@@ -1,37 +1,23 @@
 import { createClient } from "@/lib/supabase/client"
 import type { GameState, Beat } from "@/lib/game-state"
 
-function isValidUUID(str: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-  return uuidRegex.test(str)
-}
-
-function getOrCreatePlayerId(): string {
-  if (typeof window === "undefined") return ""
-
-  let playerId = localStorage.getItem("producer_tycoon_player_id")
-
-  if (!playerId || !isValidUUID(playerId)) {
-    playerId = crypto.randomUUID()
-    localStorage.setItem("producer_tycoon_player_id", playerId)
-  }
-
-  return playerId
+async function getAuthenticatedUserId(): Promise<string | null> {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  return user?.id || null
 }
 
 export async function loadGameState(): Promise<GameState | null> {
   const supabase = createClient()
-  const playerId = getOrCreatePlayerId()
-  if (!playerId) return null
+  const userId = await getAuthenticatedUserId()
+  if (!userId) return null
 
-  const { data: player, error: playerError } = await supabase
-    .from("players")
-    .select("*")
-    .eq("user_id", playerId)
-    .single()
+  const { data: player, error: playerError } = await supabase.from("players").select("*").eq("user_id", userId).single()
 
   if (playerError || !player) {
-    return null // New player, needs onboarding
+    return null
   }
 
   // Load game state
@@ -48,16 +34,16 @@ export async function loadGameState(): Promise<GameState | null> {
   // Load equipment
   const { data: equipment } = await supabase.from("equipment").select("*").eq("player_id", player.id)
 
-  // Load hired artists
-  const { data: hiredArtists } = await supabase.from("player_artists").select("artist_id").eq("player_id", player.id)
+  const { data: artistsData } = await supabase
+    .from("player_artists")
+    .select("artist_id, level")
+    .eq("player_id", player.id)
 
-  // Load purchased courses
   const { data: courses } = await supabase.from("player_courses").select("course_id").eq("player_id", player.id)
 
-  // Load beats
   const { data: beats } = await supabase.from("beats").select("*").eq("player_id", player.id).eq("sold", false)
 
-  // Reconstruct game state
+  // Reconstruct equipment
   const equipmentMap: any = {
     phone: 1,
     headphones: 0,
@@ -72,6 +58,36 @@ export async function loadGameState(): Promise<GameState | null> {
       equipmentMap[eq.equipment_type] = eq.level
     }
   })
+
+  const artistsMap: any = {
+    "mc-flow": 0,
+    "lil-dreamer": 0,
+    "street-poet": 0,
+    "young-legend": 0,
+  }
+
+  artistsData?.forEach((artist) => {
+    if (artist.artist_id in artistsMap) {
+      artistsMap[artist.artist_id] = artist.level || 0
+    }
+  })
+
+  const dailyTasksCompleted = (gameState.daily_tasks_completed as string[]) || []
+  const trainingProgressArray = (gameState.training_progress as string[]) || []
+
+  const lastActiveFromDB = gameState.last_active || gameState.updated_at || new Date().toISOString()
+  const now = new Date()
+  const lastActiveDate = new Date(lastActiveFromDB)
+  const timeDiffMs = now.getTime() - lastActiveDate.getTime()
+  const timeDiffMinutes = Math.floor(timeDiffMs / 60000)
+
+  console.log("[v0] Loading game state - Time analysis:")
+  console.log("[v0]   lastActive from DB:", lastActiveFromDB)
+  console.log("[v0]   Current time:", now.toISOString())
+  console.log("[v0]   Time difference (ms):", timeDiffMs)
+  console.log("[v0]   Time difference (minutes):", timeDiffMinutes)
+
+  console.log("[v0] Loaded energy from database:", gameState.energy)
 
   return {
     playerName: player.character_name,
@@ -97,38 +113,79 @@ export async function loadGameState(): Promise<GameState | null> {
         cover: b.cover_url,
         createdAt: new Date(b.created_at).getTime(),
       })) || [],
-    artists: [],
-    hiredArtists: hiredArtists?.map((a) => a.artist_id) || [],
+    artists: artistsMap,
     purchasedUpgrades: courses?.map((c) => c.course_id) || [],
+    dailyTasks: {
+      lastCompletedDate: gameState.daily_tasks_last_reset || "",
+      currentStreak: gameState.daily_streak || 0,
+      completedTaskIds: dailyTasksCompleted,
+    },
+    trainingProgress: {
+      freeSeminar: trainingProgressArray.includes("seminar"),
+      freeBookChapter: trainingProgressArray.includes("bookChapter"),
+    },
+    lastActive: lastActiveFromDB,
   }
 }
 
 export async function saveGameState(gameState: GameState): Promise<boolean> {
   const supabase = createClient()
-  const playerId = getOrCreatePlayerId()
-  if (!playerId) return false
+  const userId = await getAuthenticatedUserId()
+  if (!userId) return false
 
-  const { data: player } = await supabase.from("players").select("id").eq("user_id", playerId).single()
+  const { data: player } = await supabase.from("players").select("id").eq("user_id", userId).single()
 
   if (!player) return false
 
-  // Update game state
   const { error: stateError } = await supabase
     .from("game_state")
     .update({
       money: gameState.money,
       reputation: gameState.reputation,
-      energy: gameState.energy,
+      energy: Math.round(gameState.energy),
       stage: gameState.currentStage,
       total_beats_created: gameState.totalBeatsCreated,
       total_money_earned: gameState.totalMoneyEarned,
       updated_at: new Date().toISOString(),
+      last_active: gameState.lastActive,
     })
     .eq("player_id", player.id)
 
   if (stateError) {
-    console.error("[v0] Failed to save game state:", stateError)
+    console.error("[v0] Failed to save game state:", stateError.message)
     return false
+  }
+
+  try {
+    if (gameState.dailyTasks) {
+      const trainingProgress: string[] = []
+      if (gameState.trainingProgress?.freeSeminar) trainingProgress.push("seminar")
+      if (gameState.trainingProgress?.freeBookChapter) trainingProgress.push("bookChapter")
+
+      console.log("[v0] Saving daily tasks:", {
+        completedTaskIds: gameState.dailyTasks.completedTaskIds,
+        lastReset: gameState.dailyTasks.lastCompletedDate,
+        streak: gameState.dailyTasks.currentStreak,
+      })
+
+      const { error: dailyTasksError } = await supabase
+        .from("game_state")
+        .update({
+          daily_tasks_completed: gameState.dailyTasks.completedTaskIds || [],
+          daily_tasks_last_reset: gameState.dailyTasks.lastCompletedDate || new Date().toISOString(),
+          daily_streak: gameState.dailyTasks.currentStreak || 0,
+          training_progress: trainingProgress,
+        })
+        .eq("player_id", player.id)
+
+      if (dailyTasksError) {
+        console.error("[v0] Failed to save daily tasks:", dailyTasksError.message)
+      } else {
+        console.log("[v0] Daily tasks saved successfully")
+      }
+    }
+  } catch (error) {
+    console.log("[v0] Daily tasks columns not yet migrated, skipping save:", error)
   }
 
   return true
@@ -141,13 +198,18 @@ export async function createPlayer(
   startingBonus: string,
 ): Promise<boolean> {
   const supabase = createClient()
-  const playerId = getOrCreatePlayerId()
-  if (!playerId) return false
+  const userId = await getAuthenticatedUserId()
+  if (!userId) return false
+
+  if (!avatar || !avatar.trim()) {
+    console.error("[v0] Failed to create player: avatar is required")
+    return false
+  }
 
   const { data: player, error: playerError } = await supabase
     .from("players")
     .insert({
-      user_id: playerId,
+      user_id: userId,
       character_name: name,
       character_avatar: avatar,
       music_style: musicStyle,
@@ -161,7 +223,6 @@ export async function createPlayer(
     return false
   }
 
-  // Create initial game state
   const { error: stateError } = await supabase.from("game_state").insert({
     player_id: player.id,
     money: 500,
@@ -177,7 +238,20 @@ export async function createPlayer(
     return false
   }
 
-  // Create initial equipment
+  try {
+    await supabase
+      .from("game_state")
+      .update({
+        daily_tasks_completed: [],
+        daily_tasks_last_reset: new Date().toISOString(),
+        daily_streak: 0,
+        training_progress: [],
+      })
+      .eq("player_id", player.id)
+  } catch (error) {
+    console.log("[v0] Daily tasks columns not yet migrated")
+  }
+
   const { error: equipError } = await supabase.from("equipment").insert({
     player_id: player.id,
     equipment_type: "phone",
@@ -193,21 +267,20 @@ export async function createPlayer(
 
 export async function saveBeat(beat: Beat): Promise<boolean> {
   const supabase = createClient()
-  const playerId = getOrCreatePlayerId()
-  if (!playerId) return false
+  const userId = await getAuthenticatedUserId()
+  if (!userId) return false
 
-  const { data: player } = await supabase.from("players").select("id").eq("user_id", playerId).single()
+  const { data: player } = await supabase.from("players").select("id").eq("user_id", userId).single()
 
   if (!player) return false
 
-  // Save beat
   const { error } = await supabase.from("beats").insert({
     player_id: player.id,
     title: beat.name,
     quality: beat.quality,
     price: beat.price,
     cover_url: beat.cover,
-    sold: true,
+    sold: false,
   })
 
   if (error) {
@@ -218,19 +291,64 @@ export async function saveBeat(beat: Beat): Promise<boolean> {
   return true
 }
 
+export async function sellBeats(beatIds: string[]): Promise<boolean> {
+  const supabase = createClient()
+  const userId = await getAuthenticatedUserId()
+  if (!userId) return false
+
+  const { data: player } = await supabase.from("players").select("id").eq("user_id", userId).single()
+
+  if (!player) return false
+
+  const { error } = await supabase.from("beats").update({ sold: true }).in("id", beatIds).eq("player_id", player.id)
+
+  if (error) {
+    console.error("[v0] Failed to sell beats:", error)
+    return false
+  }
+
+  return true
+}
+
+export async function loadAllBeats(): Promise<Beat[]> {
+  const supabase = createClient()
+  const userId = await getAuthenticatedUserId()
+  if (!userId) return []
+
+  const { data: player } = await supabase.from("players").select("id").eq("user_id", userId).single()
+
+  if (!player) return []
+
+  const { data: beats } = await supabase
+    .from("beats")
+    .select("*")
+    .eq("player_id", player.id)
+    .order("created_at", { ascending: false })
+
+  return (
+    beats?.map((b) => ({
+      id: b.id,
+      name: b.title,
+      price: b.price,
+      quality: b.quality,
+      cover: b.cover_url,
+      createdAt: new Date(b.created_at).getTime(),
+    })) || []
+  )
+}
+
 export async function saveEquipmentUpgrade(
   equipmentType: keyof GameState["equipment"],
   level: number,
 ): Promise<boolean> {
   const supabase = createClient()
-  const playerId = getOrCreatePlayerId()
-  if (!playerId) return false
+  const userId = await getAuthenticatedUserId()
+  if (!userId) return false
 
-  const { data: player } = await supabase.from("players").select("id").eq("user_id", playerId).single()
+  const { data: player } = await supabase.from("players").select("id").eq("user_id", userId).single()
 
   if (!player) return false
 
-  // Check if equipment exists
   const { data: existing } = await supabase
     .from("equipment")
     .select("id")
@@ -239,7 +357,6 @@ export async function saveEquipmentUpgrade(
     .single()
 
   if (existing) {
-    // Update existing equipment
     const { error } = await supabase
       .from("equipment")
       .update({ level, updated_at: new Date().toISOString() })
@@ -250,7 +367,6 @@ export async function saveEquipmentUpgrade(
       return false
     }
   } else {
-    // Insert new equipment
     const { error } = await supabase.from("equipment").insert({
       player_id: player.id,
       equipment_type: equipmentType,
@@ -259,7 +375,44 @@ export async function saveEquipmentUpgrade(
 
     if (error) {
       console.error("[v0] Failed to insert equipment:", error)
+    }
+  }
+
+  return true
+}
+
+export async function saveArtistUpgrade(artistId: keyof GameState["artists"], level: number): Promise<boolean> {
+  const supabase = createClient()
+  const userId = await getAuthenticatedUserId()
+  if (!userId) return false
+
+  const { data: player } = await supabase.from("players").select("id").eq("user_id", userId).single()
+
+  if (!player) return false
+
+  const { data: existing } = await supabase
+    .from("player_artists")
+    .select("id")
+    .eq("player_id", player.id)
+    .eq("artist_id", artistId)
+    .single()
+
+  if (existing) {
+    const { error } = await supabase.from("player_artists").update({ level }).eq("id", existing.id)
+
+    if (error) {
+      console.error("[v0] Failed to update artist:", error)
       return false
+    }
+  } else {
+    const { error } = await supabase.from("player_artists").insert({
+      player_id: player.id,
+      artist_id: artistId,
+      level,
+    })
+
+    if (error) {
+      console.error("[v0] Failed to insert artist:", error)
     }
   }
 

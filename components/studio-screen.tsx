@@ -7,11 +7,46 @@ import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
 import type React from "react"
 import { saveEquipmentUpgrade } from "@/lib/game-storage"
+import { EQUIPMENT_TIERS, getEquipmentTier } from "@/lib/game-state"
 
 interface StudioScreenProps {
   gameState: GameState
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
   onNavigate: (screen: Screen) => void
+}
+
+const EQUIPMENT_IMAGES = {
+  phone: {
+    1: "/equipment-phone-1.jpg",
+    2: "/equipment-phone-2.jpg",
+    3: "/equipment-phone-3.jpg",
+    4: "/equipment-phone-4.jpg",
+    5: "/equipment-phone-5.jpg",
+  },
+  headphones: {
+    0: "/equipment-headphones-0.jpg",
+    1: "/equipment-headphones-1.jpg",
+    2: "/equipment-headphones-2.jpg",
+    3: "/equipment-headphones-3.jpg",
+    4: "/equipment-headphones-4.jpg",
+    5: "/equipment-headphones-5.jpg",
+  },
+  microphone: {
+    0: "/equipment-microphone-0.jpg",
+    1: "/equipment-microphone-1.jpg",
+    2: "/equipment-microphone-2.jpg",
+    3: "/equipment-microphone-3.jpg",
+    4: "/equipment-microphone-4.jpg",
+    5: "/equipment-microphone-5.jpg",
+  },
+  computer: {
+    0: "/equipment-computer-0.jpg",
+    1: "/equipment-computer-1.jpg",
+    2: "/equipment-computer-2.jpg",
+    3: "/equipment-computer-3.jpg",
+    4: "/equipment-computer-4.jpg",
+    5: "/equipment-computer-5.jpg",
+  },
 }
 
 export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScreenProps) {
@@ -45,47 +80,43 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
   const equipment = [
     {
       key: "phone" as keyof GameState["equipment"],
-      name: "Телефон (FL Studio Mobile)",
+      name: EQUIPMENT_TIERS.phone.name,
       level: gameState.equipment.phone,
       maxLevel: 5,
       basePrice: 100,
       bonus: "+5% качество",
       icon: Monitor,
       color: "primary",
-      image: "/smartphone-with-fl-studio-mobile-music-production-.jpg",
     },
     {
       key: "headphones" as keyof GameState["equipment"],
-      name: "Студийные наушники",
+      name: EQUIPMENT_TIERS.headphones.name,
       level: gameState.equipment.headphones,
       maxLevel: 5,
       basePrice: 150,
       bonus: "+5% качество",
       icon: Headphones,
       color: "secondary",
-      image: "/black-studio-headphones-for-music-production.jpg",
     },
     {
       key: "microphone" as keyof GameState["equipment"],
-      name: "USB микрофон",
+      name: EQUIPMENT_TIERS.microphone.name,
       level: gameState.equipment.microphone,
       maxLevel: 5,
       basePrice: 250,
       bonus: "+10% качество",
       icon: Mic,
       color: "accent",
-      image: "/usb-condenser-microphone-for-recording-vocals.jpg",
     },
     {
       key: "computer" as keyof GameState["equipment"],
-      name: "Домашняя студия",
+      name: EQUIPMENT_TIERS.computer.name,
       level: gameState.equipment.computer,
       maxLevel: 5,
       basePrice: 500,
       bonus: "+15% качество",
       icon: Home,
       color: "primary",
-      image: "/home-music-studio-setup-with-equipment-and-led-lig.jpg",
     },
   ]
 
@@ -154,21 +185,28 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
                     ? "text-secondary"
                     : "text-accent"
 
+              const currentTier = getEquipmentTier(item.key, item.level)
+              const nextTier = getEquipmentTier(item.key, item.level + 1)
+
+              const currentImage =
+                EQUIPMENT_IMAGES[item.key]?.[item.level as keyof (typeof EQUIPMENT_IMAGES)[typeof item.key]] ||
+                "/placeholder.svg"
+
               return (
                 <Card key={i} className="p-4 shadow-md">
                   <div className="flex items-start gap-3">
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
                       <img
-                        src={item.image || "/placeholder.svg"}
-                        alt={item.name}
+                        src={currentImage || "/placeholder.svg"}
+                        alt={currentTier?.name || item.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <p className="font-semibold text-sm">{item.name}</p>
-                          <p className="text-xs text-muted-foreground">{item.bonus}</p>
+                          <p className="font-semibold text-sm">{currentTier?.name || item.name}</p>
+                          <p className="text-xs text-muted-foreground">{currentTier?.description || item.bonus}</p>
                         </div>
                       </div>
 
@@ -178,7 +216,11 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
                             Уровень {item.level}/{item.maxLevel}
                           </span>
                           <span className={colorClass}>
-                            {item.level === item.maxLevel ? "МАКС" : `Далее: $${cost}`}
+                            {item.level === item.maxLevel
+                              ? "МАКС"
+                              : nextTier
+                                ? `${nextTier.name}: $${cost}`
+                                : `$${cost}`}
                           </span>
                         </div>
                         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -197,11 +239,11 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
 
                       <Button
                         size="sm"
-                        className="w-full active:scale-95 transition-transform"
+                        className="w-full h-auto py-2 whitespace-normal text-xs leading-tight active:scale-95 transition-transform"
                         disabled={item.level === item.maxLevel || gameState.money < cost}
                         onClick={() => handleUpgrade(item.key, item.basePrice)}
                       >
-                        {item.level === item.maxLevel ? "Максимум" : `Улучшить ($${cost})`}
+                        {item.level === item.maxLevel ? "Максимум" : `Купить ($${cost})`}
                       </Button>
                     </div>
                   </div>

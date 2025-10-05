@@ -15,22 +15,22 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     {
       title: "Добро пожаловать в Producer Tycoon",
       description: "Пройди путь от уличного битмейкера до мирового продюсера и владельца лейбла",
-      image: "/young-music-producer-with-headphones-making-beats-.jpg",
+      image: "/onboarding-1-welcome.jpg",
     },
     {
       title: "Создавай биты на улице",
       description: "Начни с телефона, продавай треки местным рэперам и зарабатывай первую репутацию",
-      image: "/music-production-studio-with-midi-keyboard--audio-.jpg",
+      image: "/onboarding-2-street-beats.jpg",
     },
     {
       title: "Работай с артистами",
       description: "Находи таланты, создавай коллаборации и выпускай хиты, которые прославят тебя",
-      image: "/diverse-group-of-hip-hop-artists-and-rappers-in-re.jpg",
+      image: "/onboarding-3-artists.jpg",
     },
     {
       title: "Построй музыкальную империю",
       description: "Открой свой лейбл, улучшай студию и становись легендой музыкальной индустрии",
-      image: "/successful-music-label-office-with-gold-records-on.jpg",
+      image: "/onboarding-4-empire.jpg",
     },
   ]
 

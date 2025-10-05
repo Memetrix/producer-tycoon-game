@@ -29,7 +29,7 @@ export function ResourceBar({ label, value, max, color, icon }: ResourceBarProps
           <span>{label}</span>
         </span>
         <span className={`font-bold ${textColorClasses[color]}`}>
-          {value.toLocaleString()} / {max.toLocaleString()}
+          {Math.round(value).toLocaleString()} / {max.toLocaleString()}
         </span>
       </div>
       <div className="h-2 bg-muted rounded-full overflow-hidden">

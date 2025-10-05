@@ -1,114 +1,368 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Loader2, Sparkles } from "lucide-react"
+import { useState, useEffect } from "react"
+import { HomeScreen } from "@/components/home-screen"
+import { StageScreen } from "@/components/stage-screen"
+import { StudioScreen } from "@/components/studio-screen"
+import { ArtistsScreen } from "@/components/artists-screen"
+import { UpgradesScreen } from "@/components/upgrades-screen"
+import { Onboarding } from "@/components/onboarding"
+import { CharacterCreation, type CharacterData } from "@/components/character-creation"
+import { AvatarConfirmation } from "@/components/avatar-confirmation"
+import { BottomNav } from "@/components/bottom-nav"
+import { type GameState, INITIAL_GAME_STATE } from "@/lib/game-state"
+import { loadGameState, saveGameState, createPlayer } from "@/lib/game-storage"
+import { getTotalEnergyBonus, getTotalPassiveIncome, calculateOfflineEarnings } from "@/lib/game-state"
+import { createBrowserClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
-export default function ProducerTycoonPage() {
-  const [prompt, setPrompt] = useState("")
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null)
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export type Screen = "home" | "stage" | "studio" | "artists" | "upgrades"
 
-  const handleGenerate = async () => {
-    if (!prompt.trim()) {
-      setError("Пожалуйста, введите описание персонажа")
-      return
+export default function Page() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+  const [authChecked, setAuthChecked] = useState<boolean>(false)
+  const router = useRouter()
+
+  const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE)
+  const [currentScreen, setCurrentScreen] = useState<Screen>("home")
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showCharacterSelection, setShowCharacterSelection] = useState(false)
+  const [showAvatarConfirmation, setShowAvatarConfirmation] = useState(false)
+  const [pendingCharacter, setPendingCharacter] = useState<CharacterData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [offlineEarnings, setOfflineEarnings] = useState<{ earnings: number; minutesAway: number } | null>(null)
+
+  useEffect(() => {
+    const supabase = createBrowserClient()
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("[v0] Initial session check:", session ? "authenticated" : "not authenticated")
+      if (session) {
+        console.log("[v0] User authenticated:", session.user.id)
+        setIsAuthenticated(true)
+      } else {
+        console.log("[v0] No session found, redirecting to login")
+        router.push("/auth/login")
+      }
+      setAuthChecked(true)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("[v0] Auth state changed:", event, session ? "authenticated" : "not authenticated")
+
+      if (event === "SIGNED_IN" && session) {
+        console.log("[v0] User signed in:", session.user.id)
+        setIsAuthenticated(true)
+      } else if (event === "SIGNED_OUT") {
+        console.log("[v0] User signed out")
+        setIsAuthenticated(false)
+        router.push("/auth/login")
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
     }
+  }, [router])
 
-    setIsGenerating(true)
-    setError(null)
-    setGeneratedImage(null)
+  useEffect(() => {
+    if (isAuthenticated !== true) return
+
+    async function initGame() {
+      const savedState = await loadGameState()
+      if (savedState) {
+        console.log("[v0] Loading game state, lastActive:", savedState.lastActive)
+        console.log("[v0] Initial energy from loaded state:", savedState.energy)
+
+        const passiveIncome = getTotalPassiveIncome(savedState.artists)
+        console.log("[v0] Passive income per minute:", passiveIncome)
+
+        const offlineData = calculateOfflineEarnings(savedState.lastActive, passiveIncome)
+        console.log("[v0] Offline earnings calculated:", offlineData)
+
+        if (offlineData.earnings > 0) {
+          savedState.money += offlineData.earnings
+          savedState.totalMoneyEarned += offlineData.earnings
+          setOfflineEarnings(offlineData)
+          console.log("[v0] Setting offline earnings to show modal:", offlineData)
+        } else {
+          console.log("[v0] No offline earnings to show")
+        }
+
+        savedState.lastActive = new Date().toISOString()
+
+        setGameState(savedState)
+        setShowOnboarding(false)
+        setShowCharacterSelection(false)
+        setShowAvatarConfirmation(false)
+      } else {
+        setShowOnboarding(true)
+      }
+      setIsLoading(false)
+    }
+    initGame()
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
+
+    const saveInterval = setInterval(() => {
+      console.log("[v0] Auto-saving game state...")
+      saveGameState(gameState)
+    }, 5000)
+
+    return () => clearInterval(saveInterval)
+  }, [gameState, isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation])
+
+  useEffect(() => {
+    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
+
+    console.log("[v0] Energy recovery interval started")
+
+    const interval = setInterval(() => {
+      setGameState((prev) => {
+        const energyBonus = getTotalEnergyBonus(prev.artists)
+        const baseRecovery = 1
+        const bonusMultiplier = 1 + energyBonus / 100
+        const recoveryAmount = baseRecovery * bonusMultiplier
+
+        let maxEnergy = 100
+        if (prev.musicStyle === "electronic") maxEnergy = 120
+        if (prev.startingBonus === "energizer") maxEnergy = 150
+
+        const newEnergy = Math.min(maxEnergy, Math.round(prev.energy + recoveryAmount))
+
+        console.log("[v0] Energy recovery tick:", {
+          previousEnergy: prev.energy,
+          recoveryAmount,
+          newEnergy,
+          maxEnergy,
+          energyBonus,
+          musicStyle: prev.musicStyle,
+          startingBonus: prev.startingBonus,
+        })
+
+        return {
+          ...prev,
+          energy: newEnergy,
+        }
+      })
+    }, 10000)
+    return () => {
+      console.log("[v0] Energy recovery interval stopped")
+      clearInterval(interval)
+    }
+  }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation])
+
+  useEffect(() => {
+    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
+
+    const incomeInterval = setInterval(() => {
+      setGameState((prev) => {
+        const passiveIncome = getTotalPassiveIncome(prev.artists)
+        if (passiveIncome === 0) return prev
+
+        return {
+          ...prev,
+          money: prev.money + passiveIncome,
+          totalMoneyEarned: prev.totalMoneyEarned + passiveIncome,
+        }
+      })
+    }, 60000)
+
+    return () => clearInterval(incomeInterval)
+  }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation])
+
+  useEffect(() => {
+    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
+
+    const updateLastActive = setInterval(() => {
+      setGameState((prev) => ({
+        ...prev,
+        lastActive: new Date().toISOString(),
+      }))
+    }, 60000)
+
+    return () => clearInterval(updateLastActive)
+  }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation])
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false)
+    setShowCharacterSelection(true)
+  }
+
+  const handleCharacterComplete = async (character: CharacterData) => {
+    console.log("[v0] handleCharacterComplete called with:", character)
+    setPendingCharacter(character)
+    setShowCharacterSelection(false)
+    setShowAvatarConfirmation(true)
+  }
+
+  const handleAvatarRegenerate = async () => {
+    if (!pendingCharacter) return
 
     try {
+      const style = pendingCharacter.musicStyle
+      const genderText = pendingCharacter.gender === "male" ? "male" : "female"
+
+      const MUSIC_STYLES = [
+        { id: "hiphop", prompt: "hip hop music producer, urban style, confident pose, studio headphones" },
+        { id: "trap", prompt: "trap music producer, modern streetwear, stylish, purple aesthetic" },
+        { id: "rnb", prompt: "rnb music producer, smooth style, elegant, soulful vibe" },
+        { id: "pop", prompt: "pop music producer, bright colorful style, energetic, mainstream appeal" },
+        { id: "electronic", prompt: "electronic music producer, futuristic style, neon aesthetic, tech-savvy" },
+      ]
+
+      const styleData = MUSIC_STYLES.find((s) => s.id === style)
+
+      console.log("[v0] Regenerating avatar for:", { name: pendingCharacter.name, gender: genderText, style })
+
       const response = await fetch("/api/generate-avatar", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: pendingCharacter.name,
+          gender: genderText,
+          prompt: styleData?.prompt || "music producer portrait",
+        }),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Ошибка при генерации аватара")
-      }
-
       const data = await response.json()
-      setGeneratedImage(data.imageUrl)
-    } catch (err) {
-      setError((err as Error).message)
-    } finally {
-      setIsGenerating(false)
+
+      if (data.imageUrl) {
+        setPendingCharacter({
+          ...pendingCharacter,
+          avatar: data.imageUrl,
+        })
+      }
+    } catch (error) {
+      console.error("[v0] Failed to regenerate avatar:", error)
+      alert("Не удалось перегенерировать аватар. Попробуйте еще раз.")
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
-      <div className="max-w-4xl mx-auto py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
-            <Sparkles className="w-10 h-10 text-purple-600" />
-            Producer Tycoon
-          </h1>
-          <p className="text-xl text-gray-600">Создайте уникального персонажа для вашей игры</p>
+  const handleAvatarConfirm = async () => {
+    if (!pendingCharacter) return
+
+    const success = await createPlayer(
+      pendingCharacter.name,
+      pendingCharacter.avatar,
+      pendingCharacter.musicStyle,
+      pendingCharacter.startingBonus,
+    )
+
+    if (success) {
+      const updatedState = {
+        ...gameState,
+        playerName: pendingCharacter.name,
+        playerAvatar: pendingCharacter.avatar,
+        musicStyle: pendingCharacter.musicStyle,
+        startingBonus: pendingCharacter.startingBonus,
+      }
+
+      if (pendingCharacter.musicStyle === "hiphop") {
+        updatedState.money += 100
+      } else if (pendingCharacter.musicStyle === "trap") {
+        updatedState.reputation += 50
+      } else if (pendingCharacter.musicStyle === "rnb") {
+        updatedState.equipment = { ...updatedState.equipment, headphones: 1 }
+      } else if (pendingCharacter.musicStyle === "pop") {
+        updatedState.money += 50
+        updatedState.reputation += 25
+      } else if (pendingCharacter.musicStyle === "electronic") {
+        updatedState.energy = 120
+      }
+
+      if (pendingCharacter.startingBonus === "producer") {
+        updatedState.equipment = { ...updatedState.equipment, headphones: 1 }
+      } else if (pendingCharacter.startingBonus === "hustler") {
+        updatedState.money += 200
+      } else if (pendingCharacter.startingBonus === "connector") {
+        updatedState.reputation += 100
+      } else if (pendingCharacter.startingBonus === "energizer") {
+        updatedState.energy = 150
+      }
+
+      setGameState(updatedState)
+      setShowAvatarConfirmation(false)
+      setPendingCharacter(null)
+    }
+  }
+
+  const navigateTo = (screen: Screen) => {
+    setIsTransitioning(true)
+    setTimeout(() => {
+      setCurrentScreen(screen)
+      setIsTransitioning(false)
+    }, 150)
+  }
+
+  const handleOfflineEarningsShown = () => {
+    setOfflineEarnings(null)
+  }
+
+  if (!authChecked || (isAuthenticated && isLoading)) {
+    return (
+      <div className="min-h-screen bg-background dark flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 border-4 border-[oklch(0.65_0.25_250)] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-[oklch(0.7_0_0)]">Загрузка...</p>
         </div>
-
-        <Card className="p-8 shadow-2xl">
-          <div className="space-y-6">
-            <div>
-              <Label htmlFor="prompt" className="text-lg font-semibold mb-2 block">
-                Опишите вашего персонажа
-              </Label>
-              <Input
-                id="prompt"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Например: молодой музыкальный продюсер в студии, стильная одежда, наушники"
-                className="text-lg p-6"
-                disabled={isGenerating}
-              />
-            </div>
-
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !prompt.trim()}
-              className="w-full text-lg py-6"
-              size="lg"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Генерация аватара...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Создать аватар
-                </>
-              )}
-            </Button>
-
-            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">{error}</div>}
-
-            {generatedImage && (
-              <div className="mt-8 space-y-4">
-                <h3 className="text-2xl font-semibold text-center">Ваш персонаж готов!</h3>
-                <div className="relative rounded-xl overflow-hidden shadow-2xl">
-                  <img
-                    src={generatedImage || "/placeholder.svg"}
-                    alt="Сгенерированный аватар"
-                    className="w-full h-auto"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        </Card>
       </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null
+  }
+
+  if (showOnboarding) {
+    return <Onboarding onComplete={handleOnboardingComplete} />
+  }
+
+  if (showCharacterSelection) {
+    return <CharacterCreation onComplete={handleCharacterComplete} />
+  }
+
+  if (showAvatarConfirmation && pendingCharacter) {
+    return (
+      <AvatarConfirmation
+        character={pendingCharacter}
+        onConfirm={handleAvatarConfirm}
+        onRegenerate={handleAvatarRegenerate}
+      />
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-background dark">
+      <div className={`h-screen transition-opacity duration-150 ${isTransitioning ? "opacity-0" : "opacity-100"}`}>
+        {currentScreen === "home" && (
+          <HomeScreen
+            gameState={gameState}
+            setGameState={setGameState}
+            onNavigate={navigateTo}
+            offlineEarnings={offlineEarnings}
+            onOfflineEarningsShown={handleOfflineEarningsShown}
+          />
+        )}
+        {currentScreen === "stage" && (
+          <StageScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
+        )}
+        {currentScreen === "studio" && (
+          <StudioScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
+        )}
+        {currentScreen === "artists" && (
+          <ArtistsScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
+        )}
+        {currentScreen === "upgrades" && (
+          <UpgradesScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
+        )}
+      </div>
+      <BottomNav currentScreen={currentScreen} onNavigate={navigateTo} />
     </div>
   )
 }

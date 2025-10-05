@@ -1,40 +1,92 @@
 "use client"
 
-import type React from "react"
+import React from "react"
+import { useEffect } from "react"
 
 import { Music2, Zap, Users, DollarSign, Star, Bolt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
+import { getStageTitle } from "@/lib/game-state"
+import { OfflineEarningsModal } from "@/components/offline-earnings-modal"
 
 interface HomeScreenProps {
   gameState: GameState
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
   onNavigate: (screen: Screen) => void
+  offlineEarnings: { earnings: number; minutesAway: number } | null
+  onOfflineEarningsShown: () => void
 }
 
-export function HomeScreen({ gameState, setGameState, onNavigate }: HomeScreenProps) {
+export function HomeScreen({
+  gameState,
+  setGameState,
+  onNavigate,
+  offlineEarnings,
+  onOfflineEarningsShown,
+}: HomeScreenProps) {
+  const [showOfflineModal, setShowOfflineModal] = React.useState(false)
+
+  useEffect(() => {
+    console.log("[v0] HomeScreen offlineEarnings changed:", offlineEarnings)
+    if (offlineEarnings && offlineEarnings.earnings > 0) {
+      setShowOfflineModal(true)
+      console.log("[v0] Setting showOfflineModal to true")
+      // Clear the offline earnings in parent so modal won't show again on navigation
+      onOfflineEarningsShown()
+    }
+  }, [offlineEarnings, onOfflineEarningsShown])
+
+  useEffect(() => {
+    console.log("[v0] HomeScreen - Current energy displayed:", gameState.energy)
+  }, [gameState.energy])
+
+  const handleCloseOfflineModal = () => {
+    console.log("[v0] Closing offline modal")
+    setShowOfflineModal(false)
+  }
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full pb-20">
+      {showOfflineModal && offlineEarnings && (
+        <OfflineEarningsModal
+          earnings={offlineEarnings.earnings}
+          minutesAway={offlineEarnings.minutesAway}
+          onClose={handleCloseOfflineModal}
+        />
+      )}
+
       <div className="p-4 border-b border-border/50 backdrop-blur-xl bg-card/80">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{gameState.playerName || "Producer Tycoon"}</h1>
-            <p className="text-sm text-muted-foreground">Путь к славе: Уличный битмейкер</p>
-          </div>
-          <div className="w-12 h-12 rounded-full overflow-hidden shadow-lg ring-2 ring-primary/30">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg ring-2 ring-primary/30 flex-shrink-0">
             {gameState.playerAvatar ? (
               <img
                 src={gameState.playerAvatar || "/placeholder.svg"}
-                alt="Avatar"
+                alt={`${gameState.playerName} avatar`}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none"
+                  e.currentTarget.parentElement!.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                      <svg class="w-6 h-6 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                      </svg>
+                    </div>
+                  `
+                }}
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
                 <Music2 className="w-6 h-6 text-primary-foreground" />
               </div>
             )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold tracking-tight truncate text-foreground">
+              {gameState.playerName || "Producer"}
+            </h1>
+            <p className="text-sm text-muted-foreground">{getStageTitle(gameState.currentStage)}</p>
           </div>
         </div>
 
@@ -63,7 +115,7 @@ export function HomeScreen({ gameState, setGameState, onNavigate }: HomeScreenPr
               <Bolt className="w-3.5 h-3.5 text-accent" />
               <span className="text-xs text-muted-foreground">Энергия</span>
             </div>
-            <p className="text-lg font-bold text-accent">{gameState.energy}/100</p>
+            <p className="text-lg font-bold text-accent">{Math.round(gameState.energy)}/100</p>
           </div>
         </div>
       </div>
