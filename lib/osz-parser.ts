@@ -185,9 +185,12 @@ function parseOsuFile(content: string): OsuBeatmap {
         // Otherwise = Don (red)
         let lane = 0
         if (beatmap.mode === 1) {
-          // Taiko mode
+          // Taiko mode: store 0 (Don/red) or 1 (Kat/blue)
           const isKat = (hitSound & 2) !== 0 || (hitSound & 8) !== 0
           lane = isKat ? 1 : 0
+        } else {
+          // Standard mode: store X coordinate for lane distribution
+          lane = x
         }
 
         beatmap.hitObjects.push({

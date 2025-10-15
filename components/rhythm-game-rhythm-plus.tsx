@@ -246,14 +246,30 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     onComplete?.(finalAccuracy)
   }, [onComplete])
 
-  // Get track positions to align buttons
-  const getTrackPositions = () => {
-    if (!gameInstanceRef.current) return []
-    const tracks = gameInstanceRef.current.dropTrackArr
-    return tracks.map((track) => ({ x: track.x, width: track.width }))
-  }
+  // Track positions state - updates when tracks are initialized
+  const [trackPositions, setTrackPositions] = useState<Array<{ x: number; width: number }>>([])
 
-  const trackPositions = getTrackPositions()
+  // Update track positions when game instance is ready
+  useEffect(() => {
+    const updateTrackPositions = () => {
+      if (!gameInstanceRef.current) {
+        requestAnimationFrame(updateTrackPositions)
+        return
+      }
+
+      const tracks = gameInstanceRef.current.dropTrackArr
+      if (tracks.length === 0 || tracks[0].x === 0) {
+        // Tracks not yet positioned, try again
+        requestAnimationFrame(updateTrackPositions)
+        return
+      }
+
+      const positions = tracks.map((track) => ({ x: track.x, width: track.width }))
+      setTrackPositions(positions)
+    }
+
+    updateTrackPositions()
+  }, [beatmapLoaded])
 
   return (
     <div className="relative w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden">
