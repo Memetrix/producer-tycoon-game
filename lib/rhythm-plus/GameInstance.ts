@@ -348,52 +348,46 @@ export class GameInstance {
    * Uses canvas 2D transforms to simulate 3D depth
    */
   private renderIsometric3D(): void {
-    this.ctx.save()
+    // Draw highway background
+    this.drawHighwayBackground()
 
-    // Center the highway at perspective origin
-    const originX = this.canvasWidth * this.PERSPECTIVE_ORIGIN.x
-    const originY = this.canvasHeight * this.PERSPECTIVE_ORIGIN.y
-    this.ctx.translate(originX, originY)
-
-    // Apply isometric perspective transformation
-    // Simulates 3D by scaling Y axis based on depth
-    const isMobile = window.innerWidth < 768
-    const rotationX = isMobile ? 70 : this.HIGHWAY_ROTATION_X
-    const perspectiveScale = Math.cos((rotationX * Math.PI) / 180)
-
-    // Apply perspective transform to create depth illusion
-    // Notes at the top (far away) appear smaller due to Y scaling
-    this.ctx.transform(1, 0, 0, perspectiveScale, 0, 0)
-
-    // Draw highway fog for depth effect
-    this.drawFogEffect()
-
-    // Update and render all tracks with perspective
+    // Update and render all tracks WITHOUT perspective transform
+    // (tracks render in normal 2D space)
     for (const track of this.dropTrackArr) {
       track.update(this.ctx)
     }
-
-    this.ctx.restore()
   }
 
   /**
-   * Draw atmospheric fog effect for depth perception
+   * Draw highway background with lanes
    */
-  private drawFogEffect(): void {
-    const gradient = this.ctx.createLinearGradient(0, -this.HIGHWAY_LENGTH, 0, 0)
-    gradient.addColorStop(0, "rgba(10, 10, 15, 0.9)") // Dense fog at far end
-    gradient.addColorStop(0.3, "rgba(10, 10, 15, 0.6)")
-    gradient.addColorStop(0.6, "rgba(10, 10, 15, 0.3)")
-    gradient.addColorStop(1, "rgba(10, 10, 15, 0)") // Clear at near end
+  private drawHighwayBackground(): void {
+    // Draw highway base
+    const trackWidth = Math.min(this.canvasWidth / this.trackNum, this.trackMaxWidth)
+    const highwayWidth = this.trackNum * trackWidth
+    const startX = this.canvasWidth / 2 - highwayWidth / 2
+
+    // Background gradient
+    const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvasHeight)
+    gradient.addColorStop(0, "#1a1a2e")
+    gradient.addColorStop(1, "#0a0a0f")
 
     this.ctx.fillStyle = gradient
-    this.ctx.fillRect(
-      -this.canvasWidth / 2,
-      -this.HIGHWAY_LENGTH,
-      this.canvasWidth,
-      this.HIGHWAY_LENGTH + this.canvasHeight
-    )
+    this.ctx.fillRect(startX, 0, highwayWidth, this.canvasHeight)
+
+    // Lane dividers
+    for (let i = 0; i <= this.trackNum; i++) {
+      const x = startX + i * trackWidth
+
+      this.ctx.strokeStyle = i === 0 || i === this.trackNum ? "rgba(255, 215, 0, 0.3)" : "rgba(255, 255, 255, 0.1)"
+      this.ctx.lineWidth = i === 0 || i === this.trackNum ? 2 : 1
+      this.ctx.beginPath()
+      this.ctx.moveTo(x, 0)
+      this.ctx.lineTo(x, this.canvasHeight)
+      this.ctx.stroke()
+    }
   }
+
 
   /**
    * Draw hit line
