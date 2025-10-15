@@ -25,24 +25,32 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
   const [isGeneratingCover, setIsGeneratingCover] = useState(false)
   const [isSelling, setIsSelling] = useState(false)
 
+  // Track and difficulty selection
+  const [showTrackSelector, setShowTrackSelector] = useState(false)
+  const [selectedTrack, setSelectedTrack] = useState<typeof MUSIC_TRACKS[0] | null>(null)
+  const [selectedDifficulty, setSelectedDifficulty] = useState(1)
+
   const ENERGY_COST = 20
 
-  const calculateQuality = (rhythmAccuracy: number) => {
+  const calculateQuality = (rhythmAccuracy: number, difficulty: number) => {
     const baseQuality = 40
     const rhythmBonus = Math.floor(rhythmAccuracy * 0.4) // Up to 40 points from rhythm
+    const difficultyBonus = difficulty * 5 // Higher difficulty = better quality potential
     const equipmentBonus =
       gameState.equipment.phone * 3 +
       gameState.equipment.headphones * 3 +
       gameState.equipment.microphone * 5 +
       gameState.equipment.computer * 8
-    return Math.min(100, baseQuality + rhythmBonus + equipmentBonus)
+    return Math.min(100, baseQuality + rhythmBonus + difficultyBonus + equipmentBonus)
   }
 
-  const calculatePrice = (quality: number) => {
+  const calculatePrice = (quality: number, difficulty: number) => {
     const basePrice = 30
     const qualityBonus = Math.floor((quality - 60) * 1.5)
+    const difficultyMultiplier = 1 + (difficulty - 1) * 0.3 // Each difficulty adds 30% to price
     const reputationBonus = Math.floor(gameState.reputation * 0.05)
-    return Math.max(10, basePrice + qualityBonus + reputationBonus)
+    const finalPrice = Math.floor((basePrice + qualityBonus + reputationBonus) * difficultyMultiplier)
+    return Math.max(10, finalPrice)
   }
 
   const handleSellBeat = async () => {
@@ -80,8 +88,8 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
     setIsCreating(true)
 
     const randomName = BEAT_NAMES[Math.floor(Math.random() * BEAT_NAMES.length)]
-    const quality = calculateQuality(accuracy)
-    const price = calculatePrice(quality)
+    const quality = calculateQuality(accuracy, selectedDifficulty)
+    const price = calculatePrice(quality, selectedDifficulty)
 
     setIsGeneratingCover(true)
 
@@ -131,6 +139,25 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
       return
     }
 
+    // Show track selector
+    setShowTrackSelector(true)
+    setCurrentBeat(null)
+  }
+
+  const handleTrackSelect = (track: typeof MUSIC_TRACKS[0]) => {
+    setSelectedTrack(track)
+    setShowTrackSelector(false)
+    // Auto-select difficulty based on equipment
+    const equipmentLevel =
+      gameState.equipment.phone +
+      gameState.equipment.headphones +
+      gameState.equipment.microphone +
+      gameState.equipment.computer
+    const suggestedDifficulty = Math.min(5, Math.max(1, Math.floor(equipmentLevel / 3) + 1))
+    setSelectedDifficulty(suggestedDifficulty)
+  }
+
+  const handleStartGame = () => {
     setGameState((prev) => ({
       ...prev,
       energy: prev.energy - ENERGY_COST,
@@ -138,42 +165,140 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
     }))
 
     setIsPlayingRhythm(true)
-    setCurrentBeat(null)
-  }
-
-  const getDifficulty = () => {
-    const equipmentLevel =
-      gameState.equipment.phone +
-      gameState.equipment.headphones +
-      gameState.equipment.microphone +
-      gameState.equipment.computer
-    return Math.min(5, Math.max(1, Math.floor(equipmentLevel / 3) + 1))
-  }
-
-  const getBeatmapUrl = () => {
-    const difficulty = getDifficulty()
-    const trackIndex = Math.min(difficulty - 1, MUSIC_TRACKS.length - 1)
-    const track = MUSIC_TRACKS[trackIndex] || MUSIC_TRACKS[0]
-
-    if (!track) {
-      console.error("[v0] No tracks available in MUSIC_TRACKS")
-      return ""
-    }
-
-    console.log("[v0] Selected track:", track.name, "URL:", track.oszUrl)
-    return track.oszUrl
   }
 
   // Fullscreen rhythm game mode
-  if (isPlayingRhythm) {
+  if (isPlayingRhythm && selectedTrack) {
     return (
       <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
         <div className="w-full h-full max-w-screen-xl mx-auto flex items-center justify-center">
           <RhythmGameRhythmPlus
             onComplete={handleRhythmComplete}
-            difficulty={getDifficulty()}
-            beatmapUrl={getBeatmapUrl()}
+            difficulty={selectedDifficulty}
+            beatmapUrl={selectedTrack.oszUrl}
           />
+        </div>
+      </div>
+    )
+  }
+
+  // Track selection screen
+  if (showTrackSelector) {
+    return (
+      <div className="flex flex-col h-screen bg-gradient-to-b from-background to-background/95">
+        <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowTrackSelector(false)}
+            className="active:scale-95 transition-transform"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-lg font-semibold">Выбери трек</h1>
+            <p className="text-xs text-muted-foreground">Выбери музыку для создания бита</p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {MUSIC_TRACKS.map((track) => (
+            <Card
+              key={track.id}
+              className="p-4 hover:bg-card/80 cursor-pointer transition-all active:scale-95"
+              onClick={() => handleTrackSelect(track)}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold">
+                    {track.artist} - {track.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{track.genre}</p>
+                </div>
+                <Music className="w-6 h-6 text-primary" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Difficulty selection screen
+  if (selectedTrack && !isPlayingRhythm) {
+    return (
+      <div className="flex flex-col h-screen bg-gradient-to-b from-background to-background/95">
+        <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              setSelectedTrack(null)
+              setShowTrackSelector(true)
+            }}
+            className="active:scale-95 transition-transform"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-lg font-semibold">Выбери сложность</h1>
+            <p className="text-xs text-muted-foreground">
+              {selectedTrack.artist} - {selectedTrack.name}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((diff) => {
+              const qualityBonus = diff * 5
+              const priceMultiplier = 1 + (diff - 1) * 0.3
+              const estimatedPrice = Math.floor(50 * priceMultiplier)
+
+              return (
+                <Card
+                  key={diff}
+                  className={`p-4 cursor-pointer transition-all hover:border-primary ${
+                    selectedDifficulty === diff ? "border-2 border-primary bg-primary/10" : ""
+                  }`}
+                  onClick={() => setSelectedDifficulty(diff)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">
+                          {diff === 1
+                            ? "Лёгкая"
+                            : diff === 2
+                              ? "Нормальная"
+                              : diff === 3
+                                ? "Сложная"
+                                : diff === 4
+                                  ? "Экспертная"
+                                  : "Мастер"}
+                        </p>
+                        <span className="text-xs text-primary">+{qualityBonus}% качество</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Цена: ~${estimatedPrice} (+{Math.floor((priceMultiplier - 1) * 100)}%)
+                      </p>
+                    </div>
+                    {selectedDifficulty === diff && <Sparkles className="w-5 h-5 text-primary" />}
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+
+          <Button
+            size="lg"
+            className="w-full bg-gradient-to-r from-primary to-secondary"
+            onClick={handleStartGame}
+            disabled={gameState.energy < ENERGY_COST}
+          >
+            <Play className="w-5 h-5 mr-2" />
+            Начать игру (-{ENERGY_COST} энергии)
+          </Button>
         </div>
       </div>
     )
