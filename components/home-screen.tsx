@@ -29,21 +29,13 @@ export function HomeScreen({
   const [showOfflineModal, setShowOfflineModal] = React.useState(false)
 
   useEffect(() => {
-    console.log("[v0] HomeScreen offlineEarnings changed:", offlineEarnings)
     if (offlineEarnings && offlineEarnings.earnings > 0) {
       setShowOfflineModal(true)
-      console.log("[v0] Setting showOfflineModal to true")
-      // Clear the offline earnings in parent so modal won't show again on navigation
       onOfflineEarningsShown()
     }
   }, [offlineEarnings, onOfflineEarningsShown])
 
-  useEffect(() => {
-    console.log("[v0] HomeScreen - Current energy displayed:", gameState.energy)
-  }, [gameState.energy])
-
   const handleCloseOfflineModal = () => {
-    console.log("[v0] Closing offline modal")
     setShowOfflineModal(false)
   }
 

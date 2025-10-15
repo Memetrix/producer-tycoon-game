@@ -18,6 +18,7 @@ export interface GameState {
   // Stats
   totalBeatsCreated: number
   totalMoneyEarned: number
+  totalBeatsEarnings: number
   totalCollabs: number
 
   // Equipment levels
@@ -48,6 +49,7 @@ export interface GameState {
     lastCompletedDate: string // ISO date string
     currentStreak: number
     completedTaskIds: string[] // IDs of tasks completed today
+    claimedStreakRewards: number[] // Streak milestones that have been claimed (e.g., [7, 14])
   }
 
   // Training progress
@@ -87,31 +89,31 @@ export const MUSIC_STYLES: Record<MusicStyle, { name: string; description: strin
   "hip-hop": {
     name: "Hip-Hop",
     description: "Классический хип-хоп с сильным битом",
-    bonus: "+$100 стартовых денег",
+    bonus: "+$200 стартовых денег",
     emoji: "🎤",
   },
   trap: {
     name: "Trap",
     description: "Современный трэп с 808 басами",
-    bonus: "+50 стартовой репутации",
+    bonus: "+100 стартовой репутации",
     emoji: "🔥",
   },
   rnb: {
     name: "R&B",
     description: "Мелодичный R&B с душевными вокалами",
-    bonus: "Бесплатные наушники (уровень 1)",
+    bonus: "Бесплатные наушники (уровень 1) + $100",
     emoji: "💫",
   },
   pop: {
     name: "Pop",
     description: "Популярная музыка для широкой аудитории",
-    bonus: "+$50 денег и +25 репутации",
+    bonus: "+$150 денег и +50 репутации",
     emoji: "⭐",
   },
   electronic: {
     name: "Electronic",
     description: "Электронная музыка и EDM",
-    bonus: "+20 максимальной энергии",
+    bonus: "+30 максимальной энергии + $100",
     emoji: "⚡",
   },
 }
@@ -123,25 +125,25 @@ export const STARTING_BONUSES: Record<
   producer: {
     name: "Продюсер",
     description: "Ты фокусируешься на качестве звука",
-    bonus: "Бесплатные наушники (уровень 1)",
+    bonus: "Бесплатные наушники (уровень 1) + $200",
     icon: "🎧",
   },
   hustler: {
     name: "Хастлер",
     description: "Ты умеешь зарабатывать деньги",
-    bonus: "+$200 стартовых денег",
+    bonus: "+$400 стартовых денег",
     icon: "💰",
   },
   connector: {
     name: "Коннектор",
     description: "У тебя много связей в индустрии",
-    bonus: "+100 стартовой репутации",
+    bonus: "+200 стартовой репутации + $100",
     icon: "🤝",
   },
   energizer: {
     name: "Энерджайзер",
     description: "Ты можешь работать дольше других",
-    bonus: "+50 максимальной энергии",
+    bonus: "+50 максимальной энергии + $200",
     icon: "⚡",
   },
 }
@@ -151,7 +153,7 @@ export const INITIAL_GAME_STATE: GameState = {
   playerAvatar: "",
   musicStyle: "hip-hop",
   startingBonus: "producer",
-  money: 500,
+  money: 800,
   reputation: 0,
   energy: 100,
   gems: 0,
@@ -159,6 +161,7 @@ export const INITIAL_GAME_STATE: GameState = {
   stageProgress: 0,
   totalBeatsCreated: 0,
   totalMoneyEarned: 0,
+  totalBeatsEarnings: 0,
   totalCollabs: 0,
   equipment: {
     phone: 1,
@@ -180,6 +183,7 @@ export const INITIAL_GAME_STATE: GameState = {
     lastCompletedDate: "",
     currentStreak: 0,
     completedTaskIds: [],
+    claimedStreakRewards: [],
   },
   trainingProgress: {
     freeSeminar: false,
@@ -271,6 +275,18 @@ export function getEquipmentTier(equipmentKey: keyof GameState["equipment"], lev
 }
 
 export const ARTISTS_CONFIG = {
+  "street-poet": {
+    id: "street-poet",
+    name: "Street Poet",
+    avatar: "/conscious-hip-hop-artist-portrait--thoughtful-rapp.jpg",
+    skill: 58,
+    popularity: 52,
+    genre: "Сознательный",
+    baseCost: 70,
+    incomePerLevel: [0, 5, 7, 10, 14, 20],
+    energyBonusPerLevel: [0, 8, 10, 12, 14, 18],
+    costMultiplier: 1.6,
+  },
   "mc-flow": {
     id: "mc-flow",
     name: "MC Flow",
@@ -278,13 +294,10 @@ export const ARTISTS_CONFIG = {
     skill: 65,
     popularity: 45,
     genre: "Хип-хоп",
-    baseCost: 100,
-    // Passive income per minute at each level
-    incomePerLevel: [0, 3, 4, 5, 6, 8], // Level 0-5
-    // Energy recovery bonus % at each level
+    baseCost: 80,
+    incomePerLevel: [0, 6, 9, 13, 18, 25],
     energyBonusPerLevel: [0, 10, 12, 14, 16, 20],
-    // Cost multiplier for each level
-    costMultiplier: 1.8,
+    costMultiplier: 1.6,
   },
   "lil-dreamer": {
     id: "lil-dreamer",
@@ -293,22 +306,10 @@ export const ARTISTS_CONFIG = {
     skill: 72,
     popularity: 38,
     genre: "Трэп",
-    baseCost: 120,
-    incomePerLevel: [0, 4, 5, 6, 8, 10],
+    baseCost: 100,
+    incomePerLevel: [0, 8, 11, 16, 22, 30],
     energyBonusPerLevel: [0, 15, 18, 21, 24, 30],
-    costMultiplier: 1.8,
-  },
-  "street-poet": {
-    id: "street-poet",
-    name: "Street Poet",
-    avatar: "/conscious-hip-hop-artist-portrait--thoughtful-rapp.jpg",
-    skill: 58,
-    popularity: 52,
-    genre: "Сознательный",
-    baseCost: 90,
-    incomePerLevel: [0, 2, 3, 4, 5, 6],
-    energyBonusPerLevel: [0, 8, 10, 12, 14, 18],
-    costMultiplier: 1.8,
+    costMultiplier: 1.6,
   },
   "young-legend": {
     id: "young-legend",
@@ -317,11 +318,11 @@ export const ARTISTS_CONFIG = {
     skill: 85,
     popularity: 70,
     genre: "Хип-хоп",
-    baseCost: 250,
-    incomePerLevel: [0, 8, 10, 13, 16, 20],
+    baseCost: 200,
+    incomePerLevel: [0, 12, 18, 26, 36, 50],
     energyBonusPerLevel: [0, 25, 30, 35, 40, 50],
-    costMultiplier: 2.0,
-    requiresReputation: 500,
+    costMultiplier: 1.6,
+    requiresReputation: 400,
   },
 }
 
@@ -366,7 +367,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Подписаться на Telegram",
       description: "Подпишись на наш канал в Telegram",
       url: "https://google.com", // Placeholder
-      reward: { money: 50, reputation: 10 },
+      reward: { money: 100, reputation: 20 },
       icon: "📱",
     },
     {
@@ -374,7 +375,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Подписаться на X (Twitter)",
       description: "Подпишись на нас в X",
       url: "https://google.com", // Placeholder
-      reward: { money: 50, reputation: 10 },
+      reward: { money: 100, reputation: 20 },
       icon: "🐦",
     },
     {
@@ -382,7 +383,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Подписаться на Instagram",
       description: "Подпишись на наш Instagram",
       url: "https://google.com", // Placeholder
-      reward: { money: 50, reputation: 10 },
+      reward: { money: 100, reputation: 20 },
       icon: "📸",
     },
   ],
@@ -392,7 +393,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Лайкнуть пост в Telegram",
       description: "Поставь лайк на последний пост в Telegram",
       url: "https://google.com", // Placeholder
-      reward: { money: 75, reputation: 15, energy: 10 },
+      reward: { money: 150, reputation: 30, energy: 20 },
       icon: "📱",
     },
     {
@@ -400,7 +401,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Лайкнуть пост в X",
       description: "Поставь лайк на последний пост в X",
       url: "https://google.com", // Placeholder
-      reward: { money: 75, reputation: 15, energy: 10 },
+      reward: { money: 150, reputation: 30, energy: 20 },
       icon: "🐦",
     },
     {
@@ -408,7 +409,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Лайкнуть пост в Instagram",
       description: "Поставь лайк на последний пост в Instagram",
       url: "https://google.com", // Placeholder
-      reward: { money: 75, reputation: 15, energy: 10 },
+      reward: { money: 150, reputation: 30, energy: 20 },
       icon: "📸",
     },
   ],
@@ -420,7 +421,7 @@ export const FREE_TRAINING_CONFIG = {
     name: "Бесплатный семинар: Основы битмейкинга",
     description: "Изучи базовые техники создания битов за 15 минут",
     duration: "15 минут",
-    reward: { money: 100, reputation: 50, energyBonus: 5 },
+    reward: { money: 300, reputation: 100, energyBonus: 5 },
     icon: "🎓",
   },
   bookChapter: {
@@ -428,7 +429,7 @@ export const FREE_TRAINING_CONFIG = {
     name: "Пробная глава: Путь продюсера",
     description: "Прочитай первую главу книги о карьере в музыкальной индустрии",
     duration: "10 минут",
-    reward: { money: 150, reputation: 75, qualityBonus: 5 },
+    reward: { money: 400, reputation: 150, qualityBonus: 5 },
     icon: "📖",
   },
 }
@@ -503,4 +504,32 @@ export function formatDuration(minutes: number): string {
     return `${hours} ч`
   }
   return `${hours} ч ${remainingMinutes} мин`
+}
+
+export const STREAK_REWARDS = {
+  7: {
+    money: 500,
+    reputation: 100,
+    description: "7 дней подряд",
+  },
+  14: {
+    money: 1500,
+    reputation: 300,
+    description: "14 дней подряд",
+  },
+  30: {
+    money: 3000,
+    reputation: 5000,
+    description: "30 дней подряд - Легендарный продюсер!",
+  },
+}
+
+export function getUnclaimedStreakRewards(currentStreak: number, claimedRewards: number[]): number[] {
+  const unclaimed: number[] = []
+  for (const milestone of [7, 14, 30]) {
+    if (currentStreak >= milestone && !claimedRewards.includes(milestone)) {
+      unclaimed.push(milestone)
+    }
+  }
+  return unclaimed
 }

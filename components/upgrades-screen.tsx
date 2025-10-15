@@ -12,6 +12,8 @@ import {
   shouldResetDailyTasks,
   shouldBreakStreak,
   getDailyTasksForDay,
+  STREAK_REWARDS,
+  getUnclaimedStreakRewards,
 } from "@/lib/game-state"
 import type React from "react"
 import { useEffect, useState } from "react"
@@ -30,6 +32,7 @@ export function UpgradesScreen({ gameState, setGameState, onNavigate }: Upgrades
     lastCompletedDate: "",
     currentStreak: 0,
     completedTaskIds: [],
+    claimedStreakRewards: [],
   }
 
   const trainingProgress = gameState.trainingProgress || {
@@ -57,6 +60,7 @@ export function UpgradesScreen({ gameState, setGameState, onNavigate }: Upgrades
           lastCompletedDate: "",
           currentStreak: newStreak,
           completedTaskIds: [],
+          claimedStreakRewards: breakStreak ? [] : prev.dailyTasks?.claimedStreakRewards || [],
         },
       }))
     }
@@ -67,6 +71,29 @@ export function UpgradesScreen({ gameState, setGameState, onNavigate }: Upgrades
 
     return () => clearInterval(interval)
   }, [dailyTasks.lastCompletedDate, dailyTasks.currentStreak, dailyTasks.completedTaskIds.length, setGameState])
+
+  useEffect(() => {
+    const unclaimedRewards = getUnclaimedStreakRewards(dailyTasks.currentStreak, dailyTasks.claimedStreakRewards || [])
+
+    if (unclaimedRewards.length > 0) {
+      const milestone = unclaimedRewards[0]
+      const reward = STREAK_REWARDS[milestone as keyof typeof STREAK_REWARDS]
+
+      setGameState((prev) => ({
+        ...prev,
+        money: prev.money + reward.money,
+        reputation: prev.reputation + reward.reputation,
+        dailyTasks: {
+          ...prev.dailyTasks,
+          claimedStreakRewards: [...(prev.dailyTasks?.claimedStreakRewards || []), milestone],
+        },
+      }))
+
+      alert(
+        `🔥 Награда за стрик ${milestone} дней!\n\nПолучено:\n+$${reward.money}\n+${reward.reputation} репутации\n\n${reward.description}`,
+      )
+    }
+  }, [dailyTasks.currentStreak, dailyTasks.claimedStreakRewards, setGameState])
 
   const formatTimeUntilReset = (ms: number) => {
     const hours = Math.floor(ms / (1000 * 60 * 60))
@@ -130,6 +157,7 @@ export function UpgradesScreen({ gameState, setGameState, onNavigate }: Upgrades
             : prev.dailyTasks?.lastCompletedDate || "",
           currentStreak: prev.dailyTasks?.currentStreak || 0, // Don't increment here
           completedTaskIds: newCompletedIds,
+          claimedStreakRewards: prev.dailyTasks?.claimedStreakRewards || [],
         },
       }))
 
@@ -146,6 +174,10 @@ export function UpgradesScreen({ gameState, setGameState, onNavigate }: Upgrades
 
   const isSubscribeDay = dailyTasks.currentStreak % 2 === 0
   const dayTypeText = isSubscribeDay ? "Подписки" : "Лайки"
+
+  const nextStreakMilestone = [7, 14, 30].find((m) => m > dailyTasks.currentStreak) || 30
+  const progressToNextMilestone =
+    dailyTasks.currentStreak >= 30 ? 100 : (dailyTasks.currentStreak / nextStreakMilestone) * 100
 
   return (
     <div className="flex flex-col h-screen">
@@ -202,6 +234,27 @@ export function UpgradesScreen({ gameState, setGameState, onNavigate }: Upgrades
                 </p>
               </div>
             )}
+          </div>
+        </Card>
+
+        {/* Streak Progress Card */}
+        <Card className="p-4 bg-gradient-to-br from-accent/10 to-accent/5 border-accent/30">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Flame className="w-4 h-4 text-accent" />
+                Прогресс стрика
+              </h3>
+              <span className="text-sm text-muted-foreground">
+                {dailyTasks.currentStreak}/{nextStreakMilestone} дней
+              </span>
+            </div>
+            <Progress value={progressToNextMilestone} className="h-2" />
+            <p className="text-xs text-muted-foreground">
+              {dailyTasks.currentStreak >= 30
+                ? "Максимальный стрик достигнут! 🏆"
+                : `До следующей награды: ${nextStreakMilestone - dailyTasks.currentStreak} дней`}
+            </p>
           </div>
         </Card>
 
@@ -297,21 +350,25 @@ export function UpgradesScreen({ gameState, setGameState, onNavigate }: Upgrades
             <Gift className="w-4 h-4 text-accent" />
             Награды за стрики
           </h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <span className="text-accent">🔥</span>
-              <span>7 дней подряд: +$500 и +100 репутации</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-accent">🔥</span>
-              <span>14 дней подряд: +$1500 и +300 репутации</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-accent">🔥</span>
-              <span>30 дней подряд: Эксклюзивный артист и +5000 репутации</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-red-500">⚠️</span>
+          <ul className="space-y-2 text-sm">
+            {Object.entries(STREAK_REWARDS).map(([milestone, reward]) => {
+              const isClaimed = (dailyTasks.claimedStreakRewards || []).includes(Number(milestone))
+              const isReached = dailyTasks.currentStreak >= Number(milestone)
+              return (
+                <li
+                  key={milestone}
+                  className={`flex items-start gap-2 ${isClaimed ? "text-muted-foreground line-through" : isReached ? "text-primary font-medium" : ""}`}
+                >
+                  <span className="text-accent">{isClaimed ? "✅" : "🔥"}</span>
+                  <span>
+                    {milestone} дней: +${reward.money} и +{reward.reputation} репутации
+                    {isClaimed && " (получено)"}
+                  </span>
+                </li>
+              )
+            })}
+            <li className="flex items-start gap-2 text-red-500">
+              <span>⚠️</span>
               <span>Пропустишь день - стрик сбрасывается!</span>
             </li>
           </ul>

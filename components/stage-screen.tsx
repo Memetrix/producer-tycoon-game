@@ -9,7 +9,7 @@ import { useState } from "react"
 import type { Screen } from "@/app/page"
 import { type GameState, type Beat, BEAT_NAMES } from "@/lib/game-state"
 import { saveBeat, sellBeats } from "@/lib/game-storage"
-import { RhythmGame } from "@/components/rhythm-game"
+import { RhythmGameGuitarHero } from "@/components/rhythm-game-guitar-hero"
 
 interface StageScreenProps {
   gameState: GameState
@@ -58,8 +58,9 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
         ...prev,
         beats: [currentBeat, ...prev.beats],
         money: prev.money + currentBeat.price,
-        reputation: prev.reputation + Math.floor(currentBeat.quality / 10),
+        reputation: prev.reputation + Math.floor(currentBeat.quality / 5),
         totalMoneyEarned: prev.totalMoneyEarned + currentBeat.price,
+        totalBeatsEarnings: (prev.totalBeatsEarnings || 0) + currentBeat.price,
         stageProgress: Math.min(100, prev.stageProgress + 5),
       }))
 
@@ -172,7 +173,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
               <h2 className="text-lg font-semibold mb-1">Создай свой бит!</h2>
               <p className="text-sm text-muted-foreground">Тапай в такт когда ноты достигают линии</p>
             </div>
-            <RhythmGame onComplete={handleRhythmComplete} difficulty={getDifficulty()} />
+            <RhythmGameGuitarHero onComplete={handleRhythmComplete} difficulty={getDifficulty()} />
           </Card>
         ) : (
           <Card className="p-8 bg-gradient-to-br from-primary/10 via-card to-secondary/10 border-primary/30 shadow-lg">
@@ -261,11 +262,11 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
 
         <div className="grid grid-cols-3 gap-3">
           <Card className="p-4 text-center shadow-md">
-            <p className="text-2xl font-bold text-primary">{gameState.totalBeatsCreated}</p>
+            <p className="text-2xl font-bold text-primary">{gameState.beats.length}</p>
             <p className="text-xs text-muted-foreground mt-1">Битов создано</p>
           </Card>
           <Card className="p-4 text-center shadow-md">
-            <p className="text-2xl font-bold text-secondary">${gameState.totalMoneyEarned}</p>
+            <p className="text-2xl font-bold text-secondary">${gameState.totalBeatsEarnings || 0}</p>
             <p className="text-xs text-muted-foreground mt-1">Заработано</p>
           </Card>
           <Card className="p-4 text-center shadow-md">

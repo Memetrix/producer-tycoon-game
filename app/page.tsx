@@ -37,12 +37,9 @@ export default function Page() {
     const supabase = createBrowserClient()
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("[v0] Initial session check:", session ? "authenticated" : "not authenticated")
       if (session) {
-        console.log("[v0] User authenticated:", session.user.id)
         setIsAuthenticated(true)
       } else {
-        console.log("[v0] No session found, redirecting to login")
         router.push("/auth/login")
       }
       setAuthChecked(true)
@@ -51,13 +48,9 @@ export default function Page() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("[v0] Auth state changed:", event, session ? "authenticated" : "not authenticated")
-
       if (event === "SIGNED_IN" && session) {
-        console.log("[v0] User signed in:", session.user.id)
         setIsAuthenticated(true)
       } else if (event === "SIGNED_OUT") {
-        console.log("[v0] User signed out")
         setIsAuthenticated(false)
         router.push("/auth/login")
       }
@@ -74,22 +67,13 @@ export default function Page() {
     async function initGame() {
       const savedState = await loadGameState()
       if (savedState) {
-        console.log("[v0] Loading game state, lastActive:", savedState.lastActive)
-        console.log("[v0] Initial energy from loaded state:", savedState.energy)
-
         const passiveIncome = getTotalPassiveIncome(savedState.artists)
-        console.log("[v0] Passive income per minute:", passiveIncome)
-
         const offlineData = calculateOfflineEarnings(savedState.lastActive, passiveIncome)
-        console.log("[v0] Offline earnings calculated:", offlineData)
 
         if (offlineData.earnings > 0) {
           savedState.money += offlineData.earnings
           savedState.totalMoneyEarned += offlineData.earnings
           setOfflineEarnings(offlineData)
-          console.log("[v0] Setting offline earnings to show modal:", offlineData)
-        } else {
-          console.log("[v0] No offline earnings to show")
         }
 
         savedState.lastActive = new Date().toISOString()
@@ -110,7 +94,6 @@ export default function Page() {
     if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
 
     const saveInterval = setInterval(() => {
-      console.log("[v0] Auto-saving game state...")
       saveGameState(gameState)
     }, 5000)
 
@@ -119,8 +102,6 @@ export default function Page() {
 
   useEffect(() => {
     if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
-
-    console.log("[v0] Energy recovery interval started")
 
     const interval = setInterval(() => {
       setGameState((prev) => {
@@ -135,16 +116,6 @@ export default function Page() {
 
         const newEnergy = Math.min(maxEnergy, Math.round(prev.energy + recoveryAmount))
 
-        console.log("[v0] Energy recovery tick:", {
-          previousEnergy: prev.energy,
-          recoveryAmount,
-          newEnergy,
-          maxEnergy,
-          energyBonus,
-          musicStyle: prev.musicStyle,
-          startingBonus: prev.startingBonus,
-        })
-
         return {
           ...prev,
           energy: newEnergy,
@@ -152,7 +123,6 @@ export default function Page() {
       })
     }, 10000)
     return () => {
-      console.log("[v0] Energy recovery interval stopped")
       clearInterval(interval)
     }
   }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation])
@@ -195,7 +165,6 @@ export default function Page() {
   }
 
   const handleCharacterComplete = async (character: CharacterData) => {
-    console.log("[v0] handleCharacterComplete called with:", character)
     setPendingCharacter(character)
     setShowCharacterSelection(false)
     setShowAvatarConfirmation(true)
@@ -217,8 +186,6 @@ export default function Page() {
       ]
 
       const styleData = MUSIC_STYLES.find((s) => s.id === style)
-
-      console.log("[v0] Regenerating avatar for:", { name: pendingCharacter.name, gender: genderText, style })
 
       const response = await fetch("/api/generate-avatar", {
         method: "POST",
@@ -264,26 +231,31 @@ export default function Page() {
       }
 
       if (pendingCharacter.musicStyle === "hiphop") {
-        updatedState.money += 100
+        updatedState.money += 200
       } else if (pendingCharacter.musicStyle === "trap") {
-        updatedState.reputation += 50
+        updatedState.reputation += 100
       } else if (pendingCharacter.musicStyle === "rnb") {
         updatedState.equipment = { ...updatedState.equipment, headphones: 1 }
+        updatedState.money += 100
       } else if (pendingCharacter.musicStyle === "pop") {
-        updatedState.money += 50
-        updatedState.reputation += 25
+        updatedState.money += 150
+        updatedState.reputation += 50
       } else if (pendingCharacter.musicStyle === "electronic") {
-        updatedState.energy = 120
+        updatedState.energy = 130
+        updatedState.money += 100
       }
 
       if (pendingCharacter.startingBonus === "producer") {
         updatedState.equipment = { ...updatedState.equipment, headphones: 1 }
-      } else if (pendingCharacter.startingBonus === "hustler") {
         updatedState.money += 200
+      } else if (pendingCharacter.startingBonus === "hustler") {
+        updatedState.money += 400
       } else if (pendingCharacter.startingBonus === "connector") {
-        updatedState.reputation += 100
+        updatedState.reputation += 200
+        updatedState.money += 100
       } else if (pendingCharacter.startingBonus === "energizer") {
         updatedState.energy = 150
+        updatedState.money += 200
       }
 
       setGameState(updatedState)

@@ -20,7 +20,6 @@ export async function loadGameState(): Promise<GameState | null> {
     return null
   }
 
-  // Load game state
   const { data: gameState, error: stateError } = await supabase
     .from("game_state")
     .select("*")
@@ -31,7 +30,6 @@ export async function loadGameState(): Promise<GameState | null> {
     return null
   }
 
-  // Load equipment
   const { data: equipment } = await supabase.from("equipment").select("*").eq("player_id", player.id)
 
   const { data: artistsData } = await supabase
@@ -43,7 +41,6 @@ export async function loadGameState(): Promise<GameState | null> {
 
   const { data: beats } = await supabase.from("beats").select("*").eq("player_id", player.id).eq("sold", false)
 
-  // Reconstruct equipment
   const equipmentMap: any = {
     phone: 1,
     headphones: 0,
@@ -81,13 +78,8 @@ export async function loadGameState(): Promise<GameState | null> {
   const timeDiffMs = now.getTime() - lastActiveDate.getTime()
   const timeDiffMinutes = Math.floor(timeDiffMs / 60000)
 
-  console.log("[v0] Loading game state - Time analysis:")
-  console.log("[v0]   lastActive from DB:", lastActiveFromDB)
-  console.log("[v0]   Current time:", now.toISOString())
-  console.log("[v0]   Time difference (ms):", timeDiffMs)
-  console.log("[v0]   Time difference (minutes):", timeDiffMinutes)
-
-  console.log("[v0] Loaded energy from database:", gameState.energy)
+  const baseEnergy = gameState.energy || 0
+  const regeneratedEnergy = Math.min(100, baseEnergy + timeDiffMinutes)
 
   return {
     playerName: player.character_name,
@@ -96,12 +88,13 @@ export async function loadGameState(): Promise<GameState | null> {
     startingBonus: player.starting_bonus || "",
     money: gameState.money,
     reputation: gameState.reputation,
-    energy: gameState.energy,
+    energy: regeneratedEnergy,
     gems: 0,
     currentStage: gameState.stage,
     stageProgress: 0,
     totalBeatsCreated: gameState.total_beats_created,
     totalMoneyEarned: gameState.total_money_earned,
+    totalBeatsEarnings: gameState.total_beats_earnings || 0,
     totalCollabs: 0,
     equipment: equipmentMap,
     beats:
@@ -119,6 +112,7 @@ export async function loadGameState(): Promise<GameState | null> {
       lastCompletedDate: gameState.daily_tasks_last_reset || "",
       currentStreak: gameState.daily_streak || 0,
       completedTaskIds: dailyTasksCompleted,
+      claimedStreakRewards: [],
     },
     trainingProgress: {
       freeSeminar: trainingProgressArray.includes("seminar"),
@@ -146,6 +140,7 @@ export async function saveGameState(gameState: GameState): Promise<boolean> {
       stage: gameState.currentStage,
       total_beats_created: gameState.totalBeatsCreated,
       total_money_earned: gameState.totalMoneyEarned,
+      total_beats_earnings: gameState.totalBeatsEarnings || 0,
       updated_at: new Date().toISOString(),
       last_active: gameState.lastActive,
     })
@@ -162,12 +157,6 @@ export async function saveGameState(gameState: GameState): Promise<boolean> {
       if (gameState.trainingProgress?.freeSeminar) trainingProgress.push("seminar")
       if (gameState.trainingProgress?.freeBookChapter) trainingProgress.push("bookChapter")
 
-      console.log("[v0] Saving daily tasks:", {
-        completedTaskIds: gameState.dailyTasks.completedTaskIds,
-        lastReset: gameState.dailyTasks.lastCompletedDate,
-        streak: gameState.dailyTasks.currentStreak,
-      })
-
       const { error: dailyTasksError } = await supabase
         .from("game_state")
         .update({
@@ -180,12 +169,10 @@ export async function saveGameState(gameState: GameState): Promise<boolean> {
 
       if (dailyTasksError) {
         console.error("[v0] Failed to save daily tasks:", dailyTasksError.message)
-      } else {
-        console.log("[v0] Daily tasks saved successfully")
       }
     }
   } catch (error) {
-    console.log("[v0] Daily tasks columns not yet migrated, skipping save:", error)
+    // Silently skip if columns don't exist yet
   }
 
   return true
@@ -231,6 +218,7 @@ export async function createPlayer(
     stage: 1,
     total_beats_created: 0,
     total_money_earned: 0,
+    total_beats_earnings: 0,
   })
 
   if (stateError) {

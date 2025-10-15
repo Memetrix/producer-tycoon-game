@@ -51,7 +51,7 @@ const EQUIPMENT_IMAGES = {
 
 export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScreenProps) {
   const getUpgradeCost = (basePrice: number, level: number) => {
-    return Math.floor(basePrice * Math.pow(1.5, level))
+    return Math.floor(basePrice * Math.pow(1.4, level))
   }
 
   const handleUpgrade = async (equipmentKey: keyof GameState["equipment"], basePrice: number) => {
@@ -83,7 +83,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: EQUIPMENT_TIERS.phone.name,
       level: gameState.equipment.phone,
       maxLevel: 5,
-      basePrice: 100,
+      basePrice: 80,
       bonus: "+5% качество",
       icon: Monitor,
       color: "primary",
@@ -93,7 +93,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: EQUIPMENT_TIERS.headphones.name,
       level: gameState.equipment.headphones,
       maxLevel: 5,
-      basePrice: 150,
+      basePrice: 120,
       bonus: "+5% качество",
       icon: Headphones,
       color: "secondary",
@@ -103,7 +103,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: EQUIPMENT_TIERS.microphone.name,
       level: gameState.equipment.microphone,
       maxLevel: 5,
-      basePrice: 250,
+      basePrice: 200,
       bonus: "+10% качество",
       icon: Mic,
       color: "accent",
@@ -113,7 +113,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: EQUIPMENT_TIERS.computer.name,
       level: gameState.equipment.computer,
       maxLevel: 5,
-      basePrice: 500,
+      basePrice: 400,
       bonus: "+15% качество",
       icon: Home,
       color: "primary",
