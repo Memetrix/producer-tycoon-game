@@ -35,10 +35,17 @@ export interface GameState {
   beats: Beat[]
 
   artists: {
+    // Tier 1: Street (0-500 rep)
     "mc-flow": number
     "lil-dreamer": number
     "street-poet": number
     "young-legend": number
+    // Tier 2: Local (500-2000 rep)
+    "local-hero": number
+    "scene-leader": number
+    // Tier 3: Regional (2000-5000 rep)
+    "city-star": number
+    "state-champion": number
   }
 
   // Upgrades purchased
@@ -181,10 +188,17 @@ export const INITIAL_GAME_STATE: GameState = {
   },
   beats: [],
   artists: {
+    // Tier 1: Street (0-500 rep)
     "mc-flow": 0,
     "lil-dreamer": 0,
     "street-poet": 0,
     "young-legend": 0,
+    // Tier 2: Local (500-2000 rep)
+    "local-hero": 0,
+    "scene-leader": 0,
+    // Tier 3: Regional (2000-5000 rep)
+    "city-star": 0,
+    "state-champion": 0,
   },
   purchasedUpgrades: [],
   dailyTasks: {

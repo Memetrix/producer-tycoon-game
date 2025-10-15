@@ -82,7 +82,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       key: "phone" as keyof GameState["equipment"],
       name: EQUIPMENT_TIERS.phone.name,
       level: gameState.equipment.phone,
-      maxLevel: 5,
+      maxLevel: 10, // UPDATED: было 5, стало 10
       basePrice: 80,
       bonus: "+5% качество",
       icon: Monitor,
@@ -92,7 +92,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       key: "headphones" as keyof GameState["equipment"],
       name: EQUIPMENT_TIERS.headphones.name,
       level: gameState.equipment.headphones,
-      maxLevel: 5,
+      maxLevel: 10, // UPDATED: было 5, стало 10
       basePrice: 120,
       bonus: "+5% качество",
       icon: Headphones,
@@ -102,7 +102,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       key: "microphone" as keyof GameState["equipment"],
       name: EQUIPMENT_TIERS.microphone.name,
       level: gameState.equipment.microphone,
-      maxLevel: 5,
+      maxLevel: 10, // UPDATED: было 5, стало 10
       basePrice: 200,
       bonus: "+10% качество",
       icon: Mic,
@@ -112,7 +112,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       key: "computer" as keyof GameState["equipment"],
       name: EQUIPMENT_TIERS.computer.name,
       level: gameState.equipment.computer,
-      maxLevel: 5,
+      maxLevel: 10, // UPDATED: было 5, стало 10
       basePrice: 400,
       bonus: "+15% качество",
       icon: Home,

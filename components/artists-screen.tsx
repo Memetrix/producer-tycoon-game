@@ -33,7 +33,7 @@ export function ArtistsScreen({ gameState, setGameState, onNavigate }: ArtistsSc
       return
     }
 
-    if (currentLevel >= 5) {
+    if (currentLevel >= 10) {
       alert("Максимальный уровень!")
       return
     }
@@ -84,7 +84,7 @@ export function ArtistsScreen({ gameState, setGameState, onNavigate }: ArtistsSc
         </div>
         <div className="flex items-center gap-1 text-secondary">
           <Users className="w-4 h-4" />
-          <span className="text-sm font-bold">{hiredCount}/4</span>
+          <span className="text-sm font-bold">{hiredCount}/{Object.keys(ARTISTS_CONFIG).length}</span>
         </div>
       </div>
 
@@ -120,7 +120,7 @@ export function ArtistsScreen({ gameState, setGameState, onNavigate }: ArtistsSc
               const nextEnergyBonus = getArtistEnergyBonus(artistId as keyof typeof ARTISTS_CONFIG, currentLevel + 1)
 
               const isLocked = artist.requiresReputation && gameState.reputation < artist.requiresReputation
-              const isMaxLevel = currentLevel >= 5
+              const isMaxLevel = currentLevel >= 10
 
               return (
                 <Card key={artistId} className={`p-4 shadow-md ${isLocked ? "opacity-60" : ""}`}>
