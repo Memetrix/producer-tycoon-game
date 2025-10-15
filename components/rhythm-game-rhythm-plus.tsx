@@ -15,6 +15,8 @@ interface RhythmGameRhythmPlusProps {
 }
 
 export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: RhythmGameRhythmPlusProps) {
+  console.log("[RhythmGame] Component mounted with:", { difficulty, beatmapUrl })
+
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gameInstanceRef = useRef<GameInstance | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -49,11 +51,14 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
    * Uses the same beatmap loading system as existing rhythm game
    */
   const loadBeatmap = useCallback(async (beatmapUrl: string) => {
+    console.log("[RhythmGame] Loading beatmap from:", beatmapUrl)
     try {
       setIsLoading(true)
 
       // Parse OSU beatmap package (.osz file)
+      console.log("[RhythmGame] Parsing OSZ file...")
       const oszPackage = await parseOszFile(beatmapUrl)
+      console.log("[RhythmGame] OSZ parsed. Beatmaps:", oszPackage.beatmaps.length)
 
       setOszBeatmaps(oszPackage.beatmaps)
       setOszAudioBlob(oszPackage.audioBlob)
@@ -91,9 +96,10 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
         URL.revokeObjectURL(audioUrl)
       }
 
+      console.log("[RhythmGame] Beatmap loaded successfully")
       setIsLoading(false)
     } catch (error) {
-      console.error("[Rhythm Plus] Failed to load beatmap:", error)
+      console.error("[RhythmGame] Failed to load beatmap:", error)
       setIsLoading(false)
     }
   }, [difficulty])
@@ -102,8 +108,12 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
    * Initialize game instance
    */
   useEffect(() => {
+    console.log("[RhythmGame] Initializing game instance...")
     const canvas = canvasRef.current
-    if (!canvas) return
+    if (!canvas) {
+      console.error("[RhythmGame] Canvas ref is null!")
+      return
+    }
 
     // Set canvas size
     const updateCanvasSize = () => {
@@ -111,6 +121,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
       if (container) {
         canvas.width = container.clientWidth
         canvas.height = container.clientHeight
+        console.log("[RhythmGame] Canvas sized:", canvas.width, "x", canvas.height)
         gameInstanceRef.current?.reposition()
       }
     }
@@ -119,7 +130,9 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     window.addEventListener("resize", updateCanvasSize)
 
     // Create game instance
+    console.log("[RhythmGame] Creating GameInstance...")
     const game = new GameInstance(canvas)
+    console.log("[RhythmGame] GameInstance created")
 
     // Set up callbacks
     game.setOnJudgeDisplay((judgement, currentCombo) => {
