@@ -108,12 +108,18 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
    * Initialize game instance
    */
   useEffect(() => {
+    console.log("[RhythmGame] useEffect triggered! Dependencies:", {
+      beatmapUrl,
+      hasLoadBeatmap: !!loadBeatmap,
+      hasInitAudio: !!initAudio
+    })
     console.log("[RhythmGame] Initializing game instance...")
     const canvas = canvasRef.current
     if (!canvas) {
       console.error("[RhythmGame] Canvas ref is null!")
       return
     }
+    console.log("[RhythmGame] Canvas element found:", canvas)
 
     // Set canvas size
     const updateCanvasSize = () => {
