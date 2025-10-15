@@ -163,12 +163,19 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
         setAccuracy(Math.round(acc * 100) / 100)
       }
 
+      // Check for game over when HP reaches 0
+      if (gameInstanceRef.current.health <= 0 && isPlaying) {
+        console.log("[Game Over] HP reached 0, ending game")
+        handleSkip()
+        return
+      }
+
       requestAnimationFrame(updateUI)
     }
 
     const animId = requestAnimationFrame(updateUI)
     return () => cancelAnimationFrame(animId)
-  }, [])
+  }, [isPlaying, handleSkip])
 
   /**
    * Play drum hit sound effect
@@ -251,25 +258,36 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
 
   // Update track positions when game instance is ready
   useEffect(() => {
+    let frameId: number
+
     const updateTrackPositions = () => {
       if (!gameInstanceRef.current) {
-        requestAnimationFrame(updateTrackPositions)
+        frameId = requestAnimationFrame(updateTrackPositions)
         return
       }
 
       const tracks = gameInstanceRef.current.dropTrackArr
-      if (tracks.length === 0 || tracks[0].x === 0) {
+      if (tracks.length === 0 || tracks[0].x === 0 || tracks[0].width === 0) {
         // Tracks not yet positioned, try again
-        requestAnimationFrame(updateTrackPositions)
+        frameId = requestAnimationFrame(updateTrackPositions)
         return
       }
 
       const positions = tracks.map((track) => ({ x: track.x, width: track.width }))
+      console.log("[Button Position] Tracks positioned:", positions)
       setTrackPositions(positions)
     }
 
-    updateTrackPositions()
-  }, [beatmapLoaded])
+    // Start checking after beatmap loads and canvas is sized
+    const timeoutId = setTimeout(() => {
+      updateTrackPositions()
+    }, 100)
+
+    return () => {
+      clearTimeout(timeoutId)
+      if (frameId) cancelAnimationFrame(frameId)
+    }
+  }, [beatmapLoaded, isLoading])
 
   return (
     <div className="relative w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden">

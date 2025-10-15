@@ -58,8 +58,18 @@ export function convertOsuToRhythmPlus(beatmap: OsuBeatmap): NoteData[] {
 
       // Parse X coordinate from hit object
       // osu! playfield is 512 pixels wide, divide into 4 lanes
-      let lane = Math.floor(obj.lane / 128) // 0-3 based on X position
-      lane = Math.min(3, Math.max(0, lane)) // Clamp to 0-3
+      const x = obj.lane // X coordinate stored in lane field
+      let lane = 0
+
+      if (x < 128) {
+        lane = 0 // kick (d)
+      } else if (x < 256) {
+        lane = 1 // snare (f)
+      } else if (x < 384) {
+        lane = 2 // hat (j)
+      } else {
+        lane = 3 // tom (k)
+      }
 
       const isHoldNote = (obj.type & 2) !== 0 || (obj.type & 128) !== 0
 

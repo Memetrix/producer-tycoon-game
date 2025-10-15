@@ -67,7 +67,11 @@ export class Track {
     const hitWindowPx = 100 // pixels tolerance for hitting notes (increased for casual play)
     const dist = Math.abs(closestNote.y - this.game.checkHitLineY)
 
+    console.log(`[Hit Detection] Key: ${key}, Lane: ${this.keyBind}, Distance: ${dist.toFixed(1)}px, Window: ${hitWindowPx}px`)
+
     if (dist <= hitWindowPx) {
+      console.log(`[Hit Success] Note hit! Y: ${closestNote.y.toFixed(1)}, HitLine: ${this.game.checkHitLineY.toFixed(1)}`)
+
       if (closestNote.isHoldNote) {
         if (!closestNote.didUserHold) {
           closestNote.didUserHold = true
