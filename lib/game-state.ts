@@ -235,6 +235,11 @@ export const EQUIPMENT_TIERS = {
       { level: 3, name: "Ноутбук", description: "Полноценная работа" },
       { level: 4, name: "Мощный ноутбук", description: "Профессиональная обработка" },
       { level: 5, name: "Рабочая станция", description: "Максимальная производительность" },
+      { level: 6, name: "Mac Studio", description: "Профессиональная рабочая станция" },
+      { level: 7, name: "Custom PC Pro", description: "Кастомный топовый компьютер" },
+      { level: 8, name: "Server Grade", description: "Серверное оборудование" },
+      { level: 9, name: "AI Workstation", description: "AI-оптимизированная станция" },
+      { level: 10, name: "Quantum Studio", description: "Будущее звукозаписи" },
     ],
   },
   headphones: {
@@ -246,6 +251,11 @@ export const EQUIPMENT_TIERS = {
       { level: 3, name: "Студийные наушники", description: "Точный звук" },
       { level: 4, name: "Мониторные наушники", description: "Профессиональный мониторинг" },
       { level: 5, name: "Hi-End наушники", description: "Эталонное качество" },
+      { level: 6, name: "Planar Magnetic", description: "Плоские драйверы" },
+      { level: 7, name: "Electrostatic", description: "Электростатические наушники" },
+      { level: 8, name: "Custom Tuned", description: "Кастомная настройка под слух" },
+      { level: 9, name: "Reference Grade", description: "Эталонный мониторинг" },
+      { level: 10, name: "Legendary Sound", description: "Легендарный звук" },
     ],
   },
   microphone: {
@@ -257,6 +267,11 @@ export const EQUIPMENT_TIERS = {
       { level: 3, name: "Студийный микрофон", description: "Профессиональный звук" },
       { level: 4, name: "Ламповый микрофон", description: "Теплый винтажный звук" },
       { level: 5, name: "Топовый студийный микрофон", description: "Эталонная запись" },
+      { level: 6, name: "Large Diaphragm Tube", description: "Большая мембрана, лампа" },
+      { level: 7, name: "Vintage Neumann", description: "Винтажный Neumann" },
+      { level: 8, name: "Telefunken ELA M 251", description: "Легендарный микрофон" },
+      { level: 9, name: "Sony C-800G", description: "Топовый вокальный микрофон" },
+      { level: 10, name: "Custom Vintage Collection", description: "Коллекция винтажных микрофонов" },
     ],
   },
   computer: {
@@ -268,6 +283,43 @@ export const EQUIPMENT_TIERS = {
       { level: 3, name: "Профессиональная студия", description: "Полный набор оборудования" },
       { level: 4, name: "Звукозаписывающая студия", description: "Коммерческая студия" },
       { level: 5, name: "Топовая студия", description: "Мировой уровень" },
+      { level: 6, name: "SSL Console Studio", description: "SSL консоль" },
+      { level: 7, name: "Abbey Road Replica", description: "Копия Abbey Road" },
+      { level: 8, name: "Hitsville U.S.A.", description: "Motown легенда" },
+      { level: 9, name: "Electric Lady Studios", description: "Студия Джимми Хендрикса" },
+      { level: 10, name: "Your Own Legend", description: "Твоя собственная легенда" },
+    ],
+  },
+  midi: {
+    name: "MIDI контроллер",
+    tiers: [
+      { level: 0, name: "Нет", description: "" },
+      { level: 1, name: "MIDI клавиатура 25", description: "Компактная клавиатура" },
+      { level: 2, name: "MIDI клавиатура 49", description: "Средняя клавиатура" },
+      { level: 3, name: "MIDI клавиатура 61", description: "Полноразмерная клавиатура" },
+      { level: 4, name: "MIDI клавиатура 88", description: "Полный размер пианино" },
+      { level: 5, name: "Weighted Keys 88", description: "Взвешенные клавиши" },
+      { level: 6, name: "MPK Series", description: "Akai MPK профессиональная" },
+      { level: 7, name: "Native Instruments S88", description: "Native Instruments топ" },
+      { level: 8, name: "Roland Fantom", description: "Roland синтезатор-рабочая станция" },
+      { level: 9, name: "Yamaha Montage", description: "Yamaha флагман" },
+      { level: 10, name: "Moog One", description: "Легендарный Moog синтезатор" },
+    ],
+  },
+  audioInterface: {
+    name: "Аудиоинтерфейс",
+    tiers: [
+      { level: 0, name: "Нет", description: "" },
+      { level: 1, name: "Focusrite Scarlett Solo", description: "Начальный уровень" },
+      { level: 2, name: "Focusrite Scarlett 2i2", description: "Домашняя запись" },
+      { level: 3, name: "Universal Audio Apollo Twin", description: "Профессиональный звук" },
+      { level: 4, name: "UA Apollo x4", description: "Расширенные возможности" },
+      { level: 5, name: "UA Apollo x8", description: "Студийный стандарт" },
+      { level: 6, name: "Antelope Audio Orion", description: "Топовая конверсия" },
+      { level: 7, name: "Apogee Symphony", description: "Apogee качество" },
+      { level: 8, name: "Prism Sound ADA-8XR", description: "Референсная конверсия" },
+      { level: 9, name: "Burl Audio B80", description: "Легендарное качество" },
+      { level: 10, name: "Custom Mastering Chain", description: "Кастомный мастеринг чейн" },
     ],
   },
 }
@@ -283,6 +335,7 @@ export function getEquipmentTier(equipmentKey: keyof GameState["equipment"], lev
 }
 
 export const ARTISTS_CONFIG = {
+  // TIER 1: Street (0-500 rep)
   "street-poet": {
     id: "street-poet",
     name: "Street Poet",
@@ -291,9 +344,10 @@ export const ARTISTS_CONFIG = {
     popularity: 52,
     genre: "Сознательный",
     baseCost: 70,
-    incomePerLevel: [0, 5, 7, 10, 14, 20],
-    energyBonusPerLevel: [0, 8, 10, 12, 14, 18],
+    incomePerLevel: [0, 5, 7, 10, 14, 20, 28, 38, 50, 65, 85], // Extended to 10 levels
+    energyBonusPerLevel: [0, 8, 10, 12, 14, 18, 22, 27, 33, 40, 50], // Extended to 10 levels
     costMultiplier: 1.6,
+    tier: 1,
   },
   "mc-flow": {
     id: "mc-flow",
@@ -303,9 +357,10 @@ export const ARTISTS_CONFIG = {
     popularity: 45,
     genre: "Хип-хоп",
     baseCost: 80,
-    incomePerLevel: [0, 6, 9, 13, 18, 25],
-    energyBonusPerLevel: [0, 10, 12, 14, 16, 20],
+    incomePerLevel: [0, 6, 9, 13, 18, 25, 34, 46, 62, 82, 108], // Extended to 10 levels
+    energyBonusPerLevel: [0, 10, 12, 14, 16, 20, 25, 31, 38, 47, 58], // Extended to 10 levels
     costMultiplier: 1.6,
+    tier: 1,
   },
   "lil-dreamer": {
     id: "lil-dreamer",
@@ -315,9 +370,10 @@ export const ARTISTS_CONFIG = {
     popularity: 38,
     genre: "Трэп",
     baseCost: 100,
-    incomePerLevel: [0, 8, 11, 16, 22, 30],
-    energyBonusPerLevel: [0, 15, 18, 21, 24, 30],
+    incomePerLevel: [0, 8, 11, 16, 22, 30, 41, 56, 76, 102, 136], // Extended to 10 levels
+    energyBonusPerLevel: [0, 15, 18, 21, 24, 30, 37, 46, 57, 71, 88], // Extended to 10 levels
     costMultiplier: 1.6,
+    tier: 1,
   },
   "young-legend": {
     id: "young-legend",
@@ -327,29 +383,90 @@ export const ARTISTS_CONFIG = {
     popularity: 70,
     genre: "Хип-хоп",
     baseCost: 200,
-    incomePerLevel: [0, 12, 18, 26, 36, 50],
-    energyBonusPerLevel: [0, 25, 30, 35, 40, 50],
+    incomePerLevel: [0, 12, 18, 26, 36, 50, 68, 92, 124, 166, 222], // Extended to 10 levels
+    energyBonusPerLevel: [0, 25, 30, 35, 40, 50, 62, 77, 96, 120, 150], // Extended to 10 levels
     costMultiplier: 1.6,
     requiresReputation: 400,
+    tier: 1,
+  },
+
+  // TIER 2: Local (500-2000 rep) - NEW ARTISTS
+  "local-hero": {
+    id: "local-hero",
+    name: "Local Hero",
+    avatar: "/placeholder-artist-2.jpg",
+    skill: 78,
+    popularity: 65,
+    genre: "R&B",
+    baseCost: 300,
+    incomePerLevel: [0, 20, 28, 38, 52, 70, 94, 126, 168, 224, 298],
+    energyBonusPerLevel: [0, 30, 36, 43, 52, 62, 75, 90, 108, 130, 156],
+    costMultiplier: 1.6,
+    requiresReputation: 500,
+    tier: 2,
+  },
+  "scene-leader": {
+    id: "scene-leader",
+    name: "Scene Leader",
+    avatar: "/placeholder-artist-2.jpg",
+    skill: 82,
+    popularity: 72,
+    genre: "Trap",
+    baseCost: 400,
+    incomePerLevel: [0, 25, 35, 48, 65, 88, 118, 158, 212, 282, 376],
+    energyBonusPerLevel: [0, 35, 42, 50, 60, 72, 86, 104, 125, 150, 180],
+    costMultiplier: 1.6,
+    requiresReputation: 500,
+    tier: 2,
+  },
+
+  // TIER 3: Regional (2000-5000 rep) - NEW ARTISTS
+  "city-star": {
+    id: "city-star",
+    name: "City Star",
+    avatar: "/placeholder-artist-3.jpg",
+    skill: 88,
+    popularity: 80,
+    genre: "Pop",
+    baseCost: 800,
+    incomePerLevel: [0, 50, 68, 92, 124, 166, 222, 296, 394, 524, 698],
+    energyBonusPerLevel: [0, 50, 60, 72, 86, 104, 125, 150, 180, 216, 260],
+    costMultiplier: 1.6,
+    requiresReputation: 2000,
+    tier: 3,
+  },
+  "state-champion": {
+    id: "state-champion",
+    name: "State Champion",
+    avatar: "/placeholder-artist-3.jpg",
+    skill: 92,
+    popularity: 85,
+    genre: "Hip-Hop",
+    baseCost: 1000,
+    incomePerLevel: [0, 60, 82, 110, 148, 198, 264, 352, 470, 626, 834],
+    energyBonusPerLevel: [0, 55, 66, 79, 95, 114, 137, 164, 197, 237, 284],
+    costMultiplier: 1.6,
+    requiresReputation: 2000,
+    tier: 3,
   },
 }
 
 export function getArtistUpgradeCost(artistId: keyof typeof ARTISTS_CONFIG, currentLevel: number): number {
   const artist = ARTISTS_CONFIG[artistId]
-  if (!artist || currentLevel >= 5) return 0
+  if (!artist || currentLevel >= 10) return 0 // UPDATED: было 5, стало 10 уровней
   return Math.floor(artist.baseCost * Math.pow(artist.costMultiplier, currentLevel))
 }
 
 export function getArtistIncome(artistId: keyof typeof ARTISTS_CONFIG, level: number): number {
   const artist = ARTISTS_CONFIG[artistId]
-  if (!artist || level < 1 || level > 5) return 0
-  return artist.incomePerLevel[level]
+  if (!artist || level < 1 || level > 10) return 0 // UPDATED: было 5, стало 10
+  return artist.incomePerLevel[level] || 0 // Fallback to 0 if level not defined
 }
 
 export function getArtistEnergyBonus(artistId: keyof typeof ARTISTS_CONFIG, level: number): number {
   const artist = ARTISTS_CONFIG[artistId]
-  if (!artist || level < 1 || level > 5) return 0
-  return artist.energyBonusPerLevel[level]
+  if (!artist || level < 1 || level > 10) return 0 // UPDATED: было 5, стало 10
+  return artist.energyBonusPerLevel[level] || 0 // Fallback to 0 if level not defined
 }
 
 export function getTotalPassiveIncome(artists: GameState["artists"]): number {
