@@ -246,8 +246,17 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     onComplete?.(finalAccuracy)
   }, [onComplete])
 
+  // Get track positions to align buttons
+  const getTrackPositions = () => {
+    if (!gameInstanceRef.current) return []
+    const tracks = gameInstanceRef.current.dropTrackArr
+    return tracks.map((track) => ({ x: track.x, width: track.width }))
+  }
+
+  const trackPositions = getTrackPositions()
+
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-gray-900 to-black overflow-hidden">
+    <div className="relative w-full h-[600px] bg-gradient-to-b from-gray-900 to-black overflow-hidden rounded-2xl">
       {/* Canvas for Rhythm Plus rendering */}
       <canvas
         ref={canvasRef}
@@ -258,9 +267,91 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
         }}
       />
 
-      {/* Touch buttons overlay - positioned on highway lanes */}
-      <div className="absolute inset-0 pointer-events-none flex items-end justify-center pb-4">
-        <div className="relative flex gap-0 pointer-events-auto" style={{ width: "min(400px, 90vw)" }}>
+      {/* Touch buttons overlay - positioned exactly on highway lanes */}
+      {trackPositions.length > 0 && (
+        <div className="absolute inset-0 pointer-events-none">
+          {["D", "F", "J", "K"].map((key, index) => {
+            const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
+            const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
+            const track = trackPositions[index]
+
+            if (!track) return null
+
+            return (
+              <button
+                key={key}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault()
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                  }
+                }}
+                onMouseDown={() => {
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                  }
+                }}
+                onMouseUp={() => {
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                  }
+                }}
+                className="absolute bottom-0 flex flex-col items-center justify-center gap-2 transition-all pointer-events-auto"
+                style={{
+                  left: `${track.x}px`,
+                  width: `${track.width}px`,
+                  height: "128px",
+                  background: isActive
+                    ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
+                    : "linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0.1))",
+                  touchAction: "none",
+                  userSelect: "none",
+                  WebkitTapHighlightColor: "transparent",
+                  borderLeft: index === 0 ? "none" : "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                <div
+                  className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all"
+                  style={{
+                    borderColor: laneColors[index],
+                    background: isActive ? laneColors[index] : "rgba(255,255,255,0.1)",
+                    transform: isActive ? "scale(0.9)" : "scale(1)",
+                  }}
+                >
+                  <span
+                    className="text-lg font-bold"
+                    style={{
+                      color: isActive ? "#000" : laneColors[index],
+                    }}
+                  >
+                    {key}
+                  </span>
+                </div>
+                <span className="text-xs text-white/60">{["Kick", "Snare", "Hat", "Tom"][index]}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Fallback buttons if tracks not yet initialized */}
+      {trackPositions.length === 0 && (
+        <div className="absolute inset-0 pointer-events-none flex items-end justify-center pb-4">
+          <div className="relative flex gap-0 pointer-events-auto" style={{ width: "min(400px, 90vw)" }}>
           {["D", "F", "J", "K"].map((key, index) => {
             const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
             const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
@@ -334,9 +425,9 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
 
       {/* Judgement Display */}
       {currentJudgement && (
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
           <div
-            className={`text-6xl font-bold animate-bounce ${
+            className={`text-4xl font-bold animate-bounce ${
               currentJudgement === "PERFECT"
                 ? "text-yellow-400"
                 : currentJudgement === "GOOD"
@@ -355,35 +446,32 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
         </div>
       )}
 
-      {/* Score & Stats HUD */}
-      <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-none">
-        <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4 space-y-2">
-          <div className="text-2xl font-bold text-white">
-            Score: <span className="text-yellow-400">{score.toLocaleString()}</span>
-          </div>
-          <div className="text-xl text-white">
-            Combo: <span className="text-blue-400">{combo}x</span>
-          </div>
-          <div className="text-xl text-white">
-            Accuracy: <span className="text-green-400">{accuracy.toFixed(2)}%</span>
-          </div>
+      {/* Score & Stats HUD - Compact */}
+      <div className="absolute top-2 left-2 right-2 flex justify-between items-center pointer-events-none z-40">
+        <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs">
+          <span className="text-white/60">Score: </span>
+          <span className="text-yellow-400 font-bold">{score.toLocaleString()}</span>
+          <span className="text-white/60 ml-2">Combo: </span>
+          <span className="text-blue-400 font-bold">{combo}x</span>
         </div>
 
-        {/* Health Bar */}
-        <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4 w-64">
-          <div className="text-sm text-white mb-2">Health</div>
-          <div className="w-full h-4 bg-gray-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 transition-all duration-300"
-              style={{ width: `${gameInstanceRef.current?.health || 100}%` }}
-            />
+        {/* Health Bar - Compact */}
+        <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/60">HP</span>
+            <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 transition-all duration-300"
+                style={{ width: `${gameInstanceRef.current?.health || 100}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Control Buttons */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 pointer-events-auto">
-        {!isPlaying ? (
+      {/* Control Buttons - Hidden during play */}
+      {!isPlaying && (
+        <div className="absolute bottom-36 left-1/2 -translate-x-1/2 pointer-events-auto z-40">
           <Button
             onClick={handleStart}
             disabled={isLoading || !beatmapLoaded}
@@ -393,19 +481,8 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
             <PlayCircle className="mr-2" />
             {isLoading ? "Loading..." : "Start"}
           </Button>
-        ) : (
-          <>
-            <Button onClick={handlePause} size="lg" className="bg-yellow-500 hover:bg-yellow-600">
-              <PauseCircle className="mr-2" />
-              Pause
-            </Button>
-            <Button onClick={handleSkip} size="lg" className="bg-red-500 hover:bg-red-600">
-              <SkipForward className="mr-2" />
-              Finish
-            </Button>
-          </>
-        )}
-      </div>
+        </div>
+      )}
 
 
       {/* Loading Overlay */}
