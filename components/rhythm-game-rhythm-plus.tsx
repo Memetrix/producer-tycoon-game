@@ -11,14 +11,16 @@ interface RhythmGameRhythmPlusProps {
   difficulty: number
   beatmapUrl: string // URL to .osz beatmap file
   onComplete?: (accuracy: number) => void
+  onClose?: () => void
 }
 
-export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: RhythmGameRhythmPlusProps) {
+export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClose }: RhythmGameRhythmPlusProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gameInstanceRef = useRef<GameInstance | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const backgroundMusicRef = useRef<AudioBufferSourceNode | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const gameCompletedRef = useRef(false)
 
   const [isLoading, setIsLoading] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -96,7 +98,22 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
         setSelectedBeatmapIndex(selectedIndex)
 
         const beatmap = oszPackage.beatmaps[selectedIndex]
+
+        console.log("[v0] Selected beatmap:", beatmap.title, beatmap.version)
+        console.log("[v0] AudioLeadIn:", beatmap.audioLeadIn, "ms")
+        console.log("[v0] First timing point:", beatmap.timingPoints[0]?.time, "ms")
+
         const notes = convertOsuToRhythmPlus(beatmap)
+
+        if (notes.length > 0) {
+          console.log(
+            "[v0] Converted notes - First:",
+            notes[0].t.toFixed(2),
+            "s, Last:",
+            notes[notes.length - 1].t.toFixed(2),
+            "s",
+          )
+        }
 
         if (gameInstanceRef.current) {
           gameInstanceRef.current.loadSong(notes)
@@ -109,6 +126,24 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
           const response = await fetch(audioUrl)
           const arrayBuffer = await response.arrayBuffer()
           const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer)
+
+          console.log("[v0] Audio duration:", audioBuffer.duration.toFixed(2), "seconds")
+
+          if (notes.length > 0) {
+            const lastNoteTime = notes[notes.length - 1].t
+            const timeDifference = audioBuffer.duration - lastNoteTime
+            console.log("[v0] Time difference (audio end - last note):", timeDifference.toFixed(2), "seconds")
+
+            if (timeDifference < -5) {
+              console.warn(
+                "[v0] WARNING: Last note is",
+                Math.abs(timeDifference).toFixed(2),
+                "seconds AFTER audio ends!",
+              )
+            } else if (timeDifference > 30) {
+              console.warn("[v0] WARNING: Audio continues for", timeDifference.toFixed(2), "seconds after last note")
+            }
+          }
 
           const source = audioContextRef.current.createBufferSource()
           source.buffer = audioBuffer
@@ -159,6 +194,11 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
       playDrumSound(sound)
     })
 
+    game.setOnGameEnd(() => {
+      console.log("[v0] Game ended callback triggered")
+      handleSkip()
+    })
+
     gameInstanceRef.current = game
 
     setTimeout(() => updateHighwayWidth(), 100)
@@ -199,12 +239,24 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
    * Skip/Complete game
    */
   const handleSkip = useCallback(() => {
+    if (gameCompletedRef.current) {
+      return
+    }
+
     if (!gameInstanceRef.current) return
+
+    gameCompletedRef.current = true
 
     const result = gameInstanceRef.current.result
     const finalAccuracy = result.totalHitNotes > 0 ? result.totalPercentage / result.totalHitNotes : 0
 
-    backgroundMusicRef.current?.stop()
+    console.log("[v0] Rhythm game completed with accuracy:", finalAccuracy)
+
+    try {
+      backgroundMusicRef.current?.stop()
+    } catch (error) {
+      // Audio might not have been started yet, ignore the error
+    }
     gameInstanceRef.current.pauseGame()
 
     onComplete?.(finalAccuracy)
@@ -219,7 +271,13 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     await initAudio()
 
     gameInstanceRef.current.startGame()
-    backgroundMusicRef.current?.start()
+
+    if (backgroundMusicRef.current && audioContextRef.current) {
+      // Start audio immediately
+      backgroundMusicRef.current.start(audioContextRef.current.currentTime)
+      console.log("[v0] Audio started at:", audioContextRef.current.currentTime)
+    }
+
     setIsPlaying(true)
   }, [beatmapLoaded, initAudio])
 
@@ -322,6 +380,41 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
 
   return (
     <div ref={containerRef} className="relative w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden">
+      {/* Close button in top-center to avoid overlapping with score or HP */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            if (confirm("Выйти из игры? Прогресс не будет сохранён.")) {
+              try {
+                backgroundMusicRef.current?.stop()
+              } catch (error) {
+                // Audio might not have been started yet, ignore the error
+              }
+              gameInstanceRef.current?.pauseGame()
+              onClose?.()
+            }
+          }}
+          className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </Button>
+      </div>
+
       {/* Canvas for Rhythm Plus rendering */}
       <canvas
         ref={canvasRef}

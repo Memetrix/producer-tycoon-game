@@ -35,33 +35,33 @@ export class GameInstance {
   // Canvas
   public canvas: HTMLCanvasElement
   public ctx: CanvasRenderingContext2D
-  public canvasWidth: number = 0
-  public canvasHeight: number = 0
+  public canvasWidth = 0
+  public canvasHeight = 0
 
   // Tracks (Lanes)
   public dropTrackArr: Track[] = []
-  public trackNum: number = 4
+  public trackNum = 4
   private trackKeyBind: string[] = ["d", "f", "j", "k"]
-  private trackMaxWidth: number = 150
+  private trackMaxWidth = 150
 
   // Game state
-  public paused: boolean = true
-  public started: boolean = false
-  public playMode: boolean = true
-  public playbackSpeed: number = 1
-  public noFail: boolean = false
-  public vibrate: boolean = true
+  public paused = true
+  public started = false
+  public playMode = true
+  public playbackSpeed = 1
+  public noFail = false
+  public vibrate = true
 
   // Timing
-  public currentTime: number = 0
-  public playTime: number = 0
-  public noteDelay: number = 0
-  public checkHitLineY: number = 0
-  public noteSpeedPxPerSec: number = 380
+  public currentTime = 0
+  public playTime = 0
+  public noteDelay = 0
+  public checkHitLineY = 0
+  public noteSpeedPxPerSec = 380
 
   // Note data
   private timeArr: NoteData[] = []
-  private timeArrIdx: number = 0
+  private timeArrIdx = 0
 
   // Input
   public keyHoldingStatus: Record<string, boolean> = {}
@@ -77,7 +77,7 @@ export class GameInstance {
   }
 
   public fever: FeverState = { value: 1, time: 0, percent: 0 }
-  public health: number = 100
+  public health = 100
 
   // Options
   public options: GameOptions = {
@@ -88,10 +88,11 @@ export class GameInstance {
   // Callbacks
   private onJudgeDisplayCallback?: (judgement: Judgement, combo: number) => void
   private onPlayEffectCallback?: (sound: string) => void
+  private onGameEndCallback?: () => void
 
   // Animation
   private animationFrameId: number | null = null
-  private destroyed: boolean = false
+  private destroyed = false
 
   // Isometric rendering
   private readonly PERSPECTIVE = 1200
@@ -99,6 +100,14 @@ export class GameInstance {
   private readonly HIGHWAY_ROTATION_X = 68 // degrees
   private readonly HIGHWAY_Z_OFFSET = -500
   private readonly HIGHWAY_LENGTH = 2000
+
+  private gameEnded = false
+  private allNotesSpawned = false
+  private gameEndCallbackFired = false
+
+  private startTime = 0
+  private pausedTime = 0
+  private lastUpdateTime = 0
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -237,6 +246,27 @@ export class GameInstance {
     this.timeArr = noteData
     this.timeArrIdx = 0
     this.clearNotes()
+    this.gameEnded = false
+    this.allNotesSpawned = false
+    this.gameEndCallbackFired = false
+
+    if (noteData.length > 0) {
+      const firstNote = noteData[0]
+      const lastNote = noteData[noteData.length - 1]
+      const duration = lastNote.t - firstNote.t
+
+      console.log("[v0] Song loaded:")
+      console.log("[v0]   Total notes:", noteData.length)
+      console.log("[v0]   First note at:", firstNote.t.toFixed(2), "seconds")
+      console.log("[v0]   Last note at:", lastNote.t.toFixed(2), "seconds")
+      console.log("[v0]   Duration:", duration.toFixed(2), "seconds")
+      console.log("[v0]   Note distribution:", {
+        d: noteData.filter((n) => n.k.includes("d")).length,
+        f: noteData.filter((n) => n.k.includes("f")).length,
+        j: noteData.filter((n) => n.k.includes("j")).length,
+        k: noteData.filter((n) => n.k.includes("k")).length,
+      })
+    }
   }
 
   /**
@@ -247,21 +277,32 @@ export class GameInstance {
     this.paused = false
     this.playTime = 0
     this.currentTime = 0
+    this.startTime = performance.now()
+    this.lastUpdateTime = this.startTime
+    this.pausedTime = 0
   }
 
   /**
    * Pause game
    */
   public pauseGame(): void {
-    this.paused = true
+    if (!this.paused) {
+      this.paused = true
+      this.pausedTime = performance.now()
+    }
   }
 
   /**
    * Resume game
    */
   public resumeGame(): void {
-    this.paused = false
-    this.reposition()
+    if (this.paused) {
+      this.paused = false
+      const pauseDuration = performance.now() - this.pausedTime
+      this.startTime += pauseDuration
+      this.lastUpdateTime = performance.now()
+      this.reposition()
+    }
   }
 
   /**
@@ -317,7 +358,9 @@ export class GameInstance {
 
     // Update time
     if (!this.paused && this.started) {
-      this.currentTime += 1 / 60 // Assume 60 FPS
+      const now = performance.now()
+      const elapsedSeconds = (now - this.startTime) / 1000
+      this.currentTime = elapsedSeconds
       this.playTime = this.currentTime + this.noteDelay
 
       // Spawn new notes
@@ -327,6 +370,25 @@ export class GameInstance {
           track.dropNote(noteObj.k, noteObj)
         }
         this.timeArrIdx++
+      }
+
+      if (this.timeArrIdx >= this.timeArr.length && !this.allNotesSpawned) {
+        this.allNotesSpawned = true
+        console.log("[v0] All notes spawned at time:", this.playTime.toFixed(2), "seconds")
+      }
+
+      if (this.allNotesSpawned && !this.gameEnded && !this.gameEndCallbackFired) {
+        const allTracksEmpty = this.dropTrackArr.every((track) => track.noteArr.length === 0)
+        if (allTracksEmpty) {
+          console.log("[v0] Game ended - all notes processed at time:", this.playTime.toFixed(2), "seconds")
+          this.gameEnded = true
+          this.gameEndCallbackFired = true
+
+          // Call callback after a small delay to ensure state is stable
+          setTimeout(() => {
+            this.onGameEndCallback?.()
+          }, 100)
+        }
       }
     }
 
@@ -387,7 +449,6 @@ export class GameInstance {
       this.ctx.stroke()
     }
   }
-
 
   /**
    * Draw hit line
@@ -461,6 +522,13 @@ export class GameInstance {
    */
   public setOnPlayEffect(callback: (sound: string) => void): void {
     this.onPlayEffectCallback = callback
+  }
+
+  /**
+   * Set game end callback
+   */
+  public setOnGameEnd(callback: () => void): void {
+    this.onGameEndCallback = callback
   }
 
   /**

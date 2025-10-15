@@ -69,14 +69,16 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
   const ENERGY_COST = 20
 
   const calculateQuality = (rhythmAccuracy: number, difficulty: number) => {
-    const baseQuality = 40
-    const rhythmBonus = Math.floor(rhythmAccuracy * 0.4) // Up to 40 points from rhythm
-    const difficultyBonus = difficulty * 5 // Higher difficulty = better quality potential
-    const equipmentBonus =
-      gameState.equipment.phone * 3 +
-      gameState.equipment.headphones * 3 +
-      gameState.equipment.microphone * 5 +
-      gameState.equipment.computer * 8
+    const baseQuality = 20 // Reduced base from 40 to 20
+    const rhythmBonus = Math.floor(rhythmAccuracy * 0.6) // Increased from 0.4 to 0.6 (up to 60 points)
+    const difficultyBonus = difficulty * 3 // Reduced from 5 to 3
+    const equipmentBonus = Math.floor(
+      (gameState.equipment.phone * 2 +
+        gameState.equipment.headphones * 2 +
+        gameState.equipment.microphone * 3 +
+        gameState.equipment.computer * 5) *
+        0.5, // Reduced equipment impact by 50%
+    )
     return Math.min(100, baseQuality + rhythmBonus + difficultyBonus + equipmentBonus)
   }
 
@@ -122,6 +124,7 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     console.log("[v0] Rhythm game completed with accuracy:", accuracy)
     setIsPlayingRhythm(false)
     onRhythmGameStateChange?.(false)
+    setSelectedTrack(null) // Clear selected track to return to main screen after completion
     setIsCreating(true)
 
     const randomName = BEAT_NAMES[Math.floor(Math.random() * BEAT_NAMES.length)]
@@ -215,6 +218,11 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
         <div className="w-full h-full max-w-screen-xl mx-auto flex items-center justify-center">
           <RhythmGameRhythmPlus
             onComplete={handleRhythmComplete}
+            onClose={() => {
+              setIsPlayingRhythm(false)
+              onRhythmGameStateChange?.(false)
+              setSelectedTrack(null)
+            }}
             difficulty={selectedDifficulty}
             beatmapUrl={selectedTrack.oszUrl}
           />
@@ -312,7 +320,7 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((diff) => {
-              const qualityBonus = diff * 5
+              const qualityBonus = diff * 3
               const priceMultiplier = 1 + (diff - 1) * 0.3
               const estimatedPrice = Math.floor(50 * priceMultiplier)
 
