@@ -148,6 +148,14 @@ export const STARTING_BONUSES: Record<
   },
 }
 
+// ENERGY SYSTEM CONSTANTS
+export const ENERGY_CONFIG = {
+  BASE_MAX_ENERGY: 150, // Increased from 100 for better flow
+  ENERGY_REGEN_PER_MINUTE: 2, // Increased from 1 for faster gameplay
+  ENERGY_COST_PER_BEAT: 15, // Decreased from 20 for more beats per session
+  FULL_RECHARGE_TIME_MINUTES: 75, // 150 / 2 = 75 minutes (was 100 minutes)
+}
+
 export const INITIAL_GAME_STATE: GameState = {
   playerName: "",
   playerAvatar: "",
@@ -155,7 +163,7 @@ export const INITIAL_GAME_STATE: GameState = {
   startingBonus: "producer",
   money: 800,
   reputation: 0,
-  energy: 100,
+  energy: 150, // UPDATED: было 100, стало 150 для лучшего flow
   gems: 0,
   currentStage: 1,
   stageProgress: 0,
@@ -367,7 +375,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Подписаться на Telegram",
       description: "Подпишись на наш канал в Telegram",
       url: "https://google.com", // Placeholder
-      reward: { money: 100, reputation: 20 },
+      reward: { money: 200, reputation: 50 }, // UPDATED: было 100/$20 rep
       icon: "📱",
     },
     {
@@ -375,7 +383,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Подписаться на X (Twitter)",
       description: "Подпишись на нас в X",
       url: "https://google.com", // Placeholder
-      reward: { money: 100, reputation: 20 },
+      reward: { money: 200, reputation: 50 }, // UPDATED: было 100/$20 rep
       icon: "🐦",
     },
     {
@@ -383,7 +391,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Подписаться на Instagram",
       description: "Подпишись на наш Instagram",
       url: "https://google.com", // Placeholder
-      reward: { money: 100, reputation: 20 },
+      reward: { money: 200, reputation: 50 }, // UPDATED: было 100/$20 rep
       icon: "📸",
     },
   ],
@@ -393,7 +401,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Лайкнуть пост в Telegram",
       description: "Поставь лайк на последний пост в Telegram",
       url: "https://google.com", // Placeholder
-      reward: { money: 150, reputation: 30, energy: 20 },
+      reward: { money: 300, reputation: 75, energy: 30 }, // UPDATED: было 150/$30 rep/20 energy
       icon: "📱",
     },
     {
@@ -401,7 +409,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Лайкнуть пост в X",
       description: "Поставь лайк на последний пост в X",
       url: "https://google.com", // Placeholder
-      reward: { money: 150, reputation: 30, energy: 20 },
+      reward: { money: 300, reputation: 75, energy: 30 }, // UPDATED: было 150/$30 rep/20 energy
       icon: "🐦",
     },
     {
@@ -409,7 +417,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Лайкнуть пост в Instagram",
       description: "Поставь лайк на последний пост в Instagram",
       url: "https://google.com", // Placeholder
-      reward: { money: 150, reputation: 30, energy: 20 },
+      reward: { money: 300, reputation: 75, energy: 30 }, // UPDATED: было 150/$30 rep/20 energy
       icon: "📸",
     },
   ],
@@ -506,6 +514,40 @@ export function formatDuration(minutes: number): string {
   return `${hours} ч ${remainingMinutes} мин`
 }
 
+// REPUTATION TIERS - Gate content and provide progression structure
+export const REPUTATION_TIERS = {
+  1: { min: 0, max: 500, name: "Уличный" },
+  2: { min: 500, max: 2000, name: "Местный" },
+  3: { min: 2000, max: 5000, name: "Региональный" },
+  4: { min: 5000, max: 15000, name: "Национальный" },
+  5: { min: 15000, max: 50000, name: "Международный" },
+  6: { min: 50000, max: Infinity, name: "Легендарный" },
+}
+
+// Get current reputation tier from reputation amount
+export function getReputationTier(reputation: number): number {
+  if (reputation < 500) return 1
+  if (reputation < 2000) return 2
+  if (reputation < 5000) return 3
+  if (reputation < 15000) return 4
+  if (reputation < 50000) return 5
+  return 6
+}
+
+// TIER PRICE MULTIPLIERS - Prices increase as reputation grows
+// Tier 1 (0-500): 1.0x base price
+// Tier 2 (500-2k): 1.25x
+// Tier 3 (2k-5k): 1.5x
+// Tier 4 (5k-15k): 1.75x
+// Tier 5 (15k-50k): 2.0x
+// Tier 6 (50k+): 2.5x
+export const TIER_PRICE_MULTIPLIERS = [1.0, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5]
+
+export function getTierPriceMultiplier(reputation: number): number {
+  const tier = getReputationTier(reputation)
+  return TIER_PRICE_MULTIPLIERS[tier]
+}
+
 export const STREAK_REWARDS = {
   7: {
     money: 500,
@@ -517,16 +559,36 @@ export const STREAK_REWARDS = {
     reputation: 300,
     description: "14 дней подряд",
   },
-  30: {
+  21: {
     money: 3000,
-    reputation: 5000,
-    description: "30 дней подряд - Легендарный продюсер!",
+    reputation: 800,
+    description: "21 день подряд - Серьёзный продюсер!",
+  },
+  30: {
+    money: 5000,
+    reputation: 2000,
+    description: "30 дней подряд - Региональная звезда!",
+  },
+  40: {
+    money: 8000,
+    reputation: 4000,
+    description: "40 дней подряд - Национальный герой!",
+  },
+  50: {
+    money: 12000,
+    reputation: 8000,
+    description: "50 дней подряд - Международный уровень!",
+  },
+  60: {
+    money: 20000,
+    reputation: 15000,
+    description: "60 дней подряд - ЛЕГЕНДАРНЫЙ ПРОДЮСЕР!",
   },
 }
 
 export function getUnclaimedStreakRewards(currentStreak: number, claimedRewards: number[]): number[] {
   const unclaimed: number[] = []
-  for (const milestone of [7, 14, 30]) {
+  for (const milestone of [7, 14, 21, 30, 40, 50, 60]) {
     if (currentStreak >= milestone && !claimedRewards.includes(milestone)) {
       unclaimed.push(milestone)
     }

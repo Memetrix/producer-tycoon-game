@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 import type { Screen } from "@/app/page"
-import { type GameState, type Beat, BEAT_NAMES } from "@/lib/game-state"
+import { type GameState, type Beat, BEAT_NAMES, ENERGY_CONFIG } from "@/lib/game-state"
 import { saveBeat, sellBeats } from "@/lib/game-storage"
 import { RhythmGameRhythmPlus } from "@/components/rhythm-game-rhythm-plus"
 import { OSZ_TRACKS, type OszTrack } from "@/lib/music-config"
@@ -66,7 +66,7 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     loadTracks()
   }, [])
 
-  const ENERGY_COST = 20
+  const ENERGY_COST = ENERGY_CONFIG.ENERGY_COST_PER_BEAT // UPDATED: было 20, теперь 15
 
   const calculateQuality = (rhythmAccuracy: number, difficulty: number) => {
     const baseQuality = 20 // Reduced base from 40 to 20

@@ -10,7 +10,7 @@ import { Onboarding } from "@/components/onboarding"
 import { CharacterCreation, type CharacterData } from "@/components/character-creation"
 import { AvatarConfirmation } from "@/components/avatar-confirmation"
 import { BottomNav } from "@/components/bottom-nav"
-import { type GameState, INITIAL_GAME_STATE } from "@/lib/game-state"
+import { type GameState, INITIAL_GAME_STATE, ENERGY_CONFIG } from "@/lib/game-state"
 import { loadGameState, saveGameState, createPlayer } from "@/lib/game-storage"
 import { getTotalEnergyBonus, getTotalPassiveIncome, calculateOfflineEarnings } from "@/lib/game-state"
 import { createBrowserClient } from "@/lib/supabase/client"
@@ -107,13 +107,15 @@ export default function Page() {
     const interval = setInterval(() => {
       setGameState((prev) => {
         const energyBonus = getTotalEnergyBonus(prev.artists)
-        const baseRecovery = 1
+        // UPDATED: New energy regen system - 2 energy per minute (was 1)
+        const baseRecovery = ENERGY_CONFIG.ENERGY_REGEN_PER_MINUTE / 6 // Divided by 6 because interval runs every 10 seconds (6 times per minute)
         const bonusMultiplier = 1 + energyBonus / 100
         const recoveryAmount = baseRecovery * bonusMultiplier
 
-        let maxEnergy = 100
-        if (prev.musicStyle === "electronic") maxEnergy = 120
-        if (prev.startingBonus === "energizer") maxEnergy = 150
+        // UPDATED: New max energy - 150 base (was 100)
+        let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
+        if (prev.musicStyle === "electronic") maxEnergy = 150 + 30 // Electronic style bonus
+        if (prev.startingBonus === "energizer") maxEnergy = 150 + 50 // Energizer bonus
 
         const newEnergy = Math.min(maxEnergy, Math.round(prev.energy + recoveryAmount))
 
