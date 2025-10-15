@@ -164,6 +164,21 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
     return track.oszUrl
   }
 
+  // Fullscreen rhythm game mode
+  if (isPlayingRhythm) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+        <div className="w-full h-full max-w-screen-xl mx-auto flex items-center justify-center">
+          <RhythmGameRhythmPlus
+            onComplete={handleRhythmComplete}
+            difficulty={getDifficulty()}
+            beatmapUrl={getBeatmapUrl()}
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-b from-background to-background/95">
       <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
@@ -182,20 +197,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-4">
-        {isPlayingRhythm ? (
-          <Card className="p-4 bg-card shadow-lg">
-            <div className="mb-4 text-center">
-              <h2 className="text-lg font-semibold mb-1">Создай свой бит!</h2>
-              <p className="text-sm text-muted-foreground">Тапай в такт когда ноты достигают линии</p>
-            </div>
-            <RhythmGameRhythmPlus
-              onComplete={handleRhythmComplete}
-              difficulty={getDifficulty()}
-              beatmapUrl={getBeatmapUrl()}
-            />
-          </Card>
-        ) : (
-          <Card className="p-8 bg-gradient-to-br from-primary/10 via-card to-secondary/10 border-primary/30 shadow-lg">
+        <Card className="p-8 bg-gradient-to-br from-primary/10 via-card to-secondary/10 border-primary/30 shadow-lg">
             <div className="flex flex-col items-center text-center space-y-6">
               <div className="relative">
                 {currentBeat ? (

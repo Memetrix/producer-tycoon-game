@@ -256,7 +256,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
   const trackPositions = getTrackPositions()
 
   return (
-    <div className="relative w-full h-[600px] bg-gradient-to-b from-gray-900 to-black overflow-hidden rounded-2xl">
+    <div className="relative w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden">
       {/* Canvas for Rhythm Plus rendering */}
       <canvas
         ref={canvasRef}
