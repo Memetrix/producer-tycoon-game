@@ -128,6 +128,11 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Ensure html and body have black background in dark mode */
+  html,
+  body {
+    @apply bg-background;
+  }
 }
 
 /* iOS-style smooth animations */

@@ -26,6 +26,7 @@ export default function Page() {
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE)
   const [currentScreen, setCurrentScreen] = useState<Screen>("home")
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isRhythmGameActive, setIsRhythmGameActive] = useState(false) // Add state to track if rhythm game is active
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showCharacterSelection, setShowCharacterSelection] = useState(false)
   const [showAvatarConfirmation, setShowAvatarConfirmation] = useState(false)
@@ -322,7 +323,12 @@ export default function Page() {
           />
         )}
         {currentScreen === "stage" && (
-          <StageScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
+          <StageScreen
+            gameState={gameState}
+            setGameState={setGameState}
+            onNavigate={navigateTo}
+            onRhythmGameStateChange={setIsRhythmGameActive}
+          />
         )}
         {currentScreen === "studio" && (
           <StudioScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
@@ -334,7 +340,7 @@ export default function Page() {
           <UpgradesScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
         )}
       </div>
-      <BottomNav currentScreen={currentScreen} onNavigate={navigateTo} />
+      {!isRhythmGameActive && <BottomNav currentScreen={currentScreen} onNavigate={navigateTo} />}
     </div>
   )
 }

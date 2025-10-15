@@ -16,9 +16,10 @@ interface StageScreenProps {
   gameState: GameState
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
   onNavigate: (screen: Screen) => void
+  onRhythmGameStateChange?: (isPlaying: boolean) => void
 }
 
-export function StageScreen({ gameState, setGameState, onNavigate }: StageScreenProps) {
+export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameStateChange }: StageScreenProps) {
   const [isPlayingRhythm, setIsPlayingRhythm] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null)
@@ -27,7 +28,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
 
   // Track and difficulty selection
   const [showTrackSelector, setShowTrackSelector] = useState(false)
-  const [selectedTrack, setSelectedTrack] = useState<typeof MUSIC_TRACKS[0] | null>(null)
+  const [selectedTrack, setSelectedTrack] = useState<(typeof MUSIC_TRACKS)[0] | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState(1)
 
   const ENERGY_COST = 20
@@ -85,6 +86,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
   const handleRhythmComplete = async (accuracy: number) => {
     console.log("[v0] Rhythm game completed with accuracy:", accuracy)
     setIsPlayingRhythm(false)
+    onRhythmGameStateChange?.(false)
     setIsCreating(true)
 
     const randomName = BEAT_NAMES[Math.floor(Math.random() * BEAT_NAMES.length)]
@@ -144,7 +146,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
     setCurrentBeat(null)
   }
 
-  const handleTrackSelect = (track: typeof MUSIC_TRACKS[0]) => {
+  const handleTrackSelect = (track: (typeof MUSIC_TRACKS)[0]) => {
     setSelectedTrack(track)
     setShowTrackSelector(false)
     // Auto-select difficulty based on equipment
@@ -167,6 +169,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
     }))
 
     setIsPlayingRhythm(true)
+    onRhythmGameStateChange?.(true)
   }
 
   // Fullscreen rhythm game mode

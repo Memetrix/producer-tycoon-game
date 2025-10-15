@@ -345,9 +345,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
 
             const trackWidth = gameInstanceRef.current?.dropTrackArr[index]?.width || highwayWidth / 4
 
-            const trackX = gameInstanceRef.current?.dropTrackArr[index]?.x || 0
-            console.log(`[v0] Button ${key} - trackX: ${trackX}, trackWidth: ${trackWidth}`)
-
             return (
               <button
                 key={key}
@@ -390,6 +387,8 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
                   touchAction: "none",
                   userSelect: "none",
                   WebkitTapHighlightColor: "transparent",
+                  WebkitUserSelect: "none", // Prevent text selection on iOS
+                  WebkitTouchCallout: "none", // Prevent text selection on iOS
                 }}
               >
                 <div
@@ -398,18 +397,32 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
                     borderColor: laneColors[index],
                     background: isActive ? laneColors[index] : "rgba(255,255,255,0.1)",
                     transform: isActive ? "scale(0.9)" : "scale(1)",
+                    userSelect: "none", // Prevent text selection on the circle
+                    WebkitUserSelect: "none", // Prevent text selection on the circle
                   }}
                 >
                   <span
                     className="text-lg font-bold"
                     style={{
                       color: isActive ? "#000" : laneColors[index],
+                      userSelect: "none", // Prevent text selection on the letter
+                      WebkitUserSelect: "none", // Prevent text selection on the letter
+                      pointerEvents: "none", // Prevent text selection on the letter
                     }}
                   >
                     {key}
                   </span>
                 </div>
-                <span className="text-xs text-white/60">{["Kick", "Snare", "Hat", "Tom"][index]}</span>
+                <span
+                  className="text-xs text-white/60"
+                  style={{
+                    userSelect: "none", // Prevent text selection on the label
+                    WebkitUserSelect: "none", // Prevent text selection on the label
+                    pointerEvents: "none", // Prevent text selection on the label
+                  }}
+                >
+                  {["Kick", "Snare", "Hat", "Tom"][index]}
+                </span>
               </button>
             )
           })}
