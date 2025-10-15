@@ -49,6 +49,20 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
       last: { x: lastTrack.x, width: lastTrack.width },
     })
 
+    console.log(
+      "[v0] All track positions:",
+      tracks.map((t, i) => ({
+        index: i,
+        x: t.x,
+        width: t.width,
+        key: t.keyBind,
+      })),
+    )
+    console.log("[v0] Canvas dimensions:", {
+      width: gameInstanceRef.current.canvasWidth,
+      height: gameInstanceRef.current.canvasHeight,
+    })
+
     setHighwayWidth(totalWidth)
   }, [])
 
@@ -318,9 +332,9 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
         }}
       />
 
-      <div className="absolute inset-x-0 bottom-0 pointer-events-none flex justify-center">
+      <div className="absolute inset-x-0 bottom-0 pointer-events-none flex items-end justify-center">
         <div
-          className="grid grid-cols-4 gap-0 pointer-events-auto"
+          className="flex gap-0 pointer-events-auto"
           style={{
             width: highwayWidth > 0 ? `${highwayWidth}px` : "600px",
           }}
@@ -328,6 +342,11 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
           {["D", "F", "J", "K"].map((key, index) => {
             const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
             const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
+
+            const trackWidth = gameInstanceRef.current?.dropTrackArr[index]?.width || highwayWidth / 4
+
+            const trackX = gameInstanceRef.current?.dropTrackArr[index]?.x || 0
+            console.log(`[v0] Button ${key} - trackX: ${trackX}, trackWidth: ${trackWidth}`)
 
             return (
               <button
@@ -364,6 +383,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
                 }}
                 className="h-32 flex flex-col items-center justify-center gap-2 transition-all border-r border-white/10 last:border-r-0"
                 style={{
+                  width: `${trackWidth}px`, // Explicit width matching track width
                   background: isActive
                     ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
                     : "linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0.1))",
