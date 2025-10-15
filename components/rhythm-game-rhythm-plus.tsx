@@ -251,14 +251,26 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
   useEffect(() => {
     let frameId: number
     let isActive = true
+    let lastCanvasSize = { width: 0, height: 0 }
 
     const updateTrackPositions = () => {
       if (!isActive) return
 
-      if (!gameInstanceRef.current) {
+      const canvas = canvasRef.current
+      if (!canvas || !gameInstanceRef.current) {
         frameId = requestAnimationFrame(updateTrackPositions)
         return
       }
+
+      // Force reposition if canvas size changed
+      const canvasSizeChanged = canvas.width !== lastCanvasSize.width || canvas.height !== lastCanvasSize.height
+
+      if (canvasSizeChanged && lastCanvasSize.width !== 0) {
+        console.log("[Button Position] Canvas resized:", lastCanvasSize.width, "x", lastCanvasSize.height, "→", canvas.width, "x", canvas.height)
+        gameInstanceRef.current.reposition()
+      }
+
+      lastCanvasSize = { width: canvas.width, height: canvas.height }
 
       const tracks = gameInstanceRef.current.dropTrackArr
       if (tracks.length === 0 || tracks[0].x === 0 || tracks[0].width === 0) {
@@ -268,21 +280,17 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
       }
 
       const positions = tracks.map((track) => ({ x: track.x, width: track.width }))
-      console.log("[Button Position] Tracks positioned:", positions)
       setTrackPositions(positions)
 
       // Keep updating to handle canvas resizes
       frameId = requestAnimationFrame(updateTrackPositions)
     }
 
-    // Start checking after beatmap loads and canvas is sized
-    const timeoutId = setTimeout(() => {
-      updateTrackPositions()
-    }, 100)
+    // Start immediately, no timeout delay
+    updateTrackPositions()
 
     return () => {
       isActive = false
-      clearTimeout(timeoutId)
       if (frameId) cancelAnimationFrame(frameId)
     }
   }, [beatmapLoaded, isLoading])
