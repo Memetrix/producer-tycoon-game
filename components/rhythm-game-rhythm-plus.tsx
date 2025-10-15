@@ -160,12 +160,13 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     initAudio().then(() => loadBeatmap(beatmapUrl))
 
     return () => {
+      console.log("[RhythmGame] Cleanup - unmounting")
       window.removeEventListener("resize", updateCanvasSize)
       game.destroy()
       backgroundMusicRef.current?.stop()
       audioContextRef.current?.close()
     }
-  }, [beatmapUrl, loadBeatmap, initAudio])
+  }, [beatmapUrl])
 
   /**
    * Update UI with game state
