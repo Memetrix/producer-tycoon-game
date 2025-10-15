@@ -338,61 +338,67 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
 
       {/* Touch buttons overlay - positioned exactly on highway lanes */}
       {trackPositions.length > 0 && (
-        <div className="absolute inset-0 pointer-events-none">
-          {["D", "F", "J", "K"].map((key, index) => {
-            const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
-            const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
-            const track = trackPositions[index]
+        <div className="absolute inset-0 pointer-events-none flex items-end justify-center">
+          <div
+            className="relative flex gap-0 pointer-events-auto"
+            style={{
+              width: `${trackPositions[trackPositions.length - 1].x + trackPositions[trackPositions.length - 1].width - trackPositions[0].x}px`,
+            }}
+          >
+            {["D", "F", "J", "K"].map((key, index) => {
+              const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
+              const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
+              const track = trackPositions[index]
 
-            if (!track) return null
+              if (!track) return null
 
-            return (
-              <button
-                key={key}
-                onTouchStart={(e) => {
-                  e.preventDefault()
-                  const keyLower = key.toLowerCase()
-                  if (gameInstanceRef.current) {
-                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
-                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
-                  }
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault()
-                  const keyLower = key.toLowerCase()
-                  if (gameInstanceRef.current) {
-                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
-                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
-                  }
-                }}
-                onMouseDown={() => {
-                  const keyLower = key.toLowerCase()
-                  if (gameInstanceRef.current) {
-                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
-                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
-                  }
-                }}
-                onMouseUp={() => {
-                  const keyLower = key.toLowerCase()
-                  if (gameInstanceRef.current) {
-                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
-                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
-                  }
-                }}
-                className="absolute bottom-0 flex flex-col items-center justify-center gap-2 transition-all pointer-events-auto"
-                style={{
-                  left: `${track.x}px`,
-                  width: `${track.width}px`,
-                  height: "128px",
-                  background: isActive
-                    ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
-                    : "linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0.1))",
-                  touchAction: "none",
-                  userSelect: "none",
-                  WebkitTapHighlightColor: "transparent",
-                  borderLeft: index === 0 ? "none" : "1px solid rgba(255,255,255,0.1)",
-                }}
-              >
+              return (
+                <button
+                  key={key}
+                  onTouchStart={(e) => {
+                    e.preventDefault()
+                    const keyLower = key.toLowerCase()
+                    if (gameInstanceRef.current) {
+                      gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault()
+                    const keyLower = key.toLowerCase()
+                    if (gameInstanceRef.current) {
+                      gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                    }
+                  }}
+                  onMouseDown={() => {
+                    const keyLower = key.toLowerCase()
+                    if (gameInstanceRef.current) {
+                      gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                    }
+                  }}
+                  onMouseUp={() => {
+                    const keyLower = key.toLowerCase()
+                    if (gameInstanceRef.current) {
+                      gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                    }
+                  }}
+                  className="flex flex-col items-center justify-center gap-2 transition-all"
+                  style={{
+                    flex: "0 0 auto",
+                    width: `${track.width}px`,
+                    height: "128px",
+                    background: isActive
+                      ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
+                      : "linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0.1))",
+                    touchAction: "none",
+                    userSelect: "none",
+                    WebkitTapHighlightColor: "transparent",
+                    borderLeft: index === 0 ? "none" : "1px solid rgba(255,255,255,0.1)",
+                  }}
+                >
                 <div
                   className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all"
                   style={{
