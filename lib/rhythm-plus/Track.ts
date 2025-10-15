@@ -64,7 +64,7 @@ export class Track {
       return noteDist < closestDist ? note : closest
     })
 
-    const hitWindowPx = 50 // pixels tolerance for hitting notes
+    const hitWindowPx = 100 // pixels tolerance for hitting notes (increased for casual play)
     const dist = Math.abs(closestNote.y - this.game.checkHitLineY)
 
     if (dist <= hitWindowPx) {

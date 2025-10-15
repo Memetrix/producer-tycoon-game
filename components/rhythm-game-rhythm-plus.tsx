@@ -251,13 +251,86 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
       {/* Canvas for Rhythm Plus rendering */}
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full touch-none"
+        className="absolute inset-0 w-full h-full"
         style={{
-          touchAction: "none",
           userSelect: "none",
           WebkitTapHighlightColor: "transparent",
         }}
       />
+
+      {/* Touch buttons overlay - positioned on highway lanes */}
+      <div className="absolute inset-0 pointer-events-none flex items-end justify-center pb-4">
+        <div className="relative flex gap-0 pointer-events-auto" style={{ width: "min(400px, 90vw)" }}>
+          {["D", "F", "J", "K"].map((key, index) => {
+            const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
+            const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
+
+            return (
+              <button
+                key={key}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault()
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                  }
+                }}
+                onMouseDown={() => {
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                  }
+                }}
+                onMouseUp={() => {
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                  }
+                }}
+                className="flex-1 h-32 border-r border-white/10 last:border-r-0 flex flex-col items-center justify-center gap-2 transition-all"
+                style={{
+                  background: isActive
+                    ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
+                    : "linear-gradient(to top, rgba(0,0,0,0.3), rgba(0,0,0,0.1))",
+                  touchAction: "none",
+                  userSelect: "none",
+                  WebkitTapHighlightColor: "transparent",
+                }}
+              >
+                <div
+                  className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all"
+                  style={{
+                    borderColor: laneColors[index],
+                    background: isActive ? laneColors[index] : "rgba(255,255,255,0.1)",
+                    transform: isActive ? "scale(0.9)" : "scale(1)",
+                  }}
+                >
+                  <span
+                    className="text-lg font-bold"
+                    style={{
+                      color: isActive ? "#000" : laneColors[index],
+                    }}
+                  >
+                    {key}
+                  </span>
+                </div>
+                <span className="text-xs text-white/60">{["Kick", "Snare", "Hat", "Tom"][index]}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       {/* Judgement Display */}
       {currentJudgement && (
@@ -334,21 +407,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
         )}
       </div>
 
-      {/* Key Hints (Mobile) */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2 pointer-events-none md:hidden">
-        <div className="text-white text-sm bg-black/50 backdrop-blur-sm rounded px-3 py-1">
-          Tap lanes to hit notes
-        </div>
-      </div>
-
-      {/* Key Hints (Desktop) */}
-      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 gap-4 pointer-events-none hidden md:flex">
-        {["D", "F", "J", "K"].map((key) => (
-          <div key={key} className="text-white text-lg font-bold bg-black/50 backdrop-blur-sm rounded px-4 py-2">
-            {key}
-          </div>
-        ))}
-      </div>
 
       {/* Loading Overlay */}
       {isLoading && (
