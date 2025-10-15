@@ -28,4 +28,6 @@ export const OSZ_TRACKS: OszTrack[] = [
 
 export const ALL_TRACKS = OSZ_TRACKS
 
+export const MUSIC_TRACKS = ALL_TRACKS
+
 export type MusicTrack = OszTrack

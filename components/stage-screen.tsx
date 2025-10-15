@@ -9,7 +9,8 @@ import { useState } from "react"
 import type { Screen } from "@/app/page"
 import { type GameState, type Beat, BEAT_NAMES } from "@/lib/game-state"
 import { saveBeat, sellBeats } from "@/lib/game-storage"
-import { RhythmGameGuitarHero } from "@/components/rhythm-game-guitar-hero"
+import { RhythmGameRhythmPlus } from "@/components/rhythm-game-rhythm-plus"
+import { MUSIC_TRACKS } from "@/lib/music-config"
 
 interface StageScreenProps {
   gameState: GameState
@@ -149,6 +150,20 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
     return Math.min(5, Math.max(1, Math.floor(equipmentLevel / 3) + 1))
   }
 
+  const getBeatmapUrl = () => {
+    const difficulty = getDifficulty()
+    const trackIndex = Math.min(difficulty - 1, MUSIC_TRACKS.length - 1)
+    const track = MUSIC_TRACKS[trackIndex] || MUSIC_TRACKS[0]
+
+    if (!track) {
+      console.error("[v0] No tracks available in MUSIC_TRACKS")
+      return ""
+    }
+
+    console.log("[v0] Selected track:", track.name, "URL:", track.oszUrl)
+    return track.oszUrl
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-b from-background to-background/95">
       <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
@@ -173,7 +188,11 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
               <h2 className="text-lg font-semibold mb-1">Создай свой бит!</h2>
               <p className="text-sm text-muted-foreground">Тапай в такт когда ноты достигают линии</p>
             </div>
-            <RhythmGameGuitarHero onComplete={handleRhythmComplete} difficulty={getDifficulty()} />
+            <RhythmGameRhythmPlus
+              onComplete={handleRhythmComplete}
+              difficulty={getDifficulty()}
+              beatmapUrl={getBeatmapUrl()}
+            />
           </Card>
         ) : (
           <Card className="p-8 bg-gradient-to-br from-primary/10 via-card to-secondary/10 border-primary/30 shadow-lg">

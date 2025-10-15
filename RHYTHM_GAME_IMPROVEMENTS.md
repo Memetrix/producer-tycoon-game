@@ -24,7 +24,7 @@ This document describes the mobile-first isometric rhythm game improvements inte
 ### 2. **Mobile-Optimized Touch Controls**
 
 #### Touch-Friendly Buttons
-```css
+\`\`\`css
 /* Desktop */
 .gh-fret-button {
   width: 90px;
@@ -43,7 +43,7 @@ This document describes the mobile-first isometric rhythm game improvements inte
   height: 50px;
   border-width: 4px;  /* Thicker border */
 }
-```
+\`\`\`
 
 #### Touch Event Handling
 - `onTouchStart`: Triggers lane tap immediately
@@ -54,7 +54,7 @@ This document describes the mobile-first isometric rhythm game improvements inte
 
 ### 3. **Responsive Highway Design**
 
-```css
+\`\`\`css
 .gh-highway {
   width: min(400px, 90vw);  /* Adapts to screen size */
 }
@@ -63,7 +63,7 @@ This document describes the mobile-first isometric rhythm game improvements inte
 .gh-highway {
   width: 85vw;  /* Uses more screen real estate */
 }
-```
+\`\`\`
 
 ### 4. **Performance Optimizations**
 
@@ -73,34 +73,34 @@ This document describes the mobile-first isometric rhythm game improvements inte
 - `will-change` hints for animated elements
 
 #### Rendering Pipeline
-```typescript
+\`\`\`typescript
 const gameLoop = useCallback(() => {
   // Uses requestAnimationFrame for optimal timing
   // Delta time calculation for smooth animations
   // Efficient note filtering and updates
   animationFrameRef.current = requestAnimationFrame(gameLoop)
 }, [isPlaying, HIT_ZONE, LEAD_TIME_SECONDS])
-```
+\`\`\`
 
 ## 📱 Mobile-Specific Features
 
 ### Touch Area Calculation
-```typescript
+\`\`\`typescript
 onTouchStart={(e) => {
   e.preventDefault()      // Prevent default touch behavior
   handleLaneTap(laneIndex)
 }}
-```
+\`\`\`
 
 ### Responsive Button Layout
-```typescript
+\`\`\`typescript
 const LANE_POSITIONS = [12.5, 37.5, 62.5, 87.5] // Percentage-based positioning
 
 style={{
   left: `${LANE_POSITIONS[laneIndex]}%`,
   transform: "translateX(-50%)",  // Center alignment
 }}
-```
+\`\`\`
 
 ## 🎨 Visual Enhancements
 
@@ -111,7 +111,7 @@ style={{
 - Hit feedback animations
 
 ### 2. **Depth Fog Effect**
-```css
+\`\`\`css
 .gh-fog {
   background: linear-gradient(
     to bottom,
@@ -122,10 +122,10 @@ style={{
   );
   transform: translateZ(100px);
 }
-```
+\`\`\`
 
 ### 3. **Stage Lighting**
-```css
+\`\`\`css
 .gh-stage-lights {
   background: radial-gradient(
     ellipse at 50% 0%,
@@ -133,7 +133,7 @@ style={{
     transparent 70%
   );
 }
-```
+\`\`\`
 
 ## 🔧 Integration with Existing Systems
 
@@ -165,14 +165,14 @@ style={{
 ## 📊 Technical Specifications
 
 ### Timing System
-```typescript
+\`\`\`typescript
 const LEAD_TIME_SECONDS = 3.0  // Notes visible for 3 seconds
 const HIT_ZONE = 95            // Hit line at 95% of highway
 const HIGHWAY_LENGTH = 2500    // 3D highway depth in pixels
-```
+\`\`\`
 
 ### Note Position Calculation
-```typescript
+\`\`\`typescript
 const getTransformZ = (position: number) => {
   return -HIGHWAY_LENGTH + (position / 100) * HIGHWAY_LENGTH
 }
@@ -181,7 +181,7 @@ const getTransformZ = (position: number) => {
 const timeUntilHit = note.time - gameTime
 const progress = 1 - timeUntilHit / LEAD_TIME_SECONDS
 const newPosition = progress * HIT_ZONE
-```
+\`\`\`
 
 ## 🚀 Performance Metrics
 
@@ -203,7 +203,7 @@ const newPosition = progress * HIT_ZONE
 ## 🎯 Usage
 
 ### Component Integration
-```tsx
+\`\`\`tsx
 import { RhythmGameGuitarHero } from "@/components/rhythm-game-guitar-hero"
 
 <RhythmGameGuitarHero
@@ -213,7 +213,7 @@ import { RhythmGameGuitarHero } from "@/components/rhythm-game-guitar-hero"
     // Handle beat creation in Producer Tycoon
   }}
 />
-```
+\`\`\`
 
 ### Customization
 - Adjust `LEAD_TIME_SECONDS` for note visibility
