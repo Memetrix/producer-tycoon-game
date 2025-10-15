@@ -158,6 +158,8 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
   }
 
   const handleStartGame = () => {
+    console.log("[Stage] Starting game with track:", selectedTrack?.name, "difficulty:", selectedDifficulty)
+
     setGameState((prev) => ({
       ...prev,
       energy: prev.energy - ENERGY_COST,
@@ -169,6 +171,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
 
   // Fullscreen rhythm game mode
   if (isPlayingRhythm && selectedTrack) {
+    console.log("[Stage] Rendering rhythm game. Track:", selectedTrack.name, "URL:", selectedTrack.oszUrl)
     return (
       <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
         <div className="w-full h-full max-w-screen-xl mx-auto flex items-center justify-center">
@@ -181,6 +184,9 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
       </div>
     )
   }
+
+  // Debug: Show current state
+  console.log("[Stage] State:", { isPlayingRhythm, hasSelectedTrack: !!selectedTrack, showTrackSelector })
 
   // Track selection screen
   if (showTrackSelector) {
