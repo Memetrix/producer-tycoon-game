@@ -1,12 +1,11 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
-import { GameInstance, type GameResult } from "@/lib/rhythm-plus/GameInstance"
-import type { NoteData } from "@/lib/rhythm-plus/Note"
+import { GameInstance } from "@/lib/rhythm-plus/GameInstance"
 import { parseOszFile, type OsuBeatmap } from "@/lib/osz-parser"
 import { convertOsuToRhythmPlus } from "@/lib/rhythm-plus-converter"
 import { Button } from "@/components/ui/button"
-import { PlayCircle, PauseCircle, SkipForward } from "lucide-react"
+import { PlayCircle } from "lucide-react"
 
 interface RhythmGameRhythmPlusProps {
   difficulty: number
@@ -50,59 +49,62 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
    * Load and parse beatmap from music-config
    * Uses the same beatmap loading system as existing rhythm game
    */
-  const loadBeatmap = useCallback(async (beatmapUrl: string) => {
-    console.log("[RhythmGame] Loading beatmap from:", beatmapUrl)
-    try {
-      setIsLoading(true)
+  const loadBeatmap = useCallback(
+    async (beatmapUrl: string) => {
+      console.log("[RhythmGame] Loading beatmap from:", beatmapUrl)
+      try {
+        setIsLoading(true)
 
-      // Parse OSU beatmap package (.osz file)
-      console.log("[RhythmGame] Parsing OSZ file...")
-      const oszPackage = await parseOszFile(beatmapUrl)
-      console.log("[RhythmGame] OSZ parsed. Beatmaps:", oszPackage.beatmaps.length)
+        // Parse OSU beatmap package (.osz file)
+        console.log("[RhythmGame] Parsing OSZ file...")
+        const oszPackage = await parseOszFile(beatmapUrl)
+        console.log("[RhythmGame] OSZ parsed. Beatmaps:", oszPackage.beatmaps.length)
 
-      setOszBeatmaps(oszPackage.beatmaps)
-      setOszAudioBlob(oszPackage.audioBlob)
+        setOszBeatmaps(oszPackage.beatmaps)
+        setOszAudioBlob(oszPackage.audioBlob)
 
-      // Select difficulty based on prop (0 = easiest)
-      const selectedIndex = Math.min(difficulty, oszPackage.beatmaps.length - 1)
-      setSelectedBeatmapIndex(selectedIndex)
+        // Select difficulty based on prop (0 = easiest)
+        const selectedIndex = Math.min(difficulty, oszPackage.beatmaps.length - 1)
+        setSelectedBeatmapIndex(selectedIndex)
 
-      const beatmap = oszPackage.beatmaps[selectedIndex]
+        const beatmap = oszPackage.beatmaps[selectedIndex]
 
-      // Convert OSU notes to Rhythm Plus NoteData format
-      const notes = convertOsuToRhythmPlus(beatmap)
+        // Convert OSU notes to Rhythm Plus NoteData format
+        const notes = convertOsuToRhythmPlus(beatmap)
 
-      console.log("[Rhythm Plus] Loaded beatmap:", beatmap.title, beatmap.version)
-      console.log("[Rhythm Plus] Total notes:", notes.length)
+        console.log("[Rhythm Plus] Loaded beatmap:", beatmap.title, beatmap.version)
+        console.log("[Rhythm Plus] Total notes:", notes.length)
 
-      // Load notes into game instance
-      if (gameInstanceRef.current) {
-        gameInstanceRef.current.loadSong(notes)
-        setBeatmapLoaded(true)
+        // Load notes into game instance
+        if (gameInstanceRef.current) {
+          gameInstanceRef.current.loadSong(notes)
+          setBeatmapLoaded(true)
+        }
+
+        // Load background music
+        if (oszPackage.audioBlob && audioContextRef.current) {
+          const audioUrl = URL.createObjectURL(oszPackage.audioBlob)
+          const response = await fetch(audioUrl)
+          const arrayBuffer = await response.arrayBuffer()
+          const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer)
+
+          const source = audioContextRef.current.createBufferSource()
+          source.buffer = audioBuffer
+          source.connect(audioContextRef.current.destination)
+          backgroundMusicRef.current = source
+
+          URL.revokeObjectURL(audioUrl)
+        }
+
+        console.log("[RhythmGame] Beatmap loaded successfully")
+        setIsLoading(false)
+      } catch (error) {
+        console.error("[RhythmGame] Failed to load beatmap:", error)
+        setIsLoading(false)
       }
-
-      // Load background music
-      if (oszPackage.audioBlob && audioContextRef.current) {
-        const audioUrl = URL.createObjectURL(oszPackage.audioBlob)
-        const response = await fetch(audioUrl)
-        const arrayBuffer = await response.arrayBuffer()
-        const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer)
-
-        const source = audioContextRef.current.createBufferSource()
-        source.buffer = audioBuffer
-        source.connect(audioContextRef.current.destination)
-        backgroundMusicRef.current = source
-
-        URL.revokeObjectURL(audioUrl)
-      }
-
-      console.log("[RhythmGame] Beatmap loaded successfully")
-      setIsLoading(false)
-    } catch (error) {
-      console.error("[RhythmGame] Failed to load beatmap:", error)
-      setIsLoading(false)
-    }
-  }, [difficulty])
+    },
+    [difficulty],
+  )
 
   /**
    * Initialize game instance
@@ -111,7 +113,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     console.log("[RhythmGame] useEffect triggered! Dependencies:", {
       beatmapUrl,
       hasLoadBeatmap: !!loadBeatmap,
-      hasInitAudio: !!initAudio
+      hasInitAudio: !!initAudio,
     })
     console.log("[RhythmGame] Initializing game instance...")
     const canvas = canvasRef.current
@@ -169,35 +171,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
   }, [beatmapUrl])
 
   /**
-   * Update UI with game state
-   */
-  useEffect(() => {
-    const updateUI = () => {
-      if (!gameInstanceRef.current) return
-
-      const result = gameInstanceRef.current.result
-      setScore(Math.round(result.score))
-
-      if (result.totalHitNotes > 0) {
-        const acc = (result.totalPercentage / result.totalHitNotes)
-        setAccuracy(Math.round(acc * 100) / 100)
-      }
-
-      // Check for game over when HP reaches 0
-      if (gameInstanceRef.current.health <= 0 && isPlaying) {
-        console.log("[Game Over] HP reached 0, ending game")
-        handleSkip()
-        return
-      }
-
-      requestAnimationFrame(updateUI)
-    }
-
-    const animId = requestAnimationFrame(updateUI)
-    return () => cancelAnimationFrame(animId)
-  }, [isPlaying, handleSkip])
-
-  /**
    * Play drum hit sound effect
    */
   const playDrumSound = useCallback((sound: string) => {
@@ -220,6 +193,21 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     oscillator.start(audioContextRef.current.currentTime)
     oscillator.stop(audioContextRef.current.currentTime + 0.1)
   }, [])
+
+  /**
+   * Skip/Complete game
+   */
+  const handleSkip = useCallback(() => {
+    if (!gameInstanceRef.current) return
+
+    const result = gameInstanceRef.current.result
+    const finalAccuracy = result.totalHitNotes > 0 ? result.totalPercentage / result.totalHitNotes : 0
+
+    backgroundMusicRef.current?.stop()
+    gameInstanceRef.current.pauseGame()
+
+    onComplete?.(finalAccuracy)
+  }, [onComplete])
 
   /**
    * Start game
@@ -256,23 +244,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     setIsPlaying(true)
   }, [])
 
-  /**
-   * Skip/Complete game
-   */
-  const handleSkip = useCallback(() => {
-    if (!gameInstanceRef.current) return
-
-    const result = gameInstanceRef.current.result
-    const finalAccuracy = result.totalHitNotes > 0
-      ? (result.totalPercentage / result.totalHitNotes)
-      : 0
-
-    backgroundMusicRef.current?.stop()
-    gameInstanceRef.current.pauseGame()
-
-    onComplete?.(finalAccuracy)
-  }, [onComplete])
-
   // Track positions state - updates when tracks are initialized
   const [trackPositions, setTrackPositions] = useState<Array<{ x: number; width: number }>>([])
 
@@ -308,6 +279,35 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
       if (frameId) cancelAnimationFrame(frameId)
     }
   }, [beatmapLoaded, isLoading])
+
+  /**
+   * Update UI with game state
+   */
+  useEffect(() => {
+    const updateUI = () => {
+      if (!gameInstanceRef.current) return
+
+      const result = gameInstanceRef.current.result
+      setScore(Math.round(result.score))
+
+      if (result.totalHitNotes > 0) {
+        const acc = result.totalPercentage / result.totalHitNotes
+        setAccuracy(Math.round(acc * 100) / 100)
+      }
+
+      // Check for game over when HP reaches 0
+      if (gameInstanceRef.current.health <= 0 && isPlaying) {
+        console.log("[Game Over] HP reached 0, ending game")
+        handleSkip()
+        return
+      }
+
+      requestAnimationFrame(updateUI)
+    }
+
+    const animId = requestAnimationFrame(updateUI)
+    return () => cancelAnimationFrame(animId)
+  }, [isPlaying, handleSkip])
 
   return (
     <div className="relative w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden">
@@ -406,76 +406,77 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
       {trackPositions.length === 0 && (
         <div className="absolute inset-0 pointer-events-none flex items-end justify-center pb-4">
           <div className="relative flex gap-0 pointer-events-auto" style={{ width: "min(400px, 90vw)" }}>
-          {["D", "F", "J", "K"].map((key, index) => {
-            const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
-            const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
+            {["D", "F", "J", "K"].map((key, index) => {
+              const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
+              const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
 
-            return (
-              <button
-                key={key}
-                onTouchStart={(e) => {
-                  e.preventDefault()
-                  const keyLower = key.toLowerCase()
-                  if (gameInstanceRef.current) {
-                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
-                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
-                  }
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault()
-                  const keyLower = key.toLowerCase()
-                  if (gameInstanceRef.current) {
-                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
-                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
-                  }
-                }}
-                onMouseDown={() => {
-                  const keyLower = key.toLowerCase()
-                  if (gameInstanceRef.current) {
-                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
-                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
-                  }
-                }}
-                onMouseUp={() => {
-                  const keyLower = key.toLowerCase()
-                  if (gameInstanceRef.current) {
-                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
-                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
-                  }
-                }}
-                className="flex-1 h-32 border-r border-white/10 last:border-r-0 flex flex-col items-center justify-center gap-2 transition-all"
-                style={{
-                  background: isActive
-                    ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
-                    : "linear-gradient(to top, rgba(0,0,0,0.3), rgba(0,0,0,0.1))",
-                  touchAction: "none",
-                  userSelect: "none",
-                  WebkitTapHighlightColor: "transparent",
-                }}
-              >
-                <div
-                  className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all"
+              return (
+                <button
+                  key={key}
+                  onTouchStart={(e) => {
+                    e.preventDefault()
+                    const keyLower = key.toLowerCase()
+                    if (gameInstanceRef.current) {
+                      gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                    }
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault()
+                    const keyLower = key.toLowerCase()
+                    if (gameInstanceRef.current) {
+                      gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                    }
+                  }}
+                  onMouseDown={() => {
+                    const keyLower = key.toLowerCase()
+                    if (gameInstanceRef.current) {
+                      gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                    }
+                  }}
+                  onMouseUp={() => {
+                    const keyLower = key.toLowerCase()
+                    if (gameInstanceRef.current) {
+                      gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                    }
+                  }}
+                  className="flex-1 h-32 border-r border-white/10 last:border-r-0 flex flex-col items-center justify-center gap-2 transition-all"
                   style={{
-                    borderColor: laneColors[index],
-                    background: isActive ? laneColors[index] : "rgba(255,255,255,0.1)",
-                    transform: isActive ? "scale(0.9)" : "scale(1)",
+                    background: isActive
+                      ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
+                      : "linear-gradient(to top, rgba(0,0,0,0.3), rgba(0,0,0,0.1))",
+                    touchAction: "none",
+                    userSelect: "none",
+                    WebkitTapHighlightColor: "transparent",
                   }}
                 >
-                  <span
-                    className="text-lg font-bold"
+                  <div
+                    className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all"
                     style={{
-                      color: isActive ? "#000" : laneColors[index],
+                      borderColor: laneColors[index],
+                      background: isActive ? laneColors[index] : "rgba(255,255,255,0.1)",
+                      transform: isActive ? "scale(0.9)" : "scale(1)",
                     }}
                   >
-                    {key}
-                  </span>
-                </div>
-                <span className="text-xs text-white/60">{["Kick", "Snare", "Hat", "Tom"][index]}</span>
-              </button>
-            )
-          })}
+                    <span
+                      className="text-lg font-bold"
+                      style={{
+                        color: isActive ? "#000" : laneColors[index],
+                      }}
+                    >
+                      {key}
+                    </span>
+                  </div>
+                  <span className="text-xs text-white/60">{["Kick", "Snare", "Hat", "Tom"][index]}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Judgement Display */}
       {currentJudgement && (
@@ -537,7 +538,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
           </Button>
         </div>
       )}
-
 
       {/* Loading Overlay */}
       {isLoading && (
