@@ -250,8 +250,11 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
   // Update track positions when game instance is ready
   useEffect(() => {
     let frameId: number
+    let isActive = true
 
     const updateTrackPositions = () => {
+      if (!isActive) return
+
       if (!gameInstanceRef.current) {
         frameId = requestAnimationFrame(updateTrackPositions)
         return
@@ -267,6 +270,9 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
       const positions = tracks.map((track) => ({ x: track.x, width: track.width }))
       console.log("[Button Position] Tracks positioned:", positions)
       setTrackPositions(positions)
+
+      // Keep updating to handle canvas resizes
+      frameId = requestAnimationFrame(updateTrackPositions)
     }
 
     // Start checking after beatmap loads and canvas is sized
@@ -275,6 +281,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     }, 100)
 
     return () => {
+      isActive = false
       clearTimeout(timeoutId)
       if (frameId) cancelAnimationFrame(frameId)
     }
