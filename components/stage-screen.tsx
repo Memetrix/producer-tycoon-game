@@ -5,20 +5,21 @@ import type React from "react"
 import { ArrowLeft, Play, Music, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Screen } from "@/app/page"
 import { type GameState, type Beat, BEAT_NAMES } from "@/lib/game-state"
 import { saveBeat, sellBeats } from "@/lib/game-storage"
 import { RhythmGameRhythmPlus } from "@/components/rhythm-game-rhythm-plus"
-import { MUSIC_TRACKS } from "@/lib/music-config"
+import { OSZ_TRACKS, type OszTrack } from "@/lib/music-config"
 
 interface StageScreenProps {
   gameState: GameState
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
   onNavigate: (screen: Screen) => void
+  onRhythmGameStateChange?: (isPlaying: boolean) => void
 }
 
-export function StageScreen({ gameState, setGameState, onNavigate }: StageScreenProps) {
+export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameStateChange }: StageScreenProps) {
   const [isPlayingRhythm, setIsPlayingRhythm] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null)
@@ -27,20 +28,57 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
 
   // Track and difficulty selection
   const [showTrackSelector, setShowTrackSelector] = useState(false)
-  const [selectedTrack, setSelectedTrack] = useState<typeof MUSIC_TRACKS[0] | null>(null)
+  const [selectedTrack, setSelectedTrack] = useState<OszTrack | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState(1)
+
+  const [availableTracks, setAvailableTracks] = useState<OszTrack[]>(OSZ_TRACKS)
+  const [isLoadingTracks, setIsLoadingTracks] = useState(false)
+
+  useEffect(() => {
+    const loadTracks = async () => {
+      setIsLoadingTracks(true)
+      try {
+        const response = await fetch("/api/songs")
+        const data = await response.json()
+
+        if (data.songs && Array.isArray(data.songs)) {
+          const dbTracks: OszTrack[] = data.songs.map((song: any) => ({
+            id: song.id,
+            name: song.name,
+            artist: song.artist,
+            genre: song.genre,
+            type: "osz" as const,
+            oszUrl: song.osz_url,
+          }))
+
+          // Combine hardcoded tracks with database tracks
+          setAvailableTracks([...OSZ_TRACKS, ...dbTracks])
+          console.log("[v0] Loaded tracks:", OSZ_TRACKS.length + dbTracks.length, "total")
+        }
+      } catch (error) {
+        console.error("[v0] Failed to load tracks from database:", error)
+        // Keep using hardcoded tracks if database fetch fails
+      } finally {
+        setIsLoadingTracks(false)
+      }
+    }
+
+    loadTracks()
+  }, [])
 
   const ENERGY_COST = 20
 
   const calculateQuality = (rhythmAccuracy: number, difficulty: number) => {
-    const baseQuality = 40
-    const rhythmBonus = Math.floor(rhythmAccuracy * 0.4) // Up to 40 points from rhythm
-    const difficultyBonus = difficulty * 5 // Higher difficulty = better quality potential
-    const equipmentBonus =
-      gameState.equipment.phone * 3 +
-      gameState.equipment.headphones * 3 +
-      gameState.equipment.microphone * 5 +
-      gameState.equipment.computer * 8
+    const baseQuality = 20 // Reduced base from 40 to 20
+    const rhythmBonus = Math.floor(rhythmAccuracy * 0.6) // Increased from 0.4 to 0.6 (up to 60 points)
+    const difficultyBonus = difficulty * 3 // Reduced from 5 to 3
+    const equipmentBonus = Math.floor(
+      (gameState.equipment.phone * 2 +
+        gameState.equipment.headphones * 2 +
+        gameState.equipment.microphone * 3 +
+        gameState.equipment.computer * 5) *
+        0.5, // Reduced equipment impact by 50%
+    )
     return Math.min(100, baseQuality + rhythmBonus + difficultyBonus + equipmentBonus)
   }
 
@@ -85,6 +123,8 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
   const handleRhythmComplete = async (accuracy: number) => {
     console.log("[v0] Rhythm game completed with accuracy:", accuracy)
     setIsPlayingRhythm(false)
+    onRhythmGameStateChange?.(false)
+    setSelectedTrack(null) // Clear selected track to return to main screen after completion
     setIsCreating(true)
 
     const randomName = BEAT_NAMES[Math.floor(Math.random() * BEAT_NAMES.length)]
@@ -144,7 +184,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
     setCurrentBeat(null)
   }
 
-  const handleTrackSelect = (track: typeof MUSIC_TRACKS[0]) => {
+  const handleTrackSelect = (track: OszTrack) => {
     setSelectedTrack(track)
     setShowTrackSelector(false)
     // Auto-select difficulty based on equipment
@@ -167,6 +207,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
     }))
 
     setIsPlayingRhythm(true)
+    onRhythmGameStateChange?.(true)
   }
 
   // Fullscreen rhythm game mode
@@ -177,6 +218,11 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
         <div className="w-full h-full max-w-screen-xl mx-auto flex items-center justify-center">
           <RhythmGameRhythmPlus
             onComplete={handleRhythmComplete}
+            onClose={() => {
+              setIsPlayingRhythm(false)
+              onRhythmGameStateChange?.(false)
+              setSelectedTrack(null)
+            }}
             difficulty={selectedDifficulty}
             beatmapUrl={selectedTrack.oszUrl}
           />
@@ -208,23 +254,40 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {MUSIC_TRACKS.map((track) => (
-            <Card
-              key={track.id}
-              className="p-4 hover:bg-card/80 cursor-pointer transition-all active:scale-95"
-              onClick={() => handleTrackSelect(track)}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold">
-                    {track.artist} - {track.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">{track.genre}</p>
-                </div>
-                <Music className="w-6 h-6 text-primary" />
+          {isLoadingTracks && (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center space-y-2">
+                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+                <p className="text-sm text-muted-foreground">Загружаю треки...</p>
               </div>
-            </Card>
-          ))}
+            </div>
+          )}
+
+          {!isLoadingTracks && availableTracks.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Нет доступных треков</p>
+              <p className="text-xs text-muted-foreground mt-2">Загрузи треки в разделе "Загрузка музыки"</p>
+            </div>
+          )}
+
+          {!isLoadingTracks &&
+            availableTracks.map((track) => (
+              <Card
+                key={track.id}
+                className="p-4 hover:bg-card/80 cursor-pointer transition-all active:scale-95"
+                onClick={() => handleTrackSelect(track)}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold">
+                      {track.artist} - {track.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{track.genre}</p>
+                  </div>
+                  <Music className="w-6 h-6 text-primary" />
+                </div>
+              </Card>
+            ))}
         </div>
       </div>
     )
@@ -257,7 +320,7 @@ export function StageScreen({ gameState, setGameState, onNavigate }: StageScreen
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((diff) => {
-              const qualityBonus = diff * 5
+              const qualityBonus = diff * 3
               const priceMultiplier = 1 + (diff - 1) * 0.3
               const estimatedPrice = Math.floor(50 * priceMultiplier)
 

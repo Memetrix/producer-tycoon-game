@@ -11,15 +11,16 @@ interface RhythmGameRhythmPlusProps {
   difficulty: number
   beatmapUrl: string // URL to .osz beatmap file
   onComplete?: (accuracy: number) => void
+  onClose?: () => void
 }
 
-export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: RhythmGameRhythmPlusProps) {
-  console.log("[RhythmGame] Component mounted with:", { difficulty, beatmapUrl })
-
+export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClose }: RhythmGameRhythmPlusProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const gameInstanceRef = useRef<GameInstance | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const backgroundMusicRef = useRef<AudioBufferSourceNode | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const gameCompletedRef = useRef(false)
 
   const [isLoading, setIsLoading] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -32,6 +33,40 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
   const [oszBeatmaps, setOszBeatmaps] = useState<OsuBeatmap[]>([])
   const [selectedBeatmapIndex, setSelectedBeatmapIndex] = useState<number>(0)
   const [oszAudioBlob, setOszAudioBlob] = useState<Blob | null>(null)
+
+  const [highwayWidth, setHighwayWidth] = useState<number>(600)
+
+  const updateHighwayWidth = useCallback(() => {
+    if (!gameInstanceRef.current) return
+
+    const tracks = gameInstanceRef.current.dropTrackArr
+    if (tracks.length === 0 || tracks[0].width === 0) return
+
+    const firstTrack = tracks[0]
+    const lastTrack = tracks[tracks.length - 1]
+    const totalWidth = lastTrack.x + lastTrack.width - firstTrack.x
+
+    console.log("[v0] Highway width calculated:", totalWidth, "from tracks:", {
+      first: { x: firstTrack.x, width: firstTrack.width },
+      last: { x: lastTrack.x, width: lastTrack.width },
+    })
+
+    console.log(
+      "[v0] All track positions:",
+      tracks.map((t, i) => ({
+        index: i,
+        x: t.x,
+        width: t.width,
+        key: t.keyBind,
+      })),
+    )
+    console.log("[v0] Canvas dimensions:", {
+      width: gameInstanceRef.current.canvasWidth,
+      height: gameInstanceRef.current.canvasHeight,
+    })
+
+    setHighwayWidth(totalWidth)
+  }, [])
 
   /**
    * Initialize audio context
@@ -51,42 +86,64 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
    */
   const loadBeatmap = useCallback(
     async (beatmapUrl: string) => {
-      console.log("[RhythmGame] Loading beatmap from:", beatmapUrl)
       try {
         setIsLoading(true)
 
-        // Parse OSU beatmap package (.osz file)
-        console.log("[RhythmGame] Parsing OSZ file...")
         const oszPackage = await parseOszFile(beatmapUrl)
-        console.log("[RhythmGame] OSZ parsed. Beatmaps:", oszPackage.beatmaps.length)
 
         setOszBeatmaps(oszPackage.beatmaps)
         setOszAudioBlob(oszPackage.audioBlob)
 
-        // Select difficulty based on prop (0 = easiest)
         const selectedIndex = Math.min(difficulty, oszPackage.beatmaps.length - 1)
         setSelectedBeatmapIndex(selectedIndex)
 
         const beatmap = oszPackage.beatmaps[selectedIndex]
 
-        // Convert OSU notes to Rhythm Plus NoteData format
+        console.log("[v0] Selected beatmap:", beatmap.title, beatmap.version)
+        console.log("[v0] AudioLeadIn:", beatmap.audioLeadIn, "ms")
+        console.log("[v0] First timing point:", beatmap.timingPoints[0]?.time, "ms")
+
         const notes = convertOsuToRhythmPlus(beatmap)
 
-        console.log("[Rhythm Plus] Loaded beatmap:", beatmap.title, beatmap.version)
-        console.log("[Rhythm Plus] Total notes:", notes.length)
+        if (notes.length > 0) {
+          console.log(
+            "[v0] Converted notes - First:",
+            notes[0].t.toFixed(2),
+            "s, Last:",
+            notes[notes.length - 1].t.toFixed(2),
+            "s",
+          )
+        }
 
-        // Load notes into game instance
         if (gameInstanceRef.current) {
           gameInstanceRef.current.loadSong(notes)
           setBeatmapLoaded(true)
+          setTimeout(() => updateHighwayWidth(), 100)
         }
 
-        // Load background music
         if (oszPackage.audioBlob && audioContextRef.current) {
           const audioUrl = URL.createObjectURL(oszPackage.audioBlob)
           const response = await fetch(audioUrl)
           const arrayBuffer = await response.arrayBuffer()
           const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer)
+
+          console.log("[v0] Audio duration:", audioBuffer.duration.toFixed(2), "seconds")
+
+          if (notes.length > 0) {
+            const lastNoteTime = notes[notes.length - 1].t
+            const timeDifference = audioBuffer.duration - lastNoteTime
+            console.log("[v0] Time difference (audio end - last note):", timeDifference.toFixed(2), "seconds")
+
+            if (timeDifference < -5) {
+              console.warn(
+                "[v0] WARNING: Last note is",
+                Math.abs(timeDifference).toFixed(2),
+                "seconds AFTER audio ends!",
+              )
+            } else if (timeDifference > 30) {
+              console.warn("[v0] WARNING: Audio continues for", timeDifference.toFixed(2), "seconds after last note")
+            }
+          }
 
           const source = audioContextRef.current.createBufferSource()
           source.buffer = audioBuffer
@@ -96,79 +153,65 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
           URL.revokeObjectURL(audioUrl)
         }
 
-        console.log("[RhythmGame] Beatmap loaded successfully")
         setIsLoading(false)
       } catch (error) {
-        console.error("[RhythmGame] Failed to load beatmap:", error)
+        console.error("[Rhythm Plus] Failed to load beatmap:", error)
         setIsLoading(false)
       }
     },
-    [difficulty],
+    [difficulty, updateHighwayWidth],
   )
 
   /**
    * Initialize game instance
    */
   useEffect(() => {
-    console.log("[RhythmGame] useEffect triggered! Dependencies:", {
-      beatmapUrl,
-      hasLoadBeatmap: !!loadBeatmap,
-      hasInitAudio: !!initAudio,
-    })
-    console.log("[RhythmGame] Initializing game instance...")
     const canvas = canvasRef.current
-    if (!canvas) {
-      console.error("[RhythmGame] Canvas ref is null!")
-      return
-    }
-    console.log("[RhythmGame] Canvas element found:", canvas)
+    if (!canvas) return
 
-    // Set canvas size
     const updateCanvasSize = () => {
       const container = canvas.parentElement
       if (container) {
         canvas.width = container.clientWidth
         canvas.height = container.clientHeight
-        console.log("[RhythmGame] Canvas sized:", canvas.width, "x", canvas.height)
         gameInstanceRef.current?.reposition()
+        setTimeout(() => updateHighwayWidth(), 50)
       }
     }
 
     updateCanvasSize()
     window.addEventListener("resize", updateCanvasSize)
 
-    // Create game instance
-    console.log("[RhythmGame] Creating GameInstance...")
     const game = new GameInstance(canvas)
-    console.log("[RhythmGame] GameInstance created")
 
-    // Set up callbacks
     game.setOnJudgeDisplay((judgement, currentCombo) => {
       setCurrentJudgement(judgement.toUpperCase())
       setCombo(currentCombo)
-
-      // Clear judgement display after 500ms
       setTimeout(() => setCurrentJudgement(""), 500)
     })
 
     game.setOnPlayEffect((sound) => {
-      // Play drum hit sounds
       playDrumSound(sound)
+    })
+
+    game.setOnGameEnd(() => {
+      console.log("[v0] Game ended callback triggered")
+      handleSkip()
     })
 
     gameInstanceRef.current = game
 
-    // Load beatmap
+    setTimeout(() => updateHighwayWidth(), 100)
+
     initAudio().then(() => loadBeatmap(beatmapUrl))
 
     return () => {
-      console.log("[RhythmGame] Cleanup - unmounting")
       window.removeEventListener("resize", updateCanvasSize)
       game.destroy()
       backgroundMusicRef.current?.stop()
       audioContextRef.current?.close()
     }
-  }, [beatmapUrl])
+  }, [beatmapUrl, updateHighwayWidth])
 
   /**
    * Play drum hit sound effect
@@ -176,8 +219,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
   const playDrumSound = useCallback((sound: string) => {
     if (!audioContextRef.current) return
 
-    // Create simple beep sound for now
-    // TODO: Load actual drum samples
     const oscillator = audioContextRef.current.createOscillator()
     const gainNode = audioContextRef.current.createGain()
 
@@ -198,12 +239,24 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
    * Skip/Complete game
    */
   const handleSkip = useCallback(() => {
+    if (gameCompletedRef.current) {
+      return
+    }
+
     if (!gameInstanceRef.current) return
+
+    gameCompletedRef.current = true
 
     const result = gameInstanceRef.current.result
     const finalAccuracy = result.totalHitNotes > 0 ? result.totalPercentage / result.totalHitNotes : 0
 
-    backgroundMusicRef.current?.stop()
+    console.log("[v0] Rhythm game completed with accuracy:", finalAccuracy)
+
+    try {
+      backgroundMusicRef.current?.stop()
+    } catch (error) {
+      // Audio might not have been started yet, ignore the error
+    }
     gameInstanceRef.current.pauseGame()
 
     onComplete?.(finalAccuracy)
@@ -218,7 +271,13 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     await initAudio()
 
     gameInstanceRef.current.startGame()
-    backgroundMusicRef.current?.start()
+
+    if (backgroundMusicRef.current && audioContextRef.current) {
+      // Start audio immediately
+      backgroundMusicRef.current.start(audioContextRef.current.currentTime)
+      console.log("[v0] Audio started at:", audioContextRef.current.currentTime)
+    }
+
     setIsPlaying(true)
   }, [beatmapLoaded, initAudio])
 
@@ -244,56 +303,52 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
     setIsPlaying(true)
   }, [])
 
-  // Track positions state - updates when tracks are initialized
-  const [trackPositions, setTrackPositions] = useState<Array<{ x: number; width: number }>>([])
-
-  // Update track positions when game instance is ready
   useEffect(() => {
     let frameId: number
     let isActive = true
-    let lastCanvasSize = { width: 0, height: 0 }
+    let checkCount = 0
 
-    const updateTrackPositions = () => {
+    const updateHighwayWidth = () => {
       if (!isActive) return
 
-      const canvas = canvasRef.current
-      if (!canvas || !gameInstanceRef.current) {
-        frameId = requestAnimationFrame(updateTrackPositions)
+      if (!gameInstanceRef.current || !canvasRef.current) {
+        if (checkCount < 100) {
+          // Keep checking for 100 frames (~1.6 seconds)
+          checkCount++
+          frameId = requestAnimationFrame(updateHighwayWidth)
+        }
         return
       }
-
-      // Force reposition if canvas size changed
-      const canvasSizeChanged = canvas.width !== lastCanvasSize.width || canvas.height !== lastCanvasSize.height
-
-      if (canvasSizeChanged && lastCanvasSize.width !== 0) {
-        console.log("[Button Position] Canvas resized:", lastCanvasSize.width, "x", lastCanvasSize.height, "→", canvas.width, "x", canvas.height)
-        gameInstanceRef.current.reposition()
-      }
-
-      lastCanvasSize = { width: canvas.width, height: canvas.height }
 
       const tracks = gameInstanceRef.current.dropTrackArr
-      if (tracks.length === 0 || tracks[0].x === 0 || tracks[0].width === 0) {
-        // Tracks not yet positioned, try again
-        frameId = requestAnimationFrame(updateTrackPositions)
+
+      if (tracks.length === 0 || tracks[0].width === 0) {
+        if (checkCount < 100) {
+          checkCount++
+          frameId = requestAnimationFrame(updateHighwayWidth)
+        }
         return
       }
 
-      const positions = tracks.map((track) => ({ x: track.x, width: track.width }))
-      setTrackPositions(positions)
+      const firstTrack = tracks[0]
+      const lastTrack = tracks[tracks.length - 1]
+      const totalWidth = lastTrack.x + lastTrack.width - firstTrack.x
 
-      // Keep updating to handle canvas resizes
-      frameId = requestAnimationFrame(updateTrackPositions)
+      if (Math.abs(totalWidth - highwayWidth) > 1) {
+        console.log("[Rhythm Plus] Highway width updated:", totalWidth)
+        setHighwayWidth(totalWidth)
+      }
+
+      frameId = requestAnimationFrame(updateHighwayWidth)
     }
 
-    // Start immediately, no timeout delay
-    updateTrackPositions()
+    updateHighwayWidth()
 
     return () => {
       isActive = false
       if (frameId) cancelAnimationFrame(frameId)
     }
-  }, [beatmapLoaded, isLoading])
+  }, [beatmapLoaded, isLoading, highwayWidth])
 
   /**
    * Update UI with game state
@@ -310,9 +365,8 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
         setAccuracy(Math.round(acc * 100) / 100)
       }
 
-      // Check for game over when HP reaches 0
       if (gameInstanceRef.current.health <= 0 && isPlaying) {
-        console.log("[Game Over] HP reached 0, ending game")
+        console.log("[Rhythm Plus] Game Over - HP reached 0")
         handleSkip()
         return
       }
@@ -325,7 +379,42 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
   }, [isPlaying, handleSkip])
 
   return (
-    <div className="relative w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden">
+      {/* Close button in top-center to avoid overlapping with score or HP */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            if (confirm("Выйти из игры? Прогресс не будет сохранён.")) {
+              try {
+                backgroundMusicRef.current?.stop()
+              } catch (error) {
+                // Audio might not have been started yet, ignore the error
+              }
+              gameInstanceRef.current?.pauseGame()
+              onClose?.()
+            }
+          }}
+          className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </Button>
+      </div>
+
       {/* Canvas for Rhythm Plus rendering */}
       <canvas
         ref={canvasRef}
@@ -336,168 +425,102 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete }: Rhy
         }}
       />
 
-      {/* Touch buttons overlay - positioned exactly on highway lanes */}
-      {trackPositions.length > 0 && (
-        <div className="absolute inset-0 pointer-events-none flex items-end justify-center">
-          <div
-            className="relative flex gap-0 pointer-events-auto"
-            style={{
-              width: `${trackPositions[trackPositions.length - 1].x + trackPositions[trackPositions.length - 1].width - trackPositions[0].x}px`,
-            }}
-          >
-            {["D", "F", "J", "K"].map((key, index) => {
-              const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
-              const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
-              const track = trackPositions[index]
+      <div className="absolute inset-x-0 bottom-0 pointer-events-none flex items-end justify-center">
+        <div
+          className="flex gap-0 pointer-events-auto"
+          style={{
+            width: highwayWidth > 0 ? `${highwayWidth}px` : "600px",
+          }}
+        >
+          {["D", "F", "J", "K"].map((key, index) => {
+            const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
+            const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
 
-              if (!track) return null
+            const trackWidth = gameInstanceRef.current?.dropTrackArr[index]?.width || highwayWidth / 4
 
-              return (
-                <button
-                  key={key}
-                  onTouchStart={(e) => {
-                    e.preventDefault()
-                    const keyLower = key.toLowerCase()
-                    if (gameInstanceRef.current) {
-                      gameInstanceRef.current.keyHoldingStatus[keyLower] = true
-                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
-                    }
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault()
-                    const keyLower = key.toLowerCase()
-                    if (gameInstanceRef.current) {
-                      gameInstanceRef.current.keyHoldingStatus[keyLower] = false
-                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
-                    }
-                  }}
-                  onMouseDown={() => {
-                    const keyLower = key.toLowerCase()
-                    if (gameInstanceRef.current) {
-                      gameInstanceRef.current.keyHoldingStatus[keyLower] = true
-                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
-                    }
-                  }}
-                  onMouseUp={() => {
-                    const keyLower = key.toLowerCase()
-                    if (gameInstanceRef.current) {
-                      gameInstanceRef.current.keyHoldingStatus[keyLower] = false
-                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
-                    }
-                  }}
-                  className="flex flex-col items-center justify-center gap-2 transition-all"
-                  style={{
-                    flex: "0 0 auto",
-                    width: `${track.width}px`,
-                    height: "128px",
-                    background: isActive
-                      ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
-                      : "linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0.1))",
-                    touchAction: "none",
-                    userSelect: "none",
-                    WebkitTapHighlightColor: "transparent",
-                    borderLeft: index === 0 ? "none" : "1px solid rgba(255,255,255,0.1)",
-                  }}
-                >
+            return (
+              <button
+                key={key}
+                onTouchStart={(e) => {
+                  e.preventDefault()
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault()
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                  }
+                }}
+                onMouseDown={() => {
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = true
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
+                  }
+                }}
+                onMouseUp={() => {
+                  const keyLower = key.toLowerCase()
+                  if (gameInstanceRef.current) {
+                    gameInstanceRef.current.keyHoldingStatus[keyLower] = false
+                    gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
+                  }
+                }}
+                className="h-32 flex flex-col items-center justify-center gap-2 transition-all border-r border-white/10 last:border-r-0"
+                style={{
+                  width: `${trackWidth}px`, // Explicit width matching track width
+                  background: isActive
+                    ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
+                    : "linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0.1))",
+                  touchAction: "none",
+                  userSelect: "none",
+                  WebkitTapHighlightColor: "transparent",
+                  WebkitUserSelect: "none", // Prevent text selection on iOS
+                  WebkitTouchCallout: "none", // Prevent text selection on iOS
+                }}
+              >
                 <div
                   className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all"
                   style={{
                     borderColor: laneColors[index],
                     background: isActive ? laneColors[index] : "rgba(255,255,255,0.1)",
                     transform: isActive ? "scale(0.9)" : "scale(1)",
+                    userSelect: "none", // Prevent text selection on the circle
+                    WebkitUserSelect: "none", // Prevent text selection on the circle
                   }}
                 >
                   <span
                     className="text-lg font-bold"
                     style={{
                       color: isActive ? "#000" : laneColors[index],
+                      userSelect: "none", // Prevent text selection on the letter
+                      WebkitUserSelect: "none", // Prevent text selection on the letter
+                      pointerEvents: "none", // Prevent text selection on the letter
                     }}
                   >
                     {key}
                   </span>
                 </div>
-                <span className="text-xs text-white/60">{["Kick", "Snare", "Hat", "Tom"][index]}</span>
+                <span
+                  className="text-xs text-white/60"
+                  style={{
+                    userSelect: "none", // Prevent text selection on the label
+                    WebkitUserSelect: "none", // Prevent text selection on the label
+                    pointerEvents: "none", // Prevent text selection on the label
+                  }}
+                >
+                  {["Kick", "Snare", "Hat", "Tom"][index]}
+                </span>
               </button>
             )
           })}
         </div>
-      )}
-
-      {/* Fallback buttons if tracks not yet initialized */}
-      {trackPositions.length === 0 && (
-        <div className="absolute inset-0 pointer-events-none flex items-end justify-center pb-4">
-          <div className="relative flex gap-0 pointer-events-auto" style={{ width: "min(400px, 90vw)" }}>
-            {["D", "F", "J", "K"].map((key, index) => {
-              const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
-              const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
-
-              return (
-                <button
-                  key={key}
-                  onTouchStart={(e) => {
-                    e.preventDefault()
-                    const keyLower = key.toLowerCase()
-                    if (gameInstanceRef.current) {
-                      gameInstanceRef.current.keyHoldingStatus[keyLower] = true
-                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
-                    }
-                  }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault()
-                    const keyLower = key.toLowerCase()
-                    if (gameInstanceRef.current) {
-                      gameInstanceRef.current.keyHoldingStatus[keyLower] = false
-                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
-                    }
-                  }}
-                  onMouseDown={() => {
-                    const keyLower = key.toLowerCase()
-                    if (gameInstanceRef.current) {
-                      gameInstanceRef.current.keyHoldingStatus[keyLower] = true
-                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyDown(keyLower))
-                    }
-                  }}
-                  onMouseUp={() => {
-                    const keyLower = key.toLowerCase()
-                    if (gameInstanceRef.current) {
-                      gameInstanceRef.current.keyHoldingStatus[keyLower] = false
-                      gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
-                    }
-                  }}
-                  className="flex-1 h-32 border-r border-white/10 last:border-r-0 flex flex-col items-center justify-center gap-2 transition-all"
-                  style={{
-                    background: isActive
-                      ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
-                      : "linear-gradient(to top, rgba(0,0,0,0.3), rgba(0,0,0,0.1))",
-                    touchAction: "none",
-                    userSelect: "none",
-                    WebkitTapHighlightColor: "transparent",
-                  }}
-                >
-                  <div
-                    className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all"
-                    style={{
-                      borderColor: laneColors[index],
-                      background: isActive ? laneColors[index] : "rgba(255,255,255,0.1)",
-                      transform: isActive ? "scale(0.9)" : "scale(1)",
-                    }}
-                  >
-                    <span
-                      className="text-lg font-bold"
-                      style={{
-                        color: isActive ? "#000" : laneColors[index],
-                      }}
-                    >
-                      {key}
-                    </span>
-                  </div>
-                  <span className="text-xs text-white/60">{["Kick", "Snare", "Hat", "Tom"][index]}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Judgement Display */}
       {currentJudgement && (

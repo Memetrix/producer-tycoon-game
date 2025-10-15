@@ -26,6 +26,29 @@ export const OSZ_TRACKS: OszTrack[] = [
   },
 ]
 
+export async function loadSongsFromDatabase(): Promise<OszTrack[]> {
+  try {
+    const response = await fetch("/api/songs")
+    const data = await response.json()
+
+    if (!data.songs) {
+      return []
+    }
+
+    return data.songs.map((song: any) => ({
+      id: song.id,
+      name: song.name,
+      artist: song.artist,
+      genre: song.genre,
+      type: "osz" as const,
+      oszUrl: song.osz_url,
+    }))
+  } catch (error) {
+    console.error("[v0] Failed to load songs from database:", error)
+    return []
+  }
+}
+
 export const ALL_TRACKS = OSZ_TRACKS
 
 export const MUSIC_TRACKS = ALL_TRACKS

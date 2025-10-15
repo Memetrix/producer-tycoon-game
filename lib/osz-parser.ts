@@ -6,6 +6,8 @@ export interface OsuBeatmap {
   creator: string
   version: string // difficulty name
   audioFilename: string
+  audioLeadIn: number // Added AudioLeadIn field (milliseconds of silence before audio)
+  previewTime: number // Added PreviewTime field
   mode: number // 0=standard, 1=taiko, 2=catch, 3=mania
   bpm: number
   timingPoints: TimingPoint[]
@@ -117,6 +119,8 @@ function parseOsuFile(content: string): OsuBeatmap {
     creator: "",
     version: "",
     audioFilename: "",
+    audioLeadIn: 0, // Initialize AudioLeadIn
+    previewTime: -1, // Initialize PreviewTime
     mode: 0,
     bpm: 120,
     timingPoints: [],
@@ -139,6 +143,10 @@ function parseOsuFile(content: string): OsuBeatmap {
     if (section === "General") {
       if (line.startsWith("AudioFilename:")) {
         beatmap.audioFilename = line.split(":")[1].trim()
+      } else if (line.startsWith("AudioLeadIn:")) {
+        beatmap.audioLeadIn = Number.parseInt(line.split(":")[1].trim())
+      } else if (line.startsWith("PreviewTime:")) {
+        beatmap.previewTime = Number.parseInt(line.split(":")[1].trim())
       } else if (line.startsWith("Mode:")) {
         beatmap.mode = Number.parseInt(line.split(":")[1].trim())
       }
@@ -205,6 +213,21 @@ function parseOsuFile(content: string): OsuBeatmap {
 
   console.log(`[v0] Parsed beatmap: ${beatmap.artist} - ${beatmap.title} [${beatmap.version}]`)
   console.log(`[v0]   Mode: ${beatmap.mode}, BPM: ${beatmap.bpm}, Notes: ${beatmap.hitObjects.length}`)
+  console.log(`[v0]   AudioLeadIn: ${beatmap.audioLeadIn}ms, PreviewTime: ${beatmap.previewTime}ms`)
+
+  if (beatmap.timingPoints.length > 0) {
+    const firstTiming = beatmap.timingPoints[0]
+    const lastTiming = beatmap.timingPoints[beatmap.timingPoints.length - 1]
+    console.log(`[v0]   First timing point: ${firstTiming.time}ms, Last: ${lastTiming.time}ms`)
+  }
+
+  if (beatmap.hitObjects.length > 0) {
+    const firstNote = beatmap.hitObjects[0]
+    const lastNote = beatmap.hitObjects[beatmap.hitObjects.length - 1]
+    console.log(`[v0]   First note: ${firstNote.time}ms (${(firstNote.time / 1000).toFixed(2)}s)`)
+    console.log(`[v0]   Last note: ${lastNote.time}ms (${(lastNote.time / 1000).toFixed(2)}s)`)
+    console.log(`[v0]   Beatmap duration: ${((lastNote.time - firstNote.time) / 1000).toFixed(2)}s`)
+  }
 
   return beatmap
 }
