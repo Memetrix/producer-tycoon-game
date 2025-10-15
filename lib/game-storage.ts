@@ -57,10 +57,17 @@ export async function loadGameState(): Promise<GameState | null> {
   })
 
   const artistsMap: any = {
+    // Tier 1: Street (0-500 rep)
     "mc-flow": 0,
     "lil-dreamer": 0,
     "street-poet": 0,
     "young-legend": 0,
+    // Tier 2: Local (500-2000 rep)
+    "local-hero": 0,
+    "scene-leader": 0,
+    // Tier 3: Regional (2000-5000 rep)
+    "city-star": 0,
+    "state-champion": 0,
   }
 
   artistsData?.forEach((artist) => {
@@ -71,6 +78,11 @@ export async function loadGameState(): Promise<GameState | null> {
 
   const dailyTasksCompleted = (gameState.daily_tasks_completed as string[]) || []
   const trainingProgressArray = (gameState.training_progress as string[]) || []
+
+  // Phase 3: Skills, Contracts, Labels
+  const skillsArray = (gameState.skills_unlocked as string[]) || []
+  const beatContractsData = gameState.beat_contracts as any
+  const labelDealsArray = (gameState.label_deals as string[]) || []
 
   const lastActiveFromDB = gameState.last_active || gameState.updated_at || new Date().toISOString()
   const now = new Date()
@@ -118,6 +130,31 @@ export async function loadGameState(): Promise<GameState | null> {
       freeSeminar: trainingProgressArray.includes("seminar"),
       freeBookChapter: trainingProgressArray.includes("bookChapter"),
     },
+    skills: {
+      // Energy Branch
+      caffeineRush: skillsArray.includes("caffeineRush"),
+      stamina: skillsArray.includes("stamina"),
+      flowState: skillsArray.includes("flowState"),
+      // Quality Branch
+      earTraining: skillsArray.includes("earTraining"),
+      musicTheory: skillsArray.includes("musicTheory"),
+      perfectionist: skillsArray.includes("perfectionist"),
+      // Money Branch
+      negotiator: skillsArray.includes("negotiator"),
+      businessman: skillsArray.includes("businessman"),
+      mogul: skillsArray.includes("mogul"),
+    },
+    beatContracts: {
+      availableContracts: (beatContractsData?.available as string[]) || [],
+      activeContracts: (beatContractsData?.active as string[]) || [],
+      completedContracts: (beatContractsData?.completed as string[]) || [],
+      lastRefreshDate: beatContractsData?.lastRefresh || "",
+    },
+    labelDeals: {
+      indie: labelDealsArray.includes("indie"),
+      small: labelDealsArray.includes("small"),
+      major: labelDealsArray.includes("major"),
+    },
     lastActive: lastActiveFromDB,
   }
 }
@@ -157,6 +194,32 @@ export async function saveGameState(gameState: GameState): Promise<boolean> {
       if (gameState.trainingProgress?.freeSeminar) trainingProgress.push("seminar")
       if (gameState.trainingProgress?.freeBookChapter) trainingProgress.push("bookChapter")
 
+      // Phase 3: Prepare skills array
+      const skillsUnlocked: string[] = []
+      if (gameState.skills?.caffeineRush) skillsUnlocked.push("caffeineRush")
+      if (gameState.skills?.stamina) skillsUnlocked.push("stamina")
+      if (gameState.skills?.flowState) skillsUnlocked.push("flowState")
+      if (gameState.skills?.earTraining) skillsUnlocked.push("earTraining")
+      if (gameState.skills?.musicTheory) skillsUnlocked.push("musicTheory")
+      if (gameState.skills?.perfectionist) skillsUnlocked.push("perfectionist")
+      if (gameState.skills?.negotiator) skillsUnlocked.push("negotiator")
+      if (gameState.skills?.businessman) skillsUnlocked.push("businessman")
+      if (gameState.skills?.mogul) skillsUnlocked.push("mogul")
+
+      // Phase 3: Prepare beat contracts JSON
+      const beatContractsJSON = {
+        available: gameState.beatContracts?.availableContracts || [],
+        active: gameState.beatContracts?.activeContracts || [],
+        completed: gameState.beatContracts?.completedContracts || [],
+        lastRefresh: gameState.beatContracts?.lastRefreshDate || "",
+      }
+
+      // Phase 3: Prepare label deals array
+      const labelDeals: string[] = []
+      if (gameState.labelDeals?.indie) labelDeals.push("indie")
+      if (gameState.labelDeals?.small) labelDeals.push("small")
+      if (gameState.labelDeals?.major) labelDeals.push("major")
+
       const { error: dailyTasksError } = await supabase
         .from("game_state")
         .update({
@@ -164,6 +227,9 @@ export async function saveGameState(gameState: GameState): Promise<boolean> {
           daily_tasks_last_reset: gameState.dailyTasks.lastCompletedDate || new Date().toISOString(),
           daily_streak: gameState.dailyTasks.currentStreak || 0,
           training_progress: trainingProgress,
+          skills_unlocked: skillsUnlocked,
+          beat_contracts: beatContractsJSON,
+          label_deals: labelDeals,
         })
         .eq("player_id", player.id)
 

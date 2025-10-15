@@ -65,6 +65,35 @@ export interface GameState {
     freeBookChapter: boolean
   }
 
+  // Phase 3: Skills, Contracts, Labels
+  skills: {
+    // Energy Branch
+    caffeineRush: boolean // -10% energy cost (500 rep)
+    stamina: boolean // +20% max energy (2000 rep)
+    flowState: boolean // +1 energy regen/min (5000 rep)
+    // Quality Branch
+    earTraining: boolean // +5% quality (500 rep)
+    musicTheory: boolean // +10% quality (2000 rep)
+    perfectionist: boolean // +20% quality (5000 rep)
+    // Money Branch
+    negotiator: boolean // +10% beat price (500 rep)
+    businessman: boolean // +25% beat price (2000 rep)
+    mogul: boolean // +50% beat price (5000 rep)
+  }
+
+  beatContracts: {
+    availableContracts: string[] // IDs of available contracts
+    activeContracts: string[] // IDs of active contracts
+    completedContracts: string[] // IDs of completed contracts (for history)
+    lastRefreshDate: string // ISO date string
+  }
+
+  labelDeals: {
+    indie: boolean // $5,000 investment → +$50/час
+    small: boolean // $20,000 investment → +$200/час
+    major: boolean // $100,000 investment → +$1,000/час
+  }
+
   lastActive?: string // ISO date string
 }
 
@@ -210,6 +239,31 @@ export const INITIAL_GAME_STATE: GameState = {
   trainingProgress: {
     freeSeminar: false,
     freeBookChapter: false,
+  },
+  skills: {
+    // Energy Branch
+    caffeineRush: false,
+    stamina: false,
+    flowState: false,
+    // Quality Branch
+    earTraining: false,
+    musicTheory: false,
+    perfectionist: false,
+    // Money Branch
+    negotiator: false,
+    businessman: false,
+    mogul: false,
+  },
+  beatContracts: {
+    availableContracts: [],
+    activeContracts: [],
+    completedContracts: [],
+    lastRefreshDate: "",
+  },
+  labelDeals: {
+    indie: false,
+    small: false,
+    major: false,
   },
 }
 
@@ -725,4 +779,312 @@ export function getUnclaimedStreakRewards(currentStreak: number, claimedRewards:
     }
   }
   return unclaimed
+}
+
+// ============================================================================
+// PHASE 3: SKILL TREE, BEAT CONTRACTS, LABEL DEALS
+// ============================================================================
+
+// SKILL TREE CONFIGURATION
+export interface SkillNode {
+  id: keyof GameState["skills"]
+  name: string
+  description: string
+  branch: "energy" | "quality" | "money"
+  requiredReputation: number
+  cost: number
+  effect: string
+  icon: string
+}
+
+export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
+  // Energy Branch (Tier 1, 2, 3)
+  caffeineRush: {
+    id: "caffeineRush",
+    name: "Кофеиновый Раш",
+    description: "Снижает затраты энергии на создание битов",
+    branch: "energy",
+    requiredReputation: 500,
+    cost: 2000,
+    effect: "-10% затраты энергии",
+    icon: "☕",
+  },
+  stamina: {
+    id: "stamina",
+    name: "Выносливость",
+    description: "Увеличивает максимальный запас энергии",
+    branch: "energy",
+    requiredReputation: 2000,
+    cost: 8000,
+    effect: "+20% максимальной энергии",
+    icon: "💪",
+  },
+  flowState: {
+    id: "flowState",
+    name: "Состояние Потока",
+    description: "Ускоряет восстановление энергии",
+    branch: "energy",
+    requiredReputation: 5000,
+    cost: 20000,
+    effect: "+1 энергия/мин",
+    icon: "🌊",
+  },
+
+  // Quality Branch (Tier 1, 2, 3)
+  earTraining: {
+    id: "earTraining",
+    name: "Тренировка Слуха",
+    description: "Улучшает восприятие деталей звука",
+    branch: "quality",
+    requiredReputation: 500,
+    cost: 2000,
+    effect: "+5% качество битов",
+    icon: "👂",
+  },
+  musicTheory: {
+    id: "musicTheory",
+    name: "Теория Музыки",
+    description: "Глубокое понимание музыкальных структур",
+    branch: "quality",
+    requiredReputation: 2000,
+    cost: 8000,
+    effect: "+10% качество битов",
+    icon: "📚",
+  },
+  perfectionist: {
+    id: "perfectionist",
+    name: "Перфекционист",
+    description: "Доведение каждой детали до совершенства",
+    branch: "quality",
+    requiredReputation: 5000,
+    cost: 20000,
+    effect: "+20% качество битов",
+    icon: "✨",
+  },
+
+  // Money Branch (Tier 1, 2, 3)
+  negotiator: {
+    id: "negotiator",
+    name: "Переговорщик",
+    description: "Умение договариваться о цене",
+    branch: "money",
+    requiredReputation: 500,
+    cost: 2000,
+    effect: "+10% цена битов",
+    icon: "🤝",
+  },
+  businessman: {
+    id: "businessman",
+    name: "Бизнесмен",
+    description: "Профессиональное ведение бизнеса",
+    branch: "money",
+    requiredReputation: 2000,
+    cost: 8000,
+    effect: "+25% цена битов",
+    icon: "💼",
+  },
+  mogul: {
+    id: "mogul",
+    name: "Магнат",
+    description: "Мастер монетизации своего таланта",
+    branch: "money",
+    requiredReputation: 5000,
+    cost: 20000,
+    effect: "+50% цена битов",
+    icon: "👑",
+  },
+}
+
+// Get total quality bonus from skills
+export function getSkillQualityBonus(skills: GameState["skills"]): number {
+  let bonus = 0
+  if (skills.earTraining) bonus += 5
+  if (skills.musicTheory) bonus += 10
+  if (skills.perfectionist) bonus += 20
+  return bonus
+}
+
+// Get total price multiplier from skills
+export function getSkillPriceMultiplier(skills: GameState["skills"]): number {
+  let multiplier = 1.0
+  if (skills.negotiator) multiplier += 0.1
+  if (skills.businessman) multiplier += 0.25
+  if (skills.mogul) multiplier += 0.5
+  return multiplier
+}
+
+// Get energy cost reduction from skills
+export function getSkillEnergyCostReduction(skills: GameState["skills"]): number {
+  return skills.caffeineRush ? 0.1 : 0 // 10% reduction
+}
+
+// Get max energy bonus from skills
+export function getSkillMaxEnergyBonus(skills: GameState["skills"]): number {
+  return skills.stamina ? 0.2 : 0 // 20% bonus
+}
+
+// Get energy regen bonus from skills
+export function getSkillEnergyRegenBonus(skills: GameState["skills"]): number {
+  return skills.flowState ? 1 : 0 // +1/min
+}
+
+// BEAT CONTRACTS CONFIGURATION
+export interface BeatContract {
+  id: string
+  name: string
+  description: string
+  difficulty: "easy" | "medium" | "hard"
+  requirements: {
+    beats?: number // Total beats to create
+    minAccuracy?: number // Minimum accuracy percentage
+    minQuality?: number // Minimum quality
+    timeLimit?: number // Hours to complete (optional)
+  }
+  reward: {
+    money: number
+    reputation: number
+  }
+  icon: string
+}
+
+export const BEAT_CONTRACTS_POOL: BeatContract[] = [
+  // Easy Contracts (500+ rep, Tier 2)
+  {
+    id: "easy_volume",
+    name: "Набор битов",
+    description: "Создай 10 битов с любым качеством",
+    difficulty: "easy",
+    requirements: { beats: 10 },
+    reward: { money: 2000, reputation: 200 },
+    icon: "📦",
+  },
+  {
+    id: "easy_quality",
+    name: "Качественный звук",
+    description: "Создай 5 битов с качеством 70%+",
+    difficulty: "easy",
+    requirements: { beats: 5, minQuality: 70 },
+    reward: { money: 2500, reputation: 250 },
+    icon: "🎵",
+  },
+
+  // Medium Contracts (2000+ rep, Tier 3)
+  {
+    id: "medium_accuracy",
+    name: "Точность исполнения",
+    description: "Создай 5 битов с точностью 85%+",
+    difficulty: "medium",
+    requirements: { beats: 5, minAccuracy: 85 },
+    reward: { money: 5000, reputation: 500 },
+    icon: "🎯",
+  },
+  {
+    id: "medium_volume",
+    name: "Недельный план",
+    description: "Создай 20 битов за неделю",
+    difficulty: "medium",
+    requirements: { beats: 20, timeLimit: 168 }, // 7 days
+    reward: { money: 6000, reputation: 600 },
+    icon: "📅",
+  },
+
+  // Hard Contracts (5000+ rep, Tier 4)
+  {
+    id: "hard_perfection",
+    name: "Перфекционизм",
+    description: "Создай 10 битов с качеством 90%+",
+    difficulty: "hard",
+    requirements: { beats: 10, minQuality: 90 },
+    reward: { money: 10000, reputation: 1000 },
+    icon: "💎",
+  },
+  {
+    id: "hard_master",
+    name: "Мастер-класс",
+    description: "Создай 5 битов с точностью 95%+ и качеством 85%+",
+    difficulty: "hard",
+    requirements: { beats: 5, minAccuracy: 95, minQuality: 85 },
+    reward: { money: 15000, reputation: 1500 },
+    icon: "🏆",
+  },
+]
+
+// Get available contracts based on reputation tier
+export function getAvailableContracts(reputation: number): BeatContract[] {
+  const tier = getReputationTier(reputation)
+
+  if (tier < 2) return [] // No contracts until Tier 2 (500+ rep)
+
+  const available: BeatContract[] = []
+
+  // Tier 2 (500-2000): Easy contracts only
+  if (tier === 2) {
+    available.push(...BEAT_CONTRACTS_POOL.filter((c) => c.difficulty === "easy"))
+  }
+
+  // Tier 3 (2000-5000): Easy + Medium
+  if (tier === 3) {
+    available.push(
+      ...BEAT_CONTRACTS_POOL.filter((c) => c.difficulty === "easy" || c.difficulty === "medium"),
+    )
+  }
+
+  // Tier 4+ (5000+): All contracts
+  if (tier >= 4) {
+    available.push(...BEAT_CONTRACTS_POOL)
+  }
+
+  return available
+}
+
+// LABEL DEALS CONFIGURATION
+export interface LabelDeal {
+  id: "indie" | "small" | "major"
+  name: string
+  description: string
+  cost: number
+  passiveIncomePerHour: number
+  requiredReputation: number
+  icon: string
+}
+
+export const LABEL_DEALS_CONFIG: Record<"indie" | "small" | "major", LabelDeal> = {
+  indie: {
+    id: "indie",
+    name: "Indie Label",
+    description: "Партнерство с независимым лейблом",
+    cost: 5000,
+    passiveIncomePerHour: 50,
+    requiredReputation: 2000, // Tier 3
+    icon: "🎸",
+  },
+  small: {
+    id: "small",
+    name: "Small Label",
+    description: "Контракт с малым лейблом",
+    cost: 20000,
+    passiveIncomePerHour: 200,
+    requiredReputation: 5000, // Tier 4
+    icon: "🎤",
+  },
+  major: {
+    id: "major",
+    name: "Major Label",
+    description: "Сделка с крупным лейблом",
+    cost: 100000,
+    passiveIncomePerHour: 1000,
+    requiredReputation: 15000, // Tier 5
+    icon: "🏢",
+  },
+}
+
+// Calculate total passive income from label deals (per minute)
+export function getLabelDealsPassiveIncome(labelDeals: GameState["labelDeals"]): number {
+  let incomePerHour = 0
+
+  if (labelDeals.indie) incomePerHour += LABEL_DEALS_CONFIG.indie.passiveIncomePerHour
+  if (labelDeals.small) incomePerHour += LABEL_DEALS_CONFIG.small.passiveIncomePerHour
+  if (labelDeals.major) incomePerHour += LABEL_DEALS_CONFIG.major.passiveIncomePerHour
+
+  return Math.floor(incomePerHour / 60) // Convert to per minute
 }
