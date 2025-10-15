@@ -537,22 +537,39 @@ export function RhythmGameGuitarHero({ onComplete, difficulty }: RhythmGameGuita
         .gh-perspective-container {
           position: absolute;
           inset: 0;
-          perspective: 1400px;
-          perspective-origin: 50% 85%;
+          perspective: 1200px;
+          perspective-origin: 50% 90%;
+          overflow: hidden;
         }
-        
+
         .gh-highway {
           position: absolute;
-          width: 400px;
+          width: min(400px, 90vw);
           height: 200%;
           left: 50%;
           bottom: 0;
           transform-origin: center bottom;
-          transform: 
+          transform:
             translateX(-50%)
-            translateZ(-600px)
-            rotateX(65deg);
+            translateZ(-500px)
+            rotateX(68deg);
           transform-style: preserve-3d;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+          .gh-highway {
+            width: 85vw;
+            transform:
+              translateX(-50%)
+              translateZ(-400px)
+              rotateX(70deg);
+          }
+
+          .gh-perspective-container {
+            perspective: 1000px;
+            perspective-origin: 50% 92%;
+          }
         }
         
         .gh-fog {
@@ -684,12 +701,14 @@ export function RhythmGameGuitarHero({ onComplete, difficulty }: RhythmGameGuita
           position: absolute;
           bottom: 8%;
           left: 50%;
-          width: 400px;
+          width: min(400px, 90vw);
           height: 80px;
           transform: translateX(-50%);
           z-index: 70;
+          touch-action: none;
+          -webkit-tap-highlight-color: transparent;
         }
-        
+
         .gh-fret-button {
           position: absolute;
           width: 90px;
@@ -704,6 +723,33 @@ export function RhythmGameGuitarHero({ onComplete, difficulty }: RhythmGameGuita
           align-items: center;
           justify-content: center;
           gap: 0.5rem;
+          user-select: none;
+          -webkit-user-select: none;
+          -webkit-touch-callout: none;
+        }
+
+        /* Mobile touch buttons - larger hit areas */
+        @media (max-width: 768px) {
+          .gh-fret-buttons {
+            bottom: 5%;
+            height: 100px;
+          }
+
+          .gh-fret-button {
+            width: 22vw;
+            height: 90px;
+            max-width: 100px;
+          }
+
+          .gh-fret-circle {
+            width: 50px;
+            height: 50px;
+            border-width: 4px;
+          }
+
+          .gh-fret-label {
+            font-size: 0.75rem;
+          }
         }
         
         .gh-fret-button:active,
@@ -868,6 +914,13 @@ export function RhythmGameGuitarHero({ onComplete, difficulty }: RhythmGameGuita
             key={laneIndex}
             className={`gh-fret-button ${activeLanes.has(laneIndex) ? "active" : ""}`}
             onClick={() => handleLaneTap(laneIndex)}
+            onTouchStart={(e) => {
+              e.preventDefault()
+              handleLaneTap(laneIndex)
+            }}
+            onTouchEnd={(e) => {
+              e.preventDefault()
+            }}
             style={{
               left: `${LANE_POSITIONS[laneIndex]}%`,
               transform: "translateX(-50%)",
