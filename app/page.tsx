@@ -7,6 +7,7 @@ import { StudioScreen } from "@/components/studio-screen"
 import { ArtistsScreen } from "@/components/artists-screen"
 import { UpgradesScreen } from "@/components/upgrades-screen"
 import { SkillsScreen } from "@/components/skills-screen"
+import { ContractsScreen } from "@/components/contracts-screen"
 import { Onboarding } from "@/components/onboarding"
 import { CharacterCreation, type CharacterData } from "@/components/character-creation"
 import { AvatarConfirmation } from "@/components/avatar-confirmation"
@@ -24,7 +25,7 @@ import { useRouter } from "next/navigation"
 import { type GameState, INITIAL_GAME_STATE, ENERGY_CONFIG } from "@/lib/game-state"
 import { loadGameState, saveGameState, createPlayer } from "@/lib/game-storage"
 
-export type Screen = "home" | "stage" | "studio" | "artists" | "upgrades" | "skills"
+export type Screen = "home" | "stage" | "studio" | "artists" | "upgrades" | "skills" | "contracts"
 
 export default function Page() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
@@ -358,6 +359,9 @@ export default function Page() {
         )}
         {currentScreen === "skills" && (
           <SkillsScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
+        )}
+        {currentScreen === "contracts" && (
+          <ContractsScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
         )}
       </div>
       {!isRhythmGameActive && <BottomNav currentScreen={currentScreen} onNavigate={navigateTo} />}
