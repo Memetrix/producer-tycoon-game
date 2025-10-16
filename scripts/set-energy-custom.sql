@@ -1,8 +1,8 @@
--- Fixed UUID casting issue by using text comparison
--- Restore energy to maximum (100) for current player
+-- Fixed UUID casting by converting auth.uid() to text
+-- Set energy to a custom value (change 100 to desired amount)
 UPDATE game_state
 SET 
-  energy = 100,
+  energy = 100,  -- Change this number to desired energy amount
   updated_at = NOW()
 WHERE player_id = (
   SELECT id FROM players 
@@ -11,7 +11,9 @@ WHERE player_id = (
 );
 
 -- Verify the update
-SELECT energy, updated_at
+SELECT 
+  energy as current_energy,
+  updated_at
 FROM game_state
 WHERE player_id = (
   SELECT id FROM players 

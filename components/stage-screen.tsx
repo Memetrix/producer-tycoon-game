@@ -33,6 +33,7 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
   const [isPlayingRhythm, setIsPlayingRhythm] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null)
+  const [isGeneratingName, setIsGeneratingName] = useState(false)
   const [isGeneratingCover, setIsGeneratingCover] = useState(false)
   const [isSelling, setIsSelling] = useState(false)
 
@@ -169,42 +170,93 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
   const handleResultsContinue = async () => {
     setShowResults(false)
-    setSelectedTrack(null)
     setIsCreating(true)
 
-    const randomName = BEAT_NAMES[Math.floor(Math.random() * BEAT_NAMES.length)]
+    setIsGeneratingName(true)
+    let beatName = BEAT_NAMES[Math.floor(Math.random() * BEAT_NAMES.length)]
+
+    try {
+      console.log("[v0] Generating beat name for track:", selectedTrack?.name, "by", selectedTrack?.artist)
+
+      const nameResponse = await fetch("/api/generate-beat-name", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalTrackName: selectedTrack?.name,
+          artistName: selectedTrack?.artist,
+        }),
+      })
+
+      console.log("[v0] Beat name API response status:", nameResponse.status)
+      const responseText = await nameResponse.text()
+      console.log("[v0] Beat name API response body:", responseText)
+
+      if (nameResponse.ok) {
+        const nameData = JSON.parse(responseText)
+        beatName = nameData.beatName
+        console.log("[v0] Generated beat name:", beatName)
+      } else {
+        console.error("[v0] Failed to generate beat name. Status:", nameResponse.status, "Body:", responseText)
+      }
+    } catch (error) {
+      console.error("[v0] Error generating beat name:", error)
+      console.error("[v0] Error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      })
+    } finally {
+      setIsGeneratingName(false)
+    }
+
     const quality = calculateQuality(rhythmAccuracy, selectedDifficulty)
     const price = calculatePrice(quality, selectedDifficulty)
 
     setIsGeneratingCover(true)
 
     try {
-      const coverResponse = await fetch("/api/generate-cover", {
+      console.log("[v0] Generating cover art for beat:", beatName)
+
+      const coverResponse = await fetch("/api/generate-beat-cover", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: `${randomName} hip hop album cover, urban street art, graffiti, neon lights, vinyl record`,
+          beatName: beatName,
         }),
       })
-      const coverData = await coverResponse.json()
 
-      const newBeat: Beat = {
-        id: crypto.randomUUID(),
-        name: randomName,
-        price: price,
-        quality: quality,
-        cover: coverData.imageUrl || "/placeholder.svg?height=400&width=400",
-        createdAt: Date.now(),
+      console.log("[v0] Cover API response status:", coverResponse.status)
+      const coverResponseText = await coverResponse.text()
+      console.log("[v0] Cover API response body:", coverResponseText)
+
+      if (coverResponse.ok) {
+        const coverData = JSON.parse(coverResponseText)
+        console.log("[v0] Generated cover URL:", coverData.coverUrl)
+
+        const newBeat: Beat = {
+          id: crypto.randomUUID(),
+          name: beatName,
+          price: price,
+          quality: quality,
+          cover: coverData.coverUrl,
+          createdAt: Date.now(),
+        }
+
+        console.log("[v0] Beat created with AI assets:", newBeat.id)
+        setCurrentBeat(newBeat)
+        await saveBeat(newBeat)
+      } else {
+        console.error("[v0] Failed to generate cover. Status:", coverResponse.status, "Body:", coverResponseText)
+        throw new Error("Cover generation failed")
       }
-
-      console.log("[v0] Beat created:", newBeat.id)
-      setCurrentBeat(newBeat)
-      await saveBeat(newBeat)
     } catch (error) {
       console.error("[v0] Failed to generate cover:", error)
+      console.error("[v0] Cover error details:", {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      })
       const newBeat: Beat = {
         id: crypto.randomUUID(),
-        name: randomName,
+        name: beatName,
         price: price,
         quality: quality,
         cover: "/placeholder.svg?height=400&width=400",
@@ -215,6 +267,7 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     } finally {
       setIsGeneratingCover(false)
       setIsCreating(false)
+      setSelectedTrack(null)
     }
   }
 
@@ -473,7 +526,15 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
             <div className="w-full space-y-2">
               <p className="text-lg font-semibold">
-                {isCreating ? "Создаю бит..." : currentBeat ? `${currentBeat.name} готов!` : "Готов создать новый хит"}
+                {isGeneratingName
+                  ? "Придумываю название..."
+                  : isGeneratingCover
+                    ? "Создаю обложку..."
+                    : isCreating
+                      ? "Создаю бит..."
+                      : currentBeat
+                        ? `${currentBeat.name} готов!`
+                        : "Готов создать новый хит"}
               </p>
               {currentBeat && (
                 <div className="flex items-center justify-center gap-4 text-sm">
@@ -488,14 +549,16 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
                 size="lg"
                 className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition-transform"
                 onClick={handleSellBeat}
-                disabled={isGeneratingCover || isSelling}
+                disabled={isGeneratingName || isGeneratingCover || isSelling}
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                {isGeneratingCover
-                  ? "Генерирую обложку..."
-                  : isSelling
-                    ? "Продаю..."
-                    : `Продать бит ($${currentBeat?.price})`}
+                {isGeneratingName
+                  ? "Придумываю название..."
+                  : isGeneratingCover
+                    ? "Создаю обложку..."
+                    : isSelling
+                      ? "Продаю..."
+                      : `Продать бит ($${currentBeat?.price})`}
               </Button>
             ) : (
               <div className="w-full space-y-2">

@@ -406,52 +406,52 @@ export const ARTISTS_CONFIG = {
   "street-poet": {
     id: "street-poet",
     name: "Street Poet",
-    avatar: "/conscious-hip-hop-artist-portrait--thoughtful-rapp.jpg",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-1.png",
     skill: 58,
     popularity: 52,
     genre: "Сознательный",
     baseCost: 70,
-    incomePerLevel: [0, 5, 7, 10, 14, 20, 28, 38, 50, 65, 85], // Extended to 10 levels
-    energyBonusPerLevel: [0, 8, 10, 12, 14, 18, 22, 27, 33, 40, 50], // Extended to 10 levels
+    incomePerLevel: [0, 5, 7, 10, 14, 20, 28, 38, 50, 65, 85],
+    energyBonusPerLevel: [0, 8, 10, 12, 14, 18, 22, 27, 33, 40, 50],
     costMultiplier: 1.6,
     tier: 1,
   },
   "mc-flow": {
     id: "mc-flow",
     name: "MC Flow",
-    avatar: "/hip-hop-rapper-portrait-mc-flow--young-male-artist.jpg",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-2.png",
     skill: 65,
     popularity: 45,
     genre: "Хип-хоп",
     baseCost: 80,
-    incomePerLevel: [0, 6, 9, 13, 18, 25, 34, 46, 62, 82, 108], // Extended to 10 levels
-    energyBonusPerLevel: [0, 10, 12, 14, 16, 20, 25, 31, 38, 47, 58], // Extended to 10 levels
+    incomePerLevel: [0, 6, 9, 13, 18, 25, 34, 46, 62, 82, 108],
+    energyBonusPerLevel: [0, 10, 12, 14, 16, 20, 25, 31, 38, 47, 58],
     costMultiplier: 1.6,
     tier: 1,
   },
   "lil-dreamer": {
     id: "lil-dreamer",
     name: "Lil Dreamer",
-    avatar: "/trap-artist-portrait-lil-dreamer--stylish-young-ra.jpg",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-3.png",
     skill: 72,
     popularity: 38,
     genre: "Трэп",
     baseCost: 100,
-    incomePerLevel: [0, 8, 11, 16, 22, 30, 41, 56, 76, 102, 136], // Extended to 10 levels
-    energyBonusPerLevel: [0, 15, 18, 21, 24, 30, 37, 46, 57, 71, 88], // Extended to 10 levels
+    incomePerLevel: [0, 8, 11, 16, 22, 30, 41, 56, 76, 102, 136],
+    energyBonusPerLevel: [0, 15, 18, 21, 24, 30, 37, 46, 57, 71, 88],
     costMultiplier: 1.6,
     tier: 1,
   },
   "young-legend": {
     id: "young-legend",
     name: "Young Legend",
-    avatar: "/famous-hip-hop-star-portrait--successful-rapper-wi.jpg",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-4.png",
     skill: 85,
     popularity: 70,
     genre: "Хип-хоп",
     baseCost: 200,
-    incomePerLevel: [0, 12, 18, 26, 36, 50, 68, 92, 124, 166, 222], // Extended to 10 levels
-    energyBonusPerLevel: [0, 25, 30, 35, 40, 50, 62, 77, 96, 120, 150], // Extended to 10 levels
+    incomePerLevel: [0, 12, 18, 26, 36, 50, 68, 92, 124, 166, 222],
+    energyBonusPerLevel: [0, 25, 30, 35, 40, 50, 62, 77, 96, 120, 150],
     costMultiplier: 1.6,
     requiresReputation: 400,
     tier: 1,
@@ -461,7 +461,7 @@ export const ARTISTS_CONFIG = {
   "local-hero": {
     id: "local-hero",
     name: "Local Hero",
-    avatar: "/placeholder-artist-2.jpg",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-5.png",
     skill: 78,
     popularity: 65,
     genre: "R&B",
@@ -475,7 +475,7 @@ export const ARTISTS_CONFIG = {
   "scene-leader": {
     id: "scene-leader",
     name: "Scene Leader",
-    avatar: "/placeholder-artist-2.jpg",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-6.png",
     skill: 82,
     popularity: 72,
     genre: "Trap",
@@ -491,7 +491,7 @@ export const ARTISTS_CONFIG = {
   "city-star": {
     id: "city-star",
     name: "City Star",
-    avatar: "/placeholder-artist-3.jpg",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-7.png",
     skill: 88,
     popularity: 80,
     genre: "Pop",
@@ -505,7 +505,7 @@ export const ARTISTS_CONFIG = {
   "state-champion": {
     id: "state-champion",
     name: "State Champion",
-    avatar: "/placeholder-artist-3.jpg",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-8.png",
     skill: 92,
     popularity: 85,
     genre: "Hip-Hop",
@@ -705,7 +705,7 @@ export const REPUTATION_TIERS = {
   3: { min: 2000, max: 5000, name: "Региональный" },
   4: { min: 5000, max: 15000, name: "Национальный" },
   5: { min: 15000, max: 50000, name: "Международный" },
-  6: { min: 50000, max: Infinity, name: "Легендарный" },
+  6: { min: 50000, max: Number.POSITIVE_INFINITY, name: "Легендарный" },
 }
 
 // Get current reputation tier from reputation amount
@@ -1023,9 +1023,7 @@ export function getAvailableContracts(reputation: number): BeatContract[] {
 
   // Tier 3 (2000-5000): Easy + Medium
   if (tier === 3) {
-    available.push(
-      ...BEAT_CONTRACTS_POOL.filter((c) => c.difficulty === "easy" || c.difficulty === "medium"),
-    )
+    available.push(...BEAT_CONTRACTS_POOL.filter((c) => c.difficulty === "easy" || c.difficulty === "medium"))
   }
 
   // Tier 4+ (5000+): All contracts
