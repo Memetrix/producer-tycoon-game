@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client"
 import type { GameState, Beat } from "@/lib/game-state"
+import { getReputationTier } from "@/lib/game-state"
 
 async function getAuthenticatedUserId(): Promise<string | null> {
   const supabase = createClient()
@@ -93,6 +94,9 @@ export async function loadGameState(): Promise<GameState | null> {
   const baseEnergy = gameState.energy || 0
   const regeneratedEnergy = Math.min(100, baseEnergy + timeDiffMinutes)
 
+  // FIXED: currentStage now calculated from reputation tier (Stage 1-6 based on reputation)
+  const currentStage = Math.min(6, getReputationTier(gameState.reputation))
+
   return {
     playerName: player.character_name,
     playerAvatar: player.character_avatar,
@@ -101,13 +105,12 @@ export async function loadGameState(): Promise<GameState | null> {
     money: gameState.money,
     reputation: gameState.reputation,
     energy: regeneratedEnergy,
-    gems: 0,
-    currentStage: gameState.stage,
-    stageProgress: 0,
+    currentStage: currentStage, // Calculated from reputation, not from DB
+    stageProgress: 0, // Deprecated: stageProgress no longer used
     totalBeatsCreated: gameState.total_beats_created,
     totalMoneyEarned: gameState.total_money_earned,
     totalBeatsEarnings: gameState.total_beats_earnings || 0,
-    totalCollabs: 0,
+    totalArtistsHired: 0, // RENAMED: was totalCollabs
     equipment: equipmentMap,
     beats:
       beats?.map((b) => ({

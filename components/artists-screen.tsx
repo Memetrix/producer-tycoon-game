@@ -59,7 +59,7 @@ export function ArtistsScreen({ gameState, setGameState, onNavigate }: ArtistsSc
         ...prev.artists,
         [artistId]: newLevel,
       },
-      totalCollabs: currentLevel === 0 ? prev.totalCollabs + 1 : prev.totalCollabs,
+      totalArtistsHired: currentLevel === 0 ? prev.totalArtistsHired + 1 : prev.totalArtistsHired, // RENAMED: was totalCollabs
     }))
   }
 
