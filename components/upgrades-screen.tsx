@@ -14,6 +14,8 @@ import {
   getDailyTasksForDay,
   STREAK_REWARDS,
   getUnclaimedStreakRewards,
+  LABEL_DEALS_CONFIG,
+  getReputationTier,
 } from "@/lib/game-state"
 import type React from "react"
 import { useEffect, useState } from "react"
@@ -122,6 +124,36 @@ export function UpgradesScreen({ gameState, setGameState, onNavigate }: Upgrades
     }))
 
     alert(`Обучение завершено! Получено: $${training.reward.money}, +${training.reward.reputation} репутации`)
+  }
+
+  const handleLabelDeal = (labelId: "indie" | "small" | "major") => {
+    const deal = LABEL_DEALS_CONFIG[labelId]
+
+    if (gameState.labelDeals[labelId]) {
+      alert("Вы уже купили этот контракт!")
+      return
+    }
+
+    if (gameState.reputation < deal.requiredReputation) {
+      alert(`Требуется ${deal.requiredReputation} репутации!`)
+      return
+    }
+
+    if (gameState.money < deal.cost) {
+      alert("Недостаточно денег!")
+      return
+    }
+
+    setGameState((prev) => ({
+      ...prev,
+      money: prev.money - deal.cost,
+      labelDeals: {
+        ...prev.labelDeals,
+        [labelId]: true,
+      },
+    }))
+
+    alert(`Контракт с ${deal.name} заключен! Пассивный доход: +${deal.passiveIncomePerHour}/час`)
   }
 
   const currentDayTasks = getDailyTasksForDay(dailyTasks.currentStreak)
@@ -336,6 +368,74 @@ export function UpgradesScreen({ gameState, setGameState, onNavigate }: Upgrades
                       className="w-full active:scale-95 transition-transform"
                     >
                       {isCompleted ? "Пройдено" : "Начать обучение"}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )
+          })}
+        </div>
+
+        {/* Skills Navigation Card */}
+        <Card
+          className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30 cursor-pointer hover:border-primary/50 transition-all active:scale-95"
+          onClick={() => onNavigate("skills")}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl">✨</div>
+              <div>
+                <p className="font-semibold">Древо навыков</p>
+                <p className="text-xs text-muted-foreground">Разблокируй уникальные способности</p>
+              </div>
+            </div>
+            <Button size="sm" variant="secondary">
+              Открыть
+            </Button>
+          </div>
+        </Card>
+
+        {/* Label Deals Section */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Контракты с лейблами
+          </h3>
+          {Object.entries(LABEL_DEALS_CONFIG).map(([labelId, deal]) => {
+            const isOwned = gameState.labelDeals[labelId as "indie" | "small" | "major"]
+            const isLocked = gameState.reputation < deal.requiredReputation
+
+            return (
+              <Card
+                key={labelId}
+                className={`p-4 ${isOwned ? "bg-primary/10 border-primary/30" : isLocked ? "opacity-60" : ""}`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="text-3xl">{deal.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-semibold">{deal.name}</p>
+                      {isOwned && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                      {isLocked && <span className="text-xs bg-muted px-2 py-1 rounded-lg">🔒</span>}
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">{deal.description}</p>
+
+                    <div className="bg-muted/50 rounded-lg p-2 mb-3">
+                      <p className="text-xs font-semibold text-accent">
+                        Пассивный доход: +${deal.passiveIncomePerHour}/час (${Math.floor(deal.passiveIncomePerHour / 60)}/мин)
+                      </p>
+                    </div>
+
+                    <Button
+                      size="sm"
+                      disabled={isOwned || isLocked}
+                      onClick={() => handleLabelDeal(labelId as "indie" | "small" | "major")}
+                      className="w-full active:scale-95 transition-transform"
+                    >
+                      {isOwned
+                        ? "Контракт активен"
+                        : isLocked
+                          ? `Требуется ${deal.requiredReputation} репутации`
+                          : `Купить ($${deal.cost})`}
                     </Button>
                   </div>
                 </div>

@@ -6,6 +6,7 @@ import { StageScreen } from "@/components/stage-screen"
 import { StudioScreen } from "@/components/studio-screen"
 import { ArtistsScreen } from "@/components/artists-screen"
 import { UpgradesScreen } from "@/components/upgrades-screen"
+import { SkillsScreen } from "@/components/skills-screen"
 import { Onboarding } from "@/components/onboarding"
 import { CharacterCreation, type CharacterData } from "@/components/character-creation"
 import { AvatarConfirmation } from "@/components/avatar-confirmation"
@@ -16,7 +17,7 @@ import { getTotalEnergyBonus, getTotalPassiveIncome, calculateOfflineEarnings } 
 import { createBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
-export type Screen = "home" | "stage" | "studio" | "artists" | "upgrades"
+export type Screen = "home" | "stage" | "studio" | "artists" | "upgrades" | "skills"
 
 export default function Page() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
@@ -340,6 +341,9 @@ export default function Page() {
         )}
         {currentScreen === "upgrades" && (
           <UpgradesScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
+        )}
+        {currentScreen === "skills" && (
+          <SkillsScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
         )}
       </div>
       {!isRhythmGameActive && <BottomNav currentScreen={currentScreen} onNavigate={navigateTo} />}
