@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Producer Tycoon - Нарративный дизайн 🎬</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      line-height: 1.7;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 60px 40px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .header .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.95;
+      margin-top: 10px;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .content {
+      padding: 50px 40px;
+    }
+
+    .greeting {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 40px;
+      font-size: 1.1rem;
+    }
+
+    .greeting strong {
+      font-size: 1.3rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      color: #667eea;
+      font-size: 2rem;
+      margin: 50px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #f093fb;
+    }
+
+    h3 {
+      color: #764ba2;
+      font-size: 1.5rem;
+      margin: 30px 0 15px;
+    }
+
+    h4 {
+      color: #333;
+      font-size: 1.2rem;
+      margin: 20px 0 10px;
+    }
+
+    .act-card {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      padding: 30px;
+      border-radius: 15px;
+      margin: 30px 0;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .act-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .act-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: #d63447;
+    }
+
+    .act-tier {
+      background: #d63447;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .info-item {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #764ba2;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      color: #333;
+      font-size: 1rem;
+    }
+
+    .character-card {
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      padding: 25px;
+      border-radius: 12px;
+      margin: 15px 0;
+    }
+
+    .character-name {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+
+    .character-role {
+      font-style: italic;
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .dialog-box {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 20px;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      border-radius: 8px;
+    }
+
+    .dialog-speaker {
+      font-weight: 700;
+      color: #764ba2;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .choice-box {
+      background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 2px solid #e17055;
+    }
+
+    .choice-label {
+      font-weight: 700;
+      color: #d63031;
+      margin-bottom: 5px;
+    }
+
+    .checklist {
+      background: #e8f5e9;
+      padding: 25px;
+      border-radius: 12px;
+      margin: 30px 0;
+    }
+
+    .checklist h3 {
+      color: #2ecc71;
+      margin-top: 0;
+    }
+
+    .checklist ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .checklist li {
+      padding: 10px 0;
+      padding-left: 30px;
+      position: relative;
+    }
+
+    .checklist li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #2ecc71;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .footer {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .footer p {
+      font-size: 1.2rem;
+      margin: 10px 0;
+    }
+
+    .emoji {
+      font-size: 1.5em;
+      margin: 0 5px;
+    }
+
+    blockquote {
+      border-left: 4px solid #f093fb;
+      padding-left: 20px;
+      margin: 20px 0;
+      font-style: italic;
+      color: #555;
+      background: #fafafa;
+      padding: 15px 20px;
+      border-radius: 8px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 0.85rem;
+      margin: 5px 5px 5px 0;
+    }
+
+    .highlight {
+      background: linear-gradient(135deg, #fff5ba 0%, #ffeaa7 100%);
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border: 2px dashed #fdcb6e;
+    }
+
+    ul, ol {
+      margin: 15px 0;
+      padding-left: 25px;
+    }
+
+    li {
+      margin: 8px 0;
+    }
+
+    strong {
+      color: #667eea;
+    }
+
+    .reference-box {
+      background: #e3f2fd;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+
+    .reference-box h4 {
+      color: #1976d2;
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎬 Producer Tycoon</h1>
+      <div class="subtitle">Нарративный дизайн-документ</div>
+      <div class="meta">
+        <div class="meta-item">
+          <span>📝</span>
+          <span><strong>Для:</strong> Ангелина (Narrative Designer)</span>
+        </div>
+        <div class="meta-item">
+          <span>👥</span>
+          <span><strong>От:</strong> Клод + Алексей</span>
+        </div>
+        <div class="meta-item">
+          <span>📅</span>
+          <span>16 октября 2025</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="greeting">
+        <strong>👋 Привет, Ангелина!</strong>
+        <p>Меня зовут Клод, я AI-ассистент который помогает Алексею с разработкой.</p>
+        <p>Алексей придумал <strong>ГЕНИАЛЬНУЮ ИДЕЮ</strong> превратить обычный idle-кликер в <strong>интерактивную историю</strong> о становлении музыкального продюсера! Но есть проблема: мы с ним оба <strong>технари</strong> 🤓 - мы можем запрограммировать что угодно, но создать живую, эмоциональную историю... тут нам без тебя не справиться! 🙏</p>
+        <p>Ниже я собрал всё что мы с Алексеем набросали, чтобы ты могла это развить в полноценный сюжет!</p>
+      </div>
+
+      <h2>🎯 Концепция игры</h2>
+
+      <h3>Что это?</h3>
+      <p><strong>Idle-игра + Visual Novel + Ритм-игра</strong></p>
+      <p>Игрок проходит путь от никому не известного паренька с телефоном до легендарного продюсера уровня Dr. Dre или Metro Boomin.</p>
+
+      <div class="highlight">
+        <h3>🔥 Главная фишка:</h3>
+        <p style="font-size: 1.3rem; text-align: center; font-weight: 700; color: #d63447;">60 дней в игре = 6 лет карьеры в реальности</p>
+        <p>Каждый день игрок заходит, создаёт 1-2 бита (играет в ритм-игру), улучшает оборудование, нанимает артистов. А между этим - <strong>разворачивается история!</strong></p>
+      </div>
+
+      <h2>📖 Структура истории (6 актов)</h2>
+
+      <!-- ACT 1 -->
+      <div class="act-card">
+        <div class="act-header">
+          <div class="act-title">ACT I: ГОЛОДНЫЙ ХУДОЖНИК</div>
+          <div class="act-tier">Tier 1: Уличный</div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Дни</div>
+            <div class="info-value">1-10 (Год 0-1)</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Репутация</div>
+            <div class="info-value">0 → 500</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Битов в день</div>
+            <div class="info-value">8-10 штук</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Цена бита</div>
+            <div class="info-value">$30-80</div>
+          </div>
+        </div>
+
+        <h4>Кто ты:</h4>
+        <p>Никто. Парень/девушка с телефоном и FL Studio на пиратке. Живёшь с родителями. Работаешь на обычной работе. Делаешь биты по ночам.</p>
+
+        <h4>Конфликт:</h4>
+        <p>Все говорят что ты тратишь жизнь впустую. Мама хочет чтобы ты нашёл "нормальную работу". Друзья смеются. Но у тебя есть мечта.</p>
+
+        <h4>Ключевые моменты:</h4>
+        <ul>
+          <li><strong>День 1:</strong> Пролог - решение стать продюсером</li>
+          <li><strong>День 3:</strong> Первый проданный бит за $50 (маленькая победа!)</li>
+          <li><strong>День 7:</strong> Накопил на первое оборудование</li>
+          <li><strong>День 10:</strong> Твой трек крутят на районной радиостанции! → <strong>TIER 2</strong></li>
+        </ul>
+
+        <div style="margin-top: 20px;">
+          <span class="tag">Настроение: Hustle</span>
+          <span class="tag">Голод</span>
+          <span class="tag">Борьба</span>
+          <span class="tag">Надежда</span>
+        </div>
+      </div>
+
+      <!-- ACT 2 -->
+      <div class="act-card">
+        <div class="act-header">
+          <div class="act-title">ACT II: РАСТУЩАЯ ЗВЕЗДА</div>
+          <div class="act-tier">Tier 2: Местный</div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Дни</div>
+            <div class="info-value">11-20 (Годы 1-2)</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Репутация</div>
+            <div class="info-value">500 → 2,000</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Битов в день</div>
+            <div class="info-value">6-8 штук</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Цена бита</div>
+            <div class="info-value">$100-300</div>
+          </div>
+        </div>
+
+        <h4>Кто ты:</h4>
+        <p>Местная знаменитость. Тебя узнают на районе. Начинающие рэперы пишут в DM. Ты ушёл с работы - теперь full-time музыка.</p>
+
+        <h4>Конфликт:</h4>
+        <blockquote>
+          Первый успех привлекает не только возможности, но и проблемы: кто-то украл твой бит, артисты не хотят платить, fake friends появляются когда есть деньги. Выбор: остаться честным или играть грязно?
+        </blockquote>
+
+        <h4>Ключевые персонажи:</h4>
+        <ul>
+          <li><strong>MC Flow</strong> - твой первый настоящий коллаборатор</li>
+          <li><strong>Lil Dreamer</strong> - талантливый, но сложный артист</li>
+          <li><strong>Fake Producer</strong> - антагонист, который крадёт твои битки</li>
+        </ul>
+
+        <h4>Ключевые моменты:</h4>
+        <ul>
+          <li><strong>День 12:</strong> Встреча с MC Flow (выбор: партнёрство или бизнес?)</li>
+          <li><strong>День 15:</strong> Известный рэпер купил твой бит!</li>
+          <li><strong>День 17:</strong> ДРАМА - кто-то украл твой бит (выбор как реагировать)</li>
+          <li><strong>День 20:</strong> 2000 репутации → <strong>TIER 3</strong></li>
+        </ul>
+
+        <div style="margin-top: 20px;">
+          <span class="tag">Настроение: Амбиции</span>
+          <span class="tag">Первые деньги</span>
+          <span class="tag">Первые проблемы</span>
+          <span class="tag">Выборы</span>
+        </div>
+      </div>
+
+      <!-- ACT 3 -->
+      <div class="act-card">
+        <div class="act-header">
+          <div class="act-title">ACT III: РЕГИОНАЛЬНЫЙ ГЕРОЙ</div>
+          <div class="act-tier">Tier 3: Региональный</div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Дни</div>
+            <div class="info-value">21-32 (Годы 2-3.5)</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Репутация</div>
+            <div class="info-value">2,000 → 5,000</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Битов в день</div>
+            <div class="info-value">4-5 штук</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Цена бита</div>
+            <div class="info-value">$300-800</div>
+          </div>
+        </div>
+
+        <h4>Кто ты:</h4>
+        <p>Известный в своём городе/регионе. У тебя маленькая домашняя студия. Артисты стоят в очереди. Indie лейблы предлагают контракты.</p>
+
+        <h4>Конфликт:</h4>
+        <blockquote>
+          Ты на распутье: Major label предлагает $100K но хотят контроль. Indie путь = свобода но медленнее рост. Баланс между искусством и коммерцией.
+        </blockquote>
+
+        <h4>Ключевые персонажи:</h4>
+        <ul>
+          <li><strong>Metro Maximus</strong> - легендарный продюсер, твой кумир (ментор?)</li>
+          <li><strong>Label Manager</strong> - предлагает контракт с дьяволом</li>
+          <li><strong>Young Legend</strong> - топовый артист региона</li>
+        </ul>
+
+        <h4>Ключевые моменты:</h4>
+        <ul>
+          <li><strong>День 23:</strong> Indie Label предлагает контракт</li>
+          <li><strong>День 27:</strong> Твой трек в топ-100 региона</li>
+          <li><strong>День 30:</strong> Встреча с Metro Maximus (особая ритм-игра!)</li>
+          <li><strong>День 32:</strong> 5000 репутации → <strong>TIER 4</strong></li>
+        </ul>
+
+        <div style="margin-top: 20px;">
+          <span class="tag">Настроение: Успех</span>
+          <span class="tag">Сложные выборы</span>
+          <span class="tag">Встреча с кумирами</span>
+          <span class="tag">Цена славы</span>
+        </div>
+      </div>
+
+      <!-- ACT 4 -->
+      <div class="act-card">
+        <div class="act-header">
+          <div class="act-title">ACT IV: НАЦИОНАЛЬНАЯ ЗВЕЗДА</div>
+          <div class="act-tier">Tier 4: Национальный</div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Дни</div>
+            <div class="info-value">33-46 (Годы 3.5-5)</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Репутация</div>
+            <div class="info-value">5,000 → 15,000</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Битов в день</div>
+            <div class="info-value">2-3 штуки</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Цена бита</div>
+            <div class="info-value">$800-2,500</div>
+          </div>
+        </div>
+
+        <h4>Кто ты:</h4>
+        <p>Ты - имя. Студия в центре города. 3 артиста под контрактом. Твой трек набрал 1M+ прослушиваний. Деньги больше не проблема.</p>
+
+        <h4>Конфликт:</h4>
+        <blockquote>
+          Success comes with a price: токсичные артисты, ты теряешь связь с корнями, творческий кризис "Я делаю то что продаётся, а не то что люблю". Продолжать коммерцию или вернуться к корням?
+        </blockquote>
+
+        <h4>Ключевые персонажи:</h4>
+        <ul>
+          <li><strong>City Star</strong> - топовый поп-артист</li>
+          <li><strong>Street Poet</strong> - твой старый друг с района, напоминает откуда ты</li>
+          <li><strong>Critic</strong> - музыкальный критик который хейтит</li>
+        </ul>
+
+        <h4>Ключевые моменты:</h4>
+        <ul>
+          <li><strong>День 40:</strong> Трек стал платиновым!</li>
+          <li><strong>День 42:</strong> КРИЗИС - критик пишет "Он продался"</li>
+          <li><strong>День 45:</strong> Воссоединение со Street Poet - вспоминаешь почему начал</li>
+          <li><strong>День 46:</strong> 15,000 репутации → <strong>TIER 5</strong></li>
+        </ul>
+
+        <div style="margin-top: 20px;">
+          <span class="tag">Настроение: Слава</span>
+          <span class="tag">Одиночество</span>
+          <span class="tag">Кризис идентичности</span>
+          <span class="tag">Искупление</span>
+        </div>
+      </div>
+
+      <!-- ACT 5 -->
+      <div class="act-card">
+        <div class="act-header">
+          <div class="act-title">ACT V: МЕЖДУНАРОДНЫЙ УРОВЕНЬ</div>
+          <div class="act-tier">Tier 5: Международный</div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Дни</div>
+            <div class="info-value">47-56 (Годы 5-6)</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Репутация</div>
+            <div class="info-value">15,000 → 50,000</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Битов в день</div>
+            <div class="info-value">1-2 штуки</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Цена бита</div>
+            <div class="info-value">$2,000-6,000</div>
+          </div>
+        </div>
+
+        <h4>Кто ты:</h4>
+        <p>Мировая звезда. Abbey Road акустика. Артисты летят из других стран. Forbes написал про тебя. Ты на обложках.</p>
+
+        <h4>Конфликт:</h4>
+        <blockquote>
+          Ты добился всего. Но счастлив ли ты? Нет времени на личную жизнь, старые друзья исчезли, творческое выгорание. Вопрос: "Ради чего всё это было?"
+        </blockquote>
+
+        <h4>Ключевые моменты:</h4>
+        <ul>
+          <li><strong>День 48:</strong> Major Label ($100K deal) - момент триумфа</li>
+          <li><strong>День 50:</strong> Грэмми номинация!</li>
+          <li><strong>День 52:</strong> EMOTIONAL MOMENT - встреча со старым другом</li>
+          <li><strong>День 55:</strong> Documentary - ты пересматриваешь свой путь</li>
+          <li><strong>День 56:</strong> 50,000 репутации → <strong>TIER 6</strong></li>
+        </ul>
+
+        <div style="margin-top: 20px;">
+          <span class="tag">Настроение: Рефлексия</span>
+          <span class="tag">Ностальгия</span>
+          <span class="tag">Поиск смысла</span>
+          <span class="tag">Зрелость</span>
+        </div>
+      </div>
+
+      <!-- ACT 6 -->
+      <div class="act-card">
+        <div class="act-header">
+          <div class="act-title">ACT VI: ЛЕГЕНДА</div>
+          <div class="act-tier">Tier 6: Легендарный</div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">Дни</div>
+            <div class="info-value">57-60+ (Beyond)</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Репутация</div>
+            <div class="info-value">50,000+</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Битов в день</div>
+            <div class="info-value">1 шедевр</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Цена бита</div>
+            <div class="info-value">$5,000-15,000</div>
+          </div>
+        </div>
+
+        <h4>Кто ты:</h4>
+        <p>Dr. Dre. Timbaland. Metro Boomin. Ты - бренд. Ты - институция.</p>
+
+        <h4>Конфликт:</h4>
+        <p>Нет конфликта. Только выбор наследия: какой след ты оставишь? Что ты передашь следующему поколению?</p>
+
+        <h4>Ключевые моменты:</h4>
+        <ul>
+          <li><strong>День 58:</strong> Открываешь свою компанию</li>
+          <li><strong>День 59:</strong> Помогаешь молодому продюсеру (как тебе помог Metro)</li>
+          <li><strong>День 60:</strong> <strong>ФИНАЛ - ГРЭММИ ЦЕРЕМОНИЯ</strong> 🏆</li>
+        </ul>
+
+        <h4>🎬 Концовки (4 варианта):</h4>
+        <div class="info-grid">
+          <div class="info-item" style="background: linear-gradient(135deg, #ffeaa7, #fdcb6e);">
+            <div class="info-label">Industry King</div>
+            <div class="info-value">Богат, успешен, но одинок</div>
+          </div>
+          <div class="info-item" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
+            <div class="info-label">Culture Legend</div>
+            <div class="info-value">Уважаем, искусство вечно</div>
+          </div>
+          <div class="info-item" style="background: linear-gradient(135deg, #c3cfe2, #c3cfe2);">
+            <div class="info-label">True Mogul</div>
+            <div class="info-value">Империя + верен себе</div>
+          </div>
+          <div class="info-item" style="background: linear-gradient(135deg, #ff9a9e, #fad0c4);">
+            <div class="info-label">Burned Out</div>
+            <div class="info-value">Плохие решения = падение</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+          <span class="tag">Настроение: Триумф</span>
+          <span class="tag">Наследие</span>
+          <span class="tag">Завершение круга</span>
+          <span class="tag">Катарсис</span>
+        </div>
+      </div>
+
+      <h2>🎭 Ключевые персонажи</h2>
+
+      <div class="character-card">
+        <div class="character-name">MC Flow</div>
+        <div class="character-role">Первый друг и коллаборатор</div>
+        <p><strong>Личность:</strong> Талантливый, лояльный, но иногда слишком прямой</p>
+        <p><strong>Арка:</strong> Растёт вместе с игроком, становится успешным артистом</p>
+        <p><strong>Ключевая сцена:</strong> День 12 - первая встреча, выбор как строить отношения</p>
+      </div>
+
+      <div class="character-card">
+        <div class="character-name">Metro Maximus</div>
+        <div class="character-role">Легендарный продюсер, ментор, кумир</div>
+        <p><strong>Личность:</strong> Мудрый, строгий, но справедливый</p>
+        <p><strong>Арка:</strong> Передаёт знания следующему поколению</p>
+        <p><strong>Ключевая сцена:</strong> День 30 - встреча и тест (особая ритм-игра)</p>
+      </div>
+
+      <div class="character-card">
+        <div class="character-name">Fake Producer (Антагонист)</div>
+        <div class="character-role">Завистливый конкурент</div>
+        <p><strong>Личность:</strong> Талантливый, но нечестный, играет грязно</p>
+        <p><strong>Арка:</strong> Или ты его побеждаешь честно, или опускаешься до его уровня</p>
+        <p><strong>Ключевая сцена:</strong> День 17 - он украл твой бит, как ты отреагируешь?</p>
+      </div>
+
+      <div class="character-card">
+        <div class="character-name">Street Poet</div>
+        <div class="character-role">Друг детства, голос совести</div>
+        <p><strong>Личность:</strong> Честный, real, напоминает о корнях</p>
+        <p><strong>Арка:</strong> Дистанцируется когда ты меняешься, возвращается если ты остаёшься собой</p>
+        <p><strong>Ключевая сцена:</strong> День 45 - воссоединение после кризиса</p>
+      </div>
+
+      <h2>💬 Примеры диалогов</h2>
+      <p style="color: #999; font-style: italic; margin-bottom: 20px;">(Ты можешь переписать их лучше!)</p>
+
+      <h3>День 1 - Пролог</h3>
+      <div class="dialog-box">
+        <p><span class="dialog-speaker">МАМА:</span> "Уже 3 часа ночи. Когда ты спать ляжешь?"</p>
+        <p><span class="dialog-speaker">ТЫ:</span> "Ещё пять минуточек, мам. Я почти закончил трек."</p>
+        <p><span class="dialog-speaker">МАМА:</span> "Трек... Сынок/дочка, я волнуюсь. Когда ты найдёшь нормальную работу?"</p>
+        <p><span class="dialog-speaker">ТЫ:</span> "Мам, я же говорил - музыка это и есть моя работа!"</p>
+        <p><span class="dialog-speaker">МАМА:</span> "Работа? Ты уже полгода сидишь с этим телефоном. Денег нет, будущего нет..."</p>
+        <p style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc;"><span class="dialog-speaker">ТЫ (внутренний голос):</span><br>
+        <em>"Она не понимает. Никто не понимает. Но я докажу. Я докажу ВСЕМ. Я стану легендой."</em></p>
+      </div>
+
+      <h3>День 12 - Встреча с MC Flow</h3>
+      <div class="dialog-box">
+        <p><span class="dialog-speaker">MC FLOW:</span> "Йоу! Ты делал тот бит 'Urban Dreams'?"</p>
+        <p><span class="dialog-speaker">ТЫ:</span> "Да, это мой... А ты откуда знаешь?"</p>
+        <p><span class="dialog-speaker">MC FLOW:</span> "Братан, его крутят на радио каждый час! Я записал на него трек, набрал 10K прослушиваний. Слушай, давай вместе что-то сделаем?"</p>
+      </div>
+
+      <div class="choice-box">
+        <div class="choice-label">>>> ВЫБОР A:</div>
+        <p>"Давай! Я всегда хотел работать с реальными артистами!"</p>
+        <p style="font-size: 0.9rem; color: #555; margin-top: 5px;">→ MC Flow становится другом, +50 reputation, +партнёрство</p>
+      </div>
+
+      <div class="choice-box">
+        <div class="choice-label">>>> ВЫБОР B:</div>
+        <p>"Сначала обсудим условия. Сколько ты готов заплатить?"</p>
+        <p style="font-size: 0.9rem; color: #555; margin-top: 5px;">→ MC Flow: "Ясно, ты такой... Ладно, $200." +$200, но отношения холодные</p>
+      </div>
+
+      <div class="choice-box">
+        <div class="choice-label">>>> ВЫБОР C:</div>
+        <p>"Слушай, я слышал твой трек. Ты талантливый, но текста надо доработать."</p>
+        <p style="font-size: 0.9rem; color: #555; margin-top: 5px;">→ MC Flow: "О, продюсер-перфекционист! Мне нравится." +75 reputation, особый бонус</p>
+      </div>
+
+      <h3>День 30 - Встреча с Metro Maximus</h3>
+      <div class="dialog-box">
+        <p><span class="dialog-speaker">ОХРАННИК:</span> "Стой, здесь только для артистов."</p>
+        <p><span class="dialog-speaker">ТЫ:</span> "Я... я продюсер. [Твоё Имя]."</p>
+        <p><span class="dialog-speaker">ОХРАННИК:</span> "Не слышал. Уходи."</p>
+        <p><span class="dialog-speaker">???:</span> "Пусти его. Я его знаю."</p>
+        <p style="margin-top: 10px;"><em>[Поворачивается легендарный продюсер]</em></p>
+        <p><span class="dialog-speaker">METRO MAXIMUS:</span> "Ты [Твоё Имя], да? Слышал твои работы."</p>
+        <p><span class="dialog-speaker">ТЫ:</span> "Я... Мистер Maximus! Я ваш огромный фанат! Ваш альбом 'Midnight Drive' изменил мою жизнь!"</p>
+        <p><span class="dialog-speaker">METRO:</span> "Ха, спасибо. Неплохо получается... для новичка."</p>
+        <p><span class="dialog-speaker">ТЫ:</span> "Новичка? Я уже два года—"</p>
+        <p><span class="dialog-speaker">METRO:</span> "Два года? Я в этой игре 20 лет. Хочешь я покажу что такое НАСТОЯЩИЙ битмейкинг?"</p>
+        <p style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; font-weight: 700; text-align: center;">>>> НАЧИНАЕТСЯ ОСОБАЯ РИТМ-ИГРА (сложная!) <<<</p>
+      </div>
+
+      <h2>✅ Что нам от тебя нужно, Ангелина:</h2>
+
+      <div class="checklist">
+        <h3>Твоя магия 💫</h3>
+        <ul>
+          <li><strong>Развить персонажей:</strong> бэкграунды, мотивации, арки, особенности речи</li>
+          <li><strong>Написать диалоги:</strong> переписать наши черновики, добавить эмоций, юмора, драмы</li>
+          <li><strong>Придумать выборы:</strong> моральные дилеммы, бизнес vs искусство, дружба vs карьера</li>
+          <li><strong>Написать концовки:</strong> 4 варианта финала, речь на Грэмми, эпилоги</li>
+          <li><strong>Наполнить эмоциями:</strong> мы технари делаем логику, ты делаешь чтобы игроки ЧУВСТВОВАЛИ</li>
+        </ul>
+      </div>
+
+      <div class="highlight">
+        <h3>💡 Творческая свобода</h3>
+        <p><strong>Ангелина, пожалуйста чувствуй себя свободно:</strong></p>
+        <ul>
+          <li>Менять имена персонажей</li>
+          <li>Добавлять новых персонажей если нужно</li>
+          <li>Переписывать сюжет если есть идеи получше</li>
+          <li>Добавлять сюжетные линии (романтика? предательство? redemption?)</li>
+          <li>Менять тональность (серьёзнее? смешнее? драматичнее?)</li>
+        </ul>
+        <p style="margin-top: 15px; font-size: 1.1rem;"><strong>Мы с Алексеем можем запрограммировать что угодно. Но сделать чтобы люди смеялись, плакали и сопереживали - это твоя магия! ✨</strong></p>
+      </div>
+
+      <h2>📊 Технические заметки</h2>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Основная сюжетная линия</div>
+          <div class="info-value">~30-40 сцен</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Ветвящиеся выборы</div>
+          <div class="info-value">~15-20 моментов</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Концовки</div>
+          <div class="info-value">4 варианта</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Формат</div>
+          <div class="info-value">Текст + AI-картинки</div>
+        </div>
+      </div>
+
+      <div class="reference-box">
+        <h4>🎬 Референсы по вайбу:</h4>
+        <ul>
+          <li><strong>Игры:</strong> Persona 5, Hades, Disco Elysium (диалоги)</li>
+          <li><strong>Фильмы:</strong> Whiplash, 8 Mile, Straight Outta Compton</li>
+          <li><strong>Сериалы:</strong> Atlanta, Dave (про рэперов)</li>
+          <li><strong>Музыка:</strong> всё что связано с hip-hop culture! 🎤</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p><span class="emoji">🚀</span> <strong>Давай вместе сделаем игру мечты!</strong> <span class="emoji">🚀</span></p>
+      <p style="margin-top: 20px;">Когда будешь готова показать наброски - пиши Алексею!</p>
+      <p>Мы обсудим что реализуемо, что нужно доработать, и начнём воплощать!</p>
+      <p style="margin-top: 30px; font-size: 1.5rem;"><strong>Мы верим в тебя! ✨</strong></p>
+      <p style="margin-top: 20px;">— Клод 🤖 и Алексей 👨‍💻</p>
+    </div>
+  </div>
+</body>
+</html>

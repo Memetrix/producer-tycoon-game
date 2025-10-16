@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Producer Tycoon - Art Brief для Влада</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FDC830 100%);
+      border-radius: 15px;
+      margin-bottom: 40px;
+      border: 4px solid #000;
+      box-shadow: 8px 8px 0px #000;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      color: #000;
+      margin-bottom: 10px;
+      text-shadow: 3px 3px 0px #FFF;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .header p {
+      color: #000;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .intro {
+      background: #1a1a2e;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border: 3px solid #FF6B35;
+    }
+
+    .intro h2 {
+      color: #FF6B35;
+      margin-bottom: 15px;
+      font-size: 1.8rem;
+    }
+
+    .intro p {
+      margin-bottom: 10px;
+      font-size: 1.05rem;
+    }
+
+    .style-highlight {
+      background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+      padding: 25px;
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 3px solid #000;
+      box-shadow: 6px 6px 0px #000;
+    }
+
+    .style-highlight h3 {
+      color: #000;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 0px #FFF;
+    }
+
+    .style-highlight p {
+      color: #000;
+      font-weight: 600;
+      line-height: 1.7;
+    }
+
+    .tier-section {
+      background: #1a1a2e;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border: 2px solid #2a2a3e;
+    }
+
+    .tier-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #FF6B35;
+    }
+
+    .tier-number {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #FF6B35;
+      line-height: 1;
+      text-shadow: 3px 3px 0px #000;
+    }
+
+    .tier-title {
+      flex: 1;
+    }
+
+    .tier-title h2 {
+      color: #FDC830;
+      font-size: 2rem;
+      margin-bottom: 5px;
+      text-shadow: 2px 2px 0px #000;
+    }
+
+    .tier-title p {
+      color: #b0b0b0;
+      font-size: 1.1rem;
+    }
+
+    .narrative {
+      background: rgba(255, 107, 53, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      border-left: 4px solid #F7931E;
+    }
+
+    .narrative h3 {
+      color: #FDC830;
+      margin-bottom: 12px;
+      font-size: 1.3rem;
+    }
+
+    .narrative p {
+      color: #e0e0e0;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .art-cards {
+      display: grid;
+      gap: 20px;
+      margin-top: 25px;
+    }
+
+    .art-card {
+      background: #16213e;
+      padding: 25px;
+      border-radius: 10px;
+      border: 2px solid #FF6B35;
+    }
+
+    .art-card h4 {
+      color: #FDC830;
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .art-card h4 .label {
+      background: #FF6B35;
+      color: #000;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 2px solid #000;
+    }
+
+    .prompt-box {
+      background: #0d1117;
+      border: 2px solid #FF6B35;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .prompt-label {
+      color: #FDC830;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .prompt-text {
+      font-family: 'JetBrains Mono', monospace;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .style-notes {
+      background: rgba(253, 200, 48, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 3px solid #FDC830;
+    }
+
+    .style-notes h5 {
+      color: #FDC830;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+
+    .style-notes ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .style-notes li {
+      padding: 5px 0;
+      padding-left: 20px;
+      position: relative;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+    }
+
+    .style-notes li:before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #FF6B35;
+      font-weight: bold;
+    }
+
+    .reference {
+      background: rgba(247, 147, 30, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      border-left: 3px solid #F7931E;
+    }
+
+    .reference h5 {
+      color: #F7931E;
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+
+    .reference p {
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .characters-section {
+      background: #1a1a2e;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      border: 3px solid #FF6B35;
+    }
+
+    .characters-section h2 {
+      color: #FDC830;
+      margin-bottom: 25px;
+      font-size: 2rem;
+      text-shadow: 2px 2px 0px #000;
+    }
+
+    .character-card {
+      background: #16213e;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border: 2px solid #F7931E;
+    }
+
+    .character-card h3 {
+      color: #FDC830;
+      margin-bottom: 10px;
+      font-size: 1.4rem;
+    }
+
+    .character-card .role {
+      color: #FF6B35;
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+      font-style: italic;
+      font-weight: 600;
+    }
+
+    .character-card p {
+      color: #e0e0e0;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 { font-size: 1.8rem; }
+      .tier-number { font-size: 2rem; }
+      .tier-title h2 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎨 PRODUCER TYCOON</h1>
+      <p>ART BRIEF - CEL SHADING / JET SET RADIO VIBES</p>
+    </div>
+
+    <div class="style-highlight">
+      <h3>🎨 ГЛАВНОЕ: ВИЗУАЛЬНЫЙ СТИЛЬ</h3>
+      <p><strong>Стиль:</strong> CEL SHADING (тунцовая графика) в духе Jet Set Radio, Hi-Fi Rush, Persona 5</p>
+      <p><strong>Эпоха:</strong> Early 2000s эстетика - яркие цвета, граффити, уличная культура, винил, кассеты</p>
+      <p><strong>Цветовая палитра:</strong> ЯРКИЕ, НАСЫЩЕННЫЕ цвета с чёрными контурами (комиксовый стиль)</p>
+      <p><strong>ВАЖНО:</strong> Героя НЕ показываем лицом или используем POV (от первого лица) - у каждого игрока свой аватар!</p>
+    </div>
+
+    <div class="intro">
+      <h2>📋 Технические требования</h2>
+      <p><strong>Формат:</strong> 16:9 для катсцен, 1:1 квадрат для портретов персонажей</p>
+      <p><strong>Стиль рендера:</strong> Cel shading, чёткие контуры, flat colors с простыми тенями</p>
+      <p><strong>Освещение:</strong> Стилизованное, не реалистичное. Яркие блики, цветные тени</p>
+      <p><strong>Детализация:</strong> Средняя - чёткие формы, минимум текстур, акцент на силуэты и цвет</p>
+
+      <h3 style="color: #FF6B35; margin-top: 20px;">Референсы стиля:</h3>
+      <ul style="list-style: none; padding-left: 20px;">
+        <li style="margin: 8px 0;">🎮 <strong>Jet Set Radio</strong> - главный референс! Граффити, уличный стиль, яркость</li>
+        <li style="margin: 8px 0;">🎮 <strong>Hi-Fi Rush</strong> - современный cel shading, музыкальная тема</li>
+        <li style="margin: 8px 0;">🎮 <strong>Persona 5</strong> - стильный UI, яркие цвета, японская эстетика</li>
+        <li style="margin: 8px 0;">🎬 <strong>Spider-Man: Into the Spider-Verse</strong> - комиксовые эффекты, halftone patterns</li>
+        <li style="margin: 8px 0;">🎨 <strong>Jamie Hewlett (Gorillaz art)</strong> - уличная культура, хип-хоп vibe</li>
+      </ul>
+
+      <h3 style="color: #FF6B35; margin-top: 20px;">Цветовая схема по тирам:</h3>
+      <ul style="list-style: none; padding-left: 20px;">
+        <li style="margin: 8px 0;">🎨 <strong>Tier 1:</strong> Orange, Yellow, Black - уличный, граффити, тёплые тона</li>
+        <li style="margin: 8px 0;">🎨 <strong>Tier 2:</strong> Blue, Cyan, Purple - neon lights, городская ночь</li>
+        <li style="margin: 8px 0;">🎨 <strong>Tier 3:</strong> Green, Magenta, Gold - успех, энергия, деньги</li>
+      </ul>
+    </div>
+
+    <!-- CHARACTERS SECTION -->
+    <div class="characters-section">
+      <h2>👥 Ключевые персонажи (Tier 1-3)</h2>
+
+      <div class="character-card">
+        <h3>Metro Maximus</h3>
+        <p class="role">Бывший профи, твой ментор (35-40 лет)</p>
+        <p><strong>Внешность:</strong> Афроамериканец, короткие дреды, борода, усталый но добрый взгляд. Толстовка oversized, золотая цепь (единственное напоминание о славе). Всегда с наушниками на шее.</p>
+        <p><strong>Стиль:</strong> Old school hip-hop, 90s-2000s vibe. Цвета: серый, чёрный, золотые акценты.</p>
+        <p><strong>Поза:</strong> Расслабленная, руки в карманах или скрещены. Confident но не агрессивный.</p>
+        <p><strong>Референс:</strong> Jet Set Radio character design meets older Kanye West</p>
+      </div>
+
+      <div class="character-card">
+        <h3>Street Poet</h3>
+        <p class="role">Талантливый рэпер с улиц (22-25 лет)</p>
+        <p><strong>Внешность:</strong> Энергичный парень в streetwear (hoodie, chains, кепка набок), tattoos на руках. Всегда с блокнотом для текстов. Яркая одежда - orange, yellow, красные акценты.</p>
+        <p><strong>Стиль:</strong> Modern street style, граффити aesthetic. Много деталей - pins, patches, stickers.</p>
+        <p><strong>Поза:</strong> Динамичная - в движении, жестикулирует, экспрессивный.</p>
+        <p><strong>Референс:</strong> Jet Set Radio main characters (Beat, Gum) + young Travis Scott style</p>
+      </div>
+
+      <div class="character-card">
+        <h3>DJ Vinyl</h3>
+        <p class="role">Старая школа, винил-пурист (50+ лет)</p>
+        <p><strong>Внешность:</strong> Седые волосы (может дреды), круглые очки, винтажная кожаная куртка 90-х, джинсы. Наушники профессиональные всегда на шее. Lots of accessories - rings, bracelets.</p>
+        <p><strong>Стиль:</strong> Vintage 90s hip-hop. Цвета: коричневый, бежевый, vintage gold.</p>
+        <p><strong>Поза:</strong> Спокойная, мудрая. Может держать винил в руках или опираться на turntable.</p>
+        <p><strong>Референс:</strong> Jet Set Radio Professor K meets DJ Premier</p>
+      </div>
+
+      <div class="character-card">
+        <h3>Producer Envy</h3>
+        <p class="role">Твой конкурент, завистник (28-30 лет)</p>
+        <p><strong>Внешность:</strong> Слишком много брендов (Gucci, Supreme fake vibes), excessive bling, надменное лицо. Всё выглядит "куплено", не заработано. Поддельный flex.</p>
+        <p><strong>Стиль:</strong> Hypebeast gone wrong. Цвета: purple, pink, золото (но fake looking).</p>
+        <p><strong>Поза:</strong> Напыщенная, пытается выглядеть круто но получается clown-like.</p>
+        <p><strong>Референс:</strong> Jet Set Radio antagonist vibes (The Rokkaku Group style) + Instagram flexer</p>
+      </div>
+    </div>
+
+    <!-- TIER 1 -->
+    <div class="tier-section">
+      <div class="tier-header">
+        <div class="tier-number">1</div>
+        <div class="tier-title">
+          <h2>🎧 УЛИЧНЫЙ МУЗЫКАНТ</h2>
+          <p>Reputation: 0-300 | Location: Подвал, улицы</p>
+        </div>
+      </div>
+
+      <div class="narrative">
+        <h3>📖 Нарратив</h3>
+        <p>Ты в подвале, делаешь биты на старом телефоне. Вокруг грязь, граффити на стенах, но это твоя студия. Записываешь биты для местных рэперов за копейки. Днём работаешь, ночью делаешь музыку. Hustle mode 24/7.</p>
+      </div>
+
+      <div class="art-cards">
+        <div class="art-card">
+          <h4><span class="label">Scene 1</span> Подвальная студия (POV shot)</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">First person POV shot looking down at smartphone showing FL Studio Mobile app on makeshift desk, cel shaded art style, thick black outlines, Jet Set Radio aesthetic, dark basement with graffiti walls, single overhead lightbulb, vibrant orange and yellow lighting, urban underground vibe, flat colors with simple shadows, comic book style, cables and headphones scattered, early 2000s hip hop culture, --ar 16:9 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>POV = видим руки героя на телефоне, но НЕ лицо</li>
+              <li>Cel shading: чёткие чёрные контуры вокруг всех объектов</li>
+              <li>Flat colors: телефон яркий (orange/yellow screen glow), стены dark purple/blue</li>
+              <li>Граффити на стенах в стиле Jet Set Radio (теги, спреи, яркие цвета)</li>
+              <li>Лампочка даёт dramatic warm light (orange/yellow)</li>
+              <li>Halftone patterns для теней (комиксовый эффект)</li>
+            </ul>
+          </div>
+
+          <div class="reference">
+            <h5>Референсы:</h5>
+            <p>Jet Set Radio garage hideout scenes, Hi-Fi Rush underground studio aesthetic, Persona 5 Leblanc attic vibe but more grungy</p>
+          </div>
+        </div>
+
+        <div class="art-card">
+          <h4><span class="label">Scene 2</span> Встреча с Metro Maximus (вид со спины героя)</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">Over the shoulder shot from behind protagonist (back of head and hoodie visible, no face), facing older mentor character with short dreads and kind expression, sitting on concrete steps at night, cel shaded art style, thick black outlines, Jet Set Radio vibes, street lights creating orange and yellow glow, graffiti walls in background, urban hip hop culture, flat colors, bold shadows, neon signs visible, early 2000s aesthetic, --ar 16:9 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>Герой: вид со спины/сбоку, видим только затылок и плечи в hoodie</li>
+              <li>Metro Maximus: full view, добрый но усталый взгляд, cel shaded</li>
+              <li>Композиция: two-shot, герой в foreground (спина), Metro в focus</li>
+              <li>Освещение: street lights (orange/yellow), neon signs (cyan/pink)</li>
+              <li>Background: urban night scene, граффити стены, упрощённый стиль</li>
+              <li>Цветовая схема: warm tones (orange, yellow) vs cool tones (blue, purple)</li>
+            </ul>
+          </div>
+
+          <div class="reference">
+            <h5>Контекст сцены:</h5>
+            <p>Metro говорит: "Слушай, малой. У тебя есть что-то. Я был там где ты сейчас. Дошёл до вершины. И потерял всё. Не повтори моих ошибок." Emotional moment, mentor передаёт wisdom.</p>
+          </div>
+        </div>
+
+        <div class="art-card">
+          <h4><span class="label">Portrait</span> Metro Maximus Character Portrait</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">Character portrait of older African American man with short dreadlocks and beard, kind but tired eyes, wearing grey oversized hoodie with single gold chain, professional studio headphones around neck, cel shaded art style, thick black outlines, Jet Set Radio character design, flat colors with bold shadows, simple gradient background (dark purple to black), hip hop culture aesthetic, early 2000s vibe, 1:1 square ratio, --ar 1:1 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>Jet Set Radio character proportions: немного стилизованные, не hyper-realistic</li>
+              <li>Чёткие чёрные контуры вокруг всего (волосы, лицо, одежда)</li>
+              <li>Flat shading: 2-3 тона на каждом объекте максимум</li>
+              <li>Цепь ловит light - золотой блик (white highlight)</li>
+              <li>Background: простой gradient, может halftone pattern</li>
+              <li>Expression: tired but wise, slight smile</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="art-card">
+          <h4><span class="label">Portrait</span> Street Poet Character Portrait</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">Character portrait of energetic young rapper in early 20s, wearing orange hoodie with chains, cap sideways, confident excited expression, hand tattoos visible holding notepad, cel shaded art style, thick black outlines, Jet Set Radio character design, vibrant colors (orange, yellow, red accents), flat shading, urban graffiti pattern background, hip hop streetwear aesthetic, early 2000s style, 1:1 square ratio, --ar 1:1 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>Яркий, энергичный! Много оранжевого и жёлтого</li>
+              <li>Chains + cap + tattoos = чёткие детали с black outlines</li>
+              <li>Поза: динамичная, может gesture рукой</li>
+              <li>Background: граффити pattern (теги, tags), bright colors</li>
+              <li>Expression: excited, hungry for success, big smile</li>
+              <li>Notepad видно в руке (lyrics written visible)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="art-card">
+          <h4><span class="label">Scene 3</span> Первая запись (POV от рабочего места)</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">POV from producer desk looking at rapper recording vocals in basement, cel shaded art style, thick black outlines, Jet Set Radio aesthetic, rapper energetically performing into cheap USB microphone, laptop visible in foreground showing DAW interface (out of focus), overhead lightbulb creating dramatic orange lighting, graffiti walls, vibrant colors, flat shading, urban hip hop vibe, early 2000s culture, --ar 16:9 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>POV от места героя: видим laptop в foreground (частично), rapper в center</li>
+              <li>Street Poet в энергичной позе: руки вверх, записывает трек</li>
+              <li>USB mic на простой стойке (не professional!)</li>
+              <li>Lighting: overhead warm light (orange), laptop screen glow (blue)</li>
+              <li>Композиция: depth, три плана (laptop → rapper → wall)</li>
+              <li>Vibe: creative energy, magic moment когда всё получилось</li>
+            </ul>
+          </div>
+
+          <div class="reference">
+            <h5>Контекст сцены:</h5>
+            <p>Момент когда Street Poet первый раз слышит свой голос на твоём бите. "Бля, это оно!" - чистая магия. Cel shading подчёркивает эмоцию через яркие цвета и динамичную позу.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 2 -->
+    <div class="tier-section">
+      <div class="tier-header">
+        <div class="tier-number">2</div>
+        <div class="tier-title">
+          <h2>🏠 МЕСТНАЯ ИЗВЕСТНОСТЬ</h2>
+          <p>Reputation: 300-1000 | Location: Домашняя студия</p>
+        </div>
+      </div>
+
+      <div class="narrative">
+        <h3>📖 Нарратив</h3>
+        <p>Ты заработал денег и снял квартиру. Купил ноутбук, наушники, USB-микрофон. Теперь это настоящая студия. Местные рэперы знают тебя. Street Poet выпустил трек на твоём бите - 10K прослушиваний! Но появляется Producer Envy - копирует твой стиль, завидует успеху.</p>
+      </div>
+
+      <div class="art-cards">
+        <div class="art-card">
+          <h4><span class="label">Scene 1</span> Новая домашняя студия (POV upgrade)</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">First person POV looking at upgraded home studio setup, laptop with FL Studio open on desk, studio headphones, USB microphone on stand, acoustic foam panels on walls, LED strip lights creating cyan and purple ambiance, cel shaded art style, thick black outlines, Jet Set Radio vibes, window showing city lights at night, vibrant neon colors, flat shading, organized cables, early 2000s bedroom producer aesthetic, --ar 16:9 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>Upgrade от подвала: clean, organized, но всё ещё bedroom studio</li>
+              <li>Цвета: cyan + purple LED lights (tier 2 color scheme)</li>
+              <li>Acoustic foam = geometric patterns с чёрными контурами</li>
+              <li>Окно: city lights in background (bright dots, neon glow)</li>
+              <li>Cel shading: каждый предмет чётко outlined, flat colors</li>
+              <li>Vibe: "I made it" moment, небольшой успех, надежда</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="art-card">
+          <h4><span class="label">Scene 2</span> Первый хит - реакция (вид руки на laptop)</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">Close up POV shot of hands pointing at laptop screen showing SoundCloud with 10K plays count, second person (Street Poet) visible from side celebrating, cel shaded art style, thick black outlines, Jet Set Radio aesthetic, laptop glowing with cyan light, vibrant orange and yellow celebration energy effects, halftone patterns, comic book style, excited emotions, flat colors, urban hip hop vibe, --ar 16:9 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>POV: видим руки героя pointing at screen, но не лицо</li>
+              <li>Street Poet сбоку: cel shaded, экспрессия радости</li>
+              <li>Screen clearly показывает "10,000 plays"</li>
+              <li>Celebration effects: может comic-style burst lines, halftone</li>
+              <li>Освещение: cyan laptop glow + warm room light</li>
+              <li>Vibe: pure joy, excitement, breakthrough moment</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="art-card">
+          <h4><span class="label">Portrait</span> DJ Vinyl Character Portrait</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">Character portrait of older man in 50s with grey hair/dreads, round glasses, vintage leather jacket from 90s, professional headphones around neck, holding vinyl record, cel shaded art style, thick black outlines, Jet Set Radio character design, warm vintage colors (brown, beige, gold), flat shading, vinyl records pattern background, old school hip hop aesthetic, wise expression, 1:1 square ratio, --ar 1:1 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>Vintage vibe: warm colors, brown leather, vintage gold</li>
+              <li>Glasses отражают subtle light (white highlight)</li>
+              <li>Vinyl record в руках: чётко видно (black disc, colorful label)</li>
+              <li>Background: vinyl records pattern (circles, labels)</li>
+              <li>Expression: wise, kind, немного stern (строгий дедушка vibe)</li>
+              <li>Cel shading: wrinkles показаны через simple shadow lines</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="art-card">
+          <h4><span class="label">Scene 3</span> Встреча с Producer Envy (противостояние)</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">Wide shot showing protagonist from behind (hoodie visible, no face) facing arrogant rival producer in excessive designer clothes, local music venue interior, cel shaded art style, thick black outlines, Jet Set Radio aesthetic, tense atmosphere, neon purple and pink lighting, other people in background watching, visual contrast between humble hero and overdressed rival, flat colors, urban nightlife vibe, --ar 16:9 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>Герой: back view, simple hoodie (grey/black), humble</li>
+              <li>Producer Envy: front facing, excessive bling, fake designer (pink/purple)</li>
+              <li>Контраст: simple vs overdressed, real vs fake</li>
+              <li>Venue: local club, neon lights, not fancy</li>
+              <li>Background characters: silhouettes watching drama</li>
+              <li>Lighting: purple/pink neon creating tense mood</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="art-card">
+          <h4><span class="label">Portrait</span> Producer Envy Character Portrait</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">Character portrait of arrogant young producer in late 20s, wearing excessive fake designer brands and jewelry, smug expression hiding insecurity, cel shaded art style, thick black outlines, Jet Set Radio character design but antagonist vibes, gaudy colors (bright pink, purple, fake gold), flat shading, expensive studio equipment in background, cold artificial lighting, tryhard aesthetic, 1:1 square ratio, --ar 1:1 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>Цвета: bright pink, purple, золото но выглядит fake</li>
+              <li>Одежда: слишком много брендов (logos visible), tryhard vibe</li>
+              <li>Jewelry: excessive chains, rings, но не tasteful</li>
+              <li>Expression: смаг но в глазах insecurity</li>
+              <li>Background: expensive gear но no soul (холодные тона)</li>
+              <li>Cel shading подчёркивает "plasticky" vibe - всё слишком bright</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="art-card">
+          <h4><span class="label">Scene 4</span> Радио-шоу с DJ Vinyl</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">Radio station studio interior, DJ Vinyl behind mixing desk with vinyl records and vintage equipment, protagonist visible from side/back (no face showing), professional broadcast microphones, ON AIR sign glowing red, cel shaded art style, thick black outlines, Jet Set Radio aesthetic, warm orange lighting mixed with equipment LED lights, cozy radio booth, vinyl collection on walls, hip hop culture, flat colors, early 2000s vibe, --ar 16:9 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>Radio booth: vintage equipment, vinyl records, warm vibe</li>
+              <li>"ON AIR" sign: glowing red, prominent detail</li>
+              <li>DJ Vinyl: comfortable, в своей стихии</li>
+              <li>Герой: side/back view, немного nervous</li>
+              <li>Освещение: warm orange (old school radio vibe)</li>
+              <li>Cel shading: оборудование = много деталей с чёрными контурами</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 3 PREVIEW -->
+    <div class="tier-section">
+      <div class="tier-header">
+        <div class="tier-number">3</div>
+        <div class="tier-title">
+          <h2>🏙️ РЕГИОНАЛЬНАЯ ИЗВЕСТНОСТЬ</h2>
+          <p>Reputation: 1000-3000 | Location: Профессиональная студия</p>
+        </div>
+      </div>
+
+      <div class="narrative">
+        <h3>📖 Нарратив</h3>
+        <p>Снял профессиональную студию. Desktop PC, MIDI, audio interface, мониторы. Работаешь с артистами региона. Street Poet подписал контракт с инди-лейблом. Тебе предлагают label deal - хорошие деньги, но потеряешь creative control. Выбор: независимость или безопасность?</p>
+      </div>
+
+      <div class="art-cards">
+        <div class="art-card">
+          <h4><span class="label">Scene 1</span> Профессиональная студия (full setup POV)</h4>
+
+          <div class="prompt-box">
+            <div class="prompt-label">Midjourney Prompt:</div>
+            <div class="prompt-text">First person POV of professional music studio setup, desktop PC with dual monitors showing Ableton Live, MIDI keyboard, audio interface, studio monitor speakers, acoustic treatment, LED lighting green and magenta theme (tier 3 colors), cel shaded art style, thick black outlines, Jet Set Radio vibes, organized professional aesthetic, vibrant colors, flat shading, early 2000s producer dream setup, --ar 16:9 --style raw --niji 6</div>
+          </div>
+
+          <div class="style-notes">
+            <h5>Стилистические заметки:</h5>
+            <ul>
+              <li>Цветовая схема Tier 3: green + magenta + gold</li>
+              <li>Professional setup: всё organized, clean, quality gear</li>
+              <li>MIDI keyboard, audio interface = чёткие детали cel shaded</li>
+              <li>Monitors показывают waveforms (stylized, simple)</li>
+              <li>LED lights: green/magenta gradient</li>
+              <li>Vibe: "I'm a professional now" - успех, но сохранил стиль</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TECHNICAL NOTES -->
+    <div class="intro">
+      <h2>⚙️ Финальные технические требования</h2>
+      <p><strong>Разрешение:</strong> 1920x1080 (16:9) для сцен, 1080x1080 (1:1) для портретов</p>
+      <p><strong>Формат:</strong> PNG с прозрачностью для портретов, PNG для сцен</p>
+      <p><strong>Стиль:</strong> Cel shading обязательно - чёткие чёрные контуры, flat colors, simple shadows</p>
+      <p><strong>Midjourney параметры:</strong> --niji 6 (anime style engine), --style raw (меньше украшательств)</p>
+      <p><strong>Naming:</strong> tier[X]_scene[Y]_[description].png или tier[X]_character_[name].png</p>
+    </div>
+
+    <div class="style-highlight">
+      <h2>💬 Для Влада</h2>
+      <p>Привет! Это арт-бриф для первых 3 тиров игры в стиле <strong>cel shading / Jet Set Radio</strong>.</p>
+      <p style="margin-top: 15px;"><strong>ГЛАВНОЕ:</strong> Героя НЕ показываем лицом! Используем POV (от первого лица) или вид со спины/сбоку. У каждого игрока будет свой аватар в игре.</p>
+      <p style="margin-top: 15px;"><strong>Приоритет:</strong></p>
+      <ul style="list-style: none; padding-left: 20px; margin-top: 10px;">
+        <li>1️⃣ Портреты 4 персонажей (Metro, Street Poet, DJ Vinyl, Producer Envy)</li>
+        <li>2️⃣ Tier 1: Scene 1 (basement POV) + Scene 2 (встреча Metro, вид со спины)</li>
+        <li>3️⃣ Tier 2: Scene 1 (home studio POV) + Scene 2 (10K moment)</li>
+      </ul>
+      <p style="margin-top: 15px;"><strong>Стиль:</strong> Думай Jet Set Radio meets Hi-Fi Rush meets Persona 5. Яркие цвета, чёрные контуры, flat shading, комиксовый vibe. Early 2000s hip-hop culture.</p>
+      <p style="margin-top: 15px;">Промпты готовы для Midjourney V6 с --niji 6. Если нужны правки или больше деталей - пиши!</p>
+    </div>
+  </div>
+</body>
+</html>

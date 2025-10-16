@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Симуляция экономики - 24 часа</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .metric-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .metric-card h3 {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .metric-card .value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .metric-card .subvalue {
+      font-size: 0.9rem;
+      color: #999;
+      margin-top: 4px;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .chart-container h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 1.5rem;
+    }
+
+    canvas {
+      max-height: 400px;
+    }
+
+    .log {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-top: 30px;
+    }
+
+    .log h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .log-entry {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-entry.highlight {
+      background: #f0f7ff;
+      font-weight: bold;
+    }
+
+    .minute {
+      color: #999;
+      margin-right: 10px;
+    }
+
+    .event {
+      color: #333;
+    }
+
+    .stats {
+      display: flex;
+      gap: 15px;
+      color: #666;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎮 Симуляция экономики - Первые 24 часа</h1>
+
+    <div class="metrics">
+      <div class="metric-card">
+        <h3>💰 Итоговые деньги</h3>
+        <div class="value">$71,299</div>
+        <div class="subvalue">Начало: $800</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>⭐ Репутация</h3>
+        <div class="value">201</div>
+        <div class="subvalue">Тир 1</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>🎵 Битов создано</h3>
+        <div class="value">201</div>
+        <div class="subvalue">Средняя цена: $58</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>📱 Уровень оборудования</h3>
+        <div class="value">7</div>
+        <div class="subvalue">Апгрейдов: 6</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>🎤 Артисты</h3>
+        <div class="value">10</div>
+        <div class="subvalue">Наймов/улучшений</div>
+      </div>
+
+      <div class="metric-card">
+        <h3>💸 Пассивный доход</h3>
+        <div class="value">$108/мин</div>
+        <div class="subvalue">$6480/час</div>
+      </div>
+    </div>
+
+    <div class="charts">
+      <div class="chart-container">
+        <h2>💰 Деньги во времени</h2>
+        <canvas id="moneyChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <h2>📈 Доход за бит</h2>
+        <canvas id="beatPriceChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <h2>⚡ Энергия</h2>
+        <canvas id="energyChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <h2>⭐ Репутация и уровень оборудования</h2>
+        <canvas id="progressChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <h2>💸 Активный vs Пассивный доход</h2>
+        <canvas id="incomeChart"></canvas>
+      </div>
+    </div>
+
+    <div class="log">
+      <h2>📝 Лог событий (ключевые моменты)</h2>
+      <div class="log-entry ">
+          <span class="minute">[0ч 0м]</span>
+          <span class="event">Начало игры</span>
+          <div class="stats">
+            <span>💰 $800</span>
+            <span>⭐ 0</span>
+            <span>⚡ 150</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 1м]</span>
+          <span class="event">Создан бит #1</span>
+          <div class="stats">
+            <span>💰 $830</span>
+            <span>⭐ 1</span>
+            <span>⚡ 135</span>
+            <span>🎵 $30</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 1м]</span>
+          <span class="event">📱 Улучшение Phone до уровня 2</span>
+          <div class="stats">
+            <span>💰 $580</span>
+            <span>⭐ 1</span>
+            <span>⚡ 135</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 1м]</span>
+          <span class="event">🎤 Нанят MC Flow (уровень 1)</span>
+          <div class="stats">
+            <span>💰 $500</span>
+            <span>⭐ 1</span>
+            <span>⚡ 135</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 1м]</span>
+          <span class="event">⬆️ MC Flow → уровень 2</span>
+          <div class="stats">
+            <span>💰 $372</span>
+            <span>⭐ 1</span>
+            <span>⚡ 135</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 2м]</span>
+          <span class="event">Создан бит #2</span>
+          <div class="stats">
+            <span>💰 $411</span>
+            <span>⭐ 2</span>
+            <span>⚡ 122</span>
+            <span>🎵 $30</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 3м]</span>
+          <span class="event">Создан бит #3</span>
+          <div class="stats">
+            <span>💰 $450</span>
+            <span>⭐ 3</span>
+            <span>⚡ 109</span>
+            <span>🎵 $30</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 4м]</span>
+          <span class="event">Создан бит #4</span>
+          <div class="stats">
+            <span>💰 $489</span>
+            <span>⭐ 4</span>
+            <span>⚡ 96</span>
+            <span>🎵 $30</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 5м]</span>
+          <span class="event">Создан бит #5</span>
+          <div class="stats">
+            <span>💰 $529</span>
+            <span>⭐ 5</span>
+            <span>⚡ 83</span>
+            <span>🎵 $31</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 6м]</span>
+          <span class="event">Создан бит #6</span>
+          <div class="stats">
+            <span>💰 $569</span>
+            <span>⭐ 6</span>
+            <span>⚡ 70</span>
+            <span>🎵 $31</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 7м]</span>
+          <span class="event">Создан бит #7</span>
+          <div class="stats">
+            <span>💰 $609</span>
+            <span>⭐ 7</span>
+            <span>⚡ 57</span>
+            <span>🎵 $31</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 8м]</span>
+          <span class="event">Создан бит #8</span>
+          <div class="stats">
+            <span>💰 $649</span>
+            <span>⭐ 8</span>
+            <span>⚡ 44</span>
+            <span>🎵 $31</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 8м]</span>
+          <span class="event">⬆️ MC Flow → уровень 3</span>
+          <div class="stats">
+            <span>💰 $445</span>
+            <span>⭐ 8</span>
+            <span>⚡ 44</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 9м]</span>
+          <span class="event">Создан бит #9</span>
+          <div class="stats">
+            <span>💰 $489</span>
+            <span>⭐ 9</span>
+            <span>⚡ 31</span>
+            <span>🎵 $31</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 10м]</span>
+          <span class="event">Создан бит #10</span>
+          <div class="stats">
+            <span>💰 $533</span>
+            <span>⭐ 10</span>
+            <span>⚡ 18</span>
+            <span>🎵 $31</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 11м]</span>
+          <span class="event">Создан бит #11</span>
+          <div class="stats">
+            <span>💰 $582</span>
+            <span>⭐ 11</span>
+            <span>⚡ 5</span>
+            <span>🎵 $36</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 16м]</span>
+          <span class="event">Создан бит #12</span>
+          <div class="stats">
+            <span>💰 $679</span>
+            <span>⭐ 12</span>
+            <span>⚡ 0</span>
+            <span>🎵 $32</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 24м]</span>
+          <span class="event">Создан бит #13</span>
+          <div class="stats">
+            <span>💰 $819</span>
+            <span>⭐ 13</span>
+            <span>⚡ 1</span>
+            <span>🎵 $36</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 31м]</span>
+          <span class="event">Создан бит #14</span>
+          <div class="stats">
+            <span>💰 $942</span>
+            <span>⭐ 14</span>
+            <span>⚡ 0</span>
+            <span>🎵 $32</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 31м]</span>
+          <span class="event">📱 Улучшение Phone до уровня 3</span>
+          <div class="stats">
+            <span>💰 $317</span>
+            <span>⭐ 14</span>
+            <span>⚡ 0</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 39м]</span>
+          <span class="event">Создан бит #15</span>
+          <div class="stats">
+            <span>💰 $457</span>
+            <span>⭐ 15</span>
+            <span>⚡ 1</span>
+            <span>🎵 $36</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 46м]</span>
+          <span class="event">Создан бит #16</span>
+          <div class="stats">
+            <span>💰 $584</span>
+            <span>⭐ 16</span>
+            <span>⚡ 0</span>
+            <span>🎵 $36</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[0ч 54м]</span>
+          <span class="event">Создан бит #17</span>
+          <div class="stats">
+            <span>💰 $721</span>
+            <span>⭐ 17</span>
+            <span>⚡ 1</span>
+            <span>🎵 $33</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[1ч 0м]</span>
+          <span class="event">⏰ Прошёл 1 час</span>
+          <div class="stats">
+            <span>💰 $799</span>
+            <span>⭐ 17</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 1м]</span>
+          <span class="event">Создан бит #18</span>
+          <div class="stats">
+            <span>💰 $850</span>
+            <span>⭐ 18</span>
+            <span>⚡ 0</span>
+            <span>🎵 $38</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 9м]</span>
+          <span class="event">Создан бит #19</span>
+          <div class="stats">
+            <span>💰 $988</span>
+            <span>⭐ 19</span>
+            <span>⚡ 1</span>
+            <span>🎵 $34</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 9м]</span>
+          <span class="event">⬆️ MC Flow → уровень 4</span>
+          <div class="stats">
+            <span>💰 $661</span>
+            <span>⭐ 19</span>
+            <span>⚡ 1</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 16м]</span>
+          <span class="event">Создан бит #20</span>
+          <div class="stats">
+            <span>💰 $826</span>
+            <span>⭐ 20</span>
+            <span>⚡ 0</span>
+            <span>🎵 $39</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 24м]</span>
+          <span class="event">Создан бит #21</span>
+          <div class="stats">
+            <span>💰 $1,007</span>
+            <span>⭐ 21</span>
+            <span>⚡ 1</span>
+            <span>🎵 $37</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 31м]</span>
+          <span class="event">Создан бит #22</span>
+          <div class="stats">
+            <span>💰 $1,170</span>
+            <span>⭐ 22</span>
+            <span>⚡ 0</span>
+            <span>🎵 $37</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 39м]</span>
+          <span class="event">Создан бит #23</span>
+          <div class="stats">
+            <span>💰 $1,352</span>
+            <span>⭐ 23</span>
+            <span>⚡ 1</span>
+            <span>🎵 $38</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 46м]</span>
+          <span class="event">Создан бит #24</span>
+          <div class="stats">
+            <span>💰 $1,512</span>
+            <span>⭐ 24</span>
+            <span>⚡ 0</span>
+            <span>🎵 $34</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 50м]</span>
+          <span class="event">⬆️ MC Flow → уровень 5</span>
+          <div class="stats">
+            <span>💰 $1,060</span>
+            <span>⭐ 24</span>
+            <span>⚡ 8</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[1ч 54м]</span>
+          <span class="event">Создан бит #25</span>
+          <div class="stats">
+            <span>💰 $1,195</span>
+            <span>⭐ 25</span>
+            <span>⚡ 1</span>
+            <span>🎵 $35</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[2ч 0м]</span>
+          <span class="event">⏰ Прошёл 2 час</span>
+          <div class="stats">
+            <span>💰 $1,345</span>
+            <span>⭐ 25</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[2ч 1м]</span>
+          <span class="event">Создан бит #26</span>
+          <div class="stats">
+            <span>💰 $1,410</span>
+            <span>⭐ 26</span>
+            <span>⚡ 0</span>
+            <span>🎵 $40</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[2ч 9м]</span>
+          <span class="event">Создан бит #27</span>
+          <div class="stats">
+            <span>💰 $1,648</span>
+            <span>⭐ 27</span>
+            <span>⚡ 1</span>
+            <span>🎵 $38</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[2ч 16м]</span>
+          <span class="event">Создан бит #28</span>
+          <div class="stats">
+            <span>💰 $1,865</span>
+            <span>⭐ 28</span>
+            <span>⚡ 0</span>
+            <span>🎵 $42</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[2ч 24м]</span>
+          <span class="event">Создан бит #29</span>
+          <div class="stats">
+            <span>💰 $2,100</span>
+            <span>⭐ 29</span>
+            <span>⚡ 1</span>
+            <span>🎵 $35</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[2ч 31м]</span>
+          <span class="event">Создан бит #30</span>
+          <div class="stats">
+            <span>💰 $2,317</span>
+            <span>⭐ 30</span>
+            <span>⚡ 0</span>
+            <span>🎵 $42</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[2ч 33м]</span>
+          <span class="event">📱 Улучшение Phone до уровня 4</span>
+          <div class="stats">
+            <span>💰 $805</span>
+            <span>⭐ 30</span>
+            <span>⚡ 4</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[2ч 39м]</span>
+          <span class="event">Создан бит #31</span>
+          <div class="stats">
+            <span>💰 $997</span>
+            <span>⭐ 31</span>
+            <span>⚡ 1</span>
+            <span>🎵 $42</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[2ч 46м]</span>
+          <span class="event">Создан бит #32</span>
+          <div class="stats">
+            <span>💰 $1,210</span>
+            <span>⭐ 32</span>
+            <span>⚡ 0</span>
+            <span>🎵 $38</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[2ч 54м]</span>
+          <span class="event">Создан бит #33</span>
+          <div class="stats">
+            <span>💰 $1,450</span>
+            <span>⭐ 33</span>
+            <span>⚡ 1</span>
+            <span>🎵 $40</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[3ч 0м]</span>
+          <span class="event">⏰ Прошёл 3 час</span>
+          <div class="stats">
+            <span>💰 $1,600</span>
+            <span>⭐ 33</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[3ч 1м]</span>
+          <span class="event">Создан бит #34</span>
+          <div class="stats">
+            <span>💰 $1,670</span>
+            <span>⭐ 34</span>
+            <span>⚡ 0</span>
+            <span>🎵 $45</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[3ч 9м]</span>
+          <span class="event">Создан бит #35</span>
+          <div class="stats">
+            <span>💰 $1,911</span>
+            <span>⭐ 35</span>
+            <span>⚡ 1</span>
+            <span>🎵 $41</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[3ч 16м]</span>
+          <span class="event">Создан бит #36</span>
+          <div class="stats">
+            <span>💰 $2,129</span>
+            <span>⭐ 36</span>
+            <span>⚡ 0</span>
+            <span>🎵 $43</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[3ч 24м]</span>
+          <span class="event">Создан бит #37</span>
+          <div class="stats">
+            <span>💰 $2,372</span>
+            <span>⭐ 37</span>
+            <span>⚡ 1</span>
+            <span>🎵 $43</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[3ч 30м]</span>
+          <span class="event">⬆️ MC Flow → уровень 6</span>
+          <div class="stats">
+            <span>💰 $1,684</span>
+            <span>⭐ 37</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[3ч 31м]</span>
+          <span class="event">Создан бит #38</span>
+          <div class="stats">
+            <span>💰 $1,765</span>
+            <span>⭐ 38</span>
+            <span>⚡ 0</span>
+            <span>🎵 $47</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[3ч 39м]</span>
+          <span class="event">Создан бит #39</span>
+          <div class="stats">
+            <span>💰 $2,077</span>
+            <span>⭐ 39</span>
+            <span>⚡ 1</span>
+            <span>🎵 $40</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[3ч 46м]</span>
+          <span class="event">Создан бит #40</span>
+          <div class="stats">
+            <span>💰 $2,354</span>
+            <span>⭐ 40</span>
+            <span>⚡ 0</span>
+            <span>🎵 $39</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[3ч 54м]</span>
+          <span class="event">Создан бит #41</span>
+          <div class="stats">
+            <span>💰 $2,673</span>
+            <span>⭐ 41</span>
+            <span>⚡ 1</span>
+            <span>🎵 $47</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[4ч 0м]</span>
+          <span class="event">⏰ Прошёл 4 час</span>
+          <div class="stats">
+            <span>💰 $2,877</span>
+            <span>⭐ 41</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[4ч 1м]</span>
+          <span class="event">Создан бит #42</span>
+          <div class="stats">
+            <span>💰 $2,954</span>
+            <span>⭐ 42</span>
+            <span>⚡ 0</span>
+            <span>🎵 $43</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[4ч 9м]</span>
+          <span class="event">Создан бит #43</span>
+          <div class="stats">
+            <span>💰 $3,269</span>
+            <span>⭐ 43</span>
+            <span>⚡ 1</span>
+            <span>🎵 $43</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[4ч 16м]</span>
+          <span class="event">Создан бит #44</span>
+          <div class="stats">
+            <span>💰 $3,552</span>
+            <span>⭐ 44</span>
+            <span>⚡ 0</span>
+            <span>🎵 $45</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[4ч 24м]</span>
+          <span class="event">Создан бит #45</span>
+          <div class="stats">
+            <span>💰 $3,869</span>
+            <span>⭐ 45</span>
+            <span>⚡ 1</span>
+            <span>🎵 $45</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[4ч 29м]</span>
+          <span class="event">⬆️ MC Flow → уровень 7</span>
+          <div class="stats">
+            <span>💰 $2,697</span>
+            <span>⭐ 45</span>
+            <span>⚡ 11</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[4ч 31м]</span>
+          <span class="event">Создан бит #46</span>
+          <div class="stats">
+            <span>💰 $2,832</span>
+            <span>⭐ 46</span>
+            <span>⚡ 0</span>
+            <span>🎵 $43</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[4ч 39м]</span>
+          <span class="event">Создан бит #47</span>
+          <div class="stats">
+            <span>💰 $3,240</span>
+            <span>⭐ 47</span>
+            <span>⚡ 1</span>
+            <span>🎵 $40</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[4ч 46м]</span>
+          <span class="event">Создан бит #48</span>
+          <div class="stats">
+            <span>💰 $3,607</span>
+            <span>⭐ 48</span>
+            <span>⚡ 0</span>
+            <span>🎵 $45</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[4ч 54м]</span>
+          <span class="event">Создан бит #49</span>
+          <div class="stats">
+            <span>💰 $4,023</span>
+            <span>⭐ 49</span>
+            <span>⚡ 1</span>
+            <span>🎵 $48</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[5ч 0м]</span>
+          <span class="event">⏰ Прошёл 5 час</span>
+          <div class="stats">
+            <span>💰 $4,299</span>
+            <span>⭐ 49</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[5ч 1м]</span>
+          <span class="event">Создан бит #50</span>
+          <div class="stats">
+            <span>💰 $4,391</span>
+            <span>⭐ 50</span>
+            <span>⚡ 0</span>
+            <span>🎵 $46</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[5ч 9м]</span>
+          <span class="event">Создан бит #51</span>
+          <div class="stats">
+            <span>💰 $4,808</span>
+            <span>⭐ 51</span>
+            <span>⚡ 1</span>
+            <span>🎵 $49</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[5ч 16м]</span>
+          <span class="event">Создан бит #52</span>
+          <div class="stats">
+            <span>💰 $5,173</span>
+            <span>⭐ 52</span>
+            <span>⚡ 0</span>
+            <span>🎵 $43</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[5ч 24м]</span>
+          <span class="event">Создан бит #53</span>
+          <div class="stats">
+            <span>💰 $5,585</span>
+            <span>⭐ 53</span>
+            <span>⚡ 1</span>
+            <span>🎵 $44</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[5ч 30м]</span>
+          <span class="event">📱 Улучшение Phone до уровня 5</span>
+          <div class="stats">
+            <span>💰 $1,955</span>
+            <span>⭐ 53</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[5ч 31м]</span>
+          <span class="event">Создан бит #54</span>
+          <div class="stats">
+            <span>💰 $2,045</span>
+            <span>⭐ 54</span>
+            <span>⚡ 0</span>
+            <span>🎵 $44</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[5ч 39м]</span>
+          <span class="event">Создан бит #55</span>
+          <div class="stats">
+            <span>💰 $2,459</span>
+            <span>⭐ 55</span>
+            <span>⚡ 1</span>
+            <span>🎵 $46</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[5ч 46м]</span>
+          <span class="event">Создан бит #56</span>
+          <div class="stats">
+            <span>💰 $2,829</span>
+            <span>⭐ 56</span>
+            <span>⚡ 0</span>
+            <span>🎵 $48</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[5ч 54м]</span>
+          <span class="event">Создан бит #57</span>
+          <div class="stats">
+            <span>💰 $3,243</span>
+            <span>⭐ 57</span>
+            <span>⚡ 1</span>
+            <span>🎵 $46</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[6ч 0м]</span>
+          <span class="event">⏰ Прошёл 6 час</span>
+          <div class="stats">
+            <span>💰 $3,519</span>
+            <span>⭐ 57</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[6ч 1м]</span>
+          <span class="event">Создан бит #58</span>
+          <div class="stats">
+            <span>💰 $3,609</span>
+            <span>⭐ 58</span>
+            <span>⚡ 0</span>
+            <span>🎵 $44</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[6ч 9м]</span>
+          <span class="event">Создан бит #59</span>
+          <div class="stats">
+            <span>💰 $4,030</span>
+            <span>⭐ 59</span>
+            <span>⚡ 1</span>
+            <span>🎵 $53</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[6ч 16м]</span>
+          <span class="event">Создан бит #60</span>
+          <div class="stats">
+            <span>💰 $4,401</span>
+            <span>⭐ 60</span>
+            <span>⚡ 0</span>
+            <span>🎵 $49</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[6ч 24м]</span>
+          <span class="event">Создан бит #61</span>
+          <div class="stats">
+            <span>💰 $4,817</span>
+            <span>⭐ 61</span>
+            <span>⚡ 1</span>
+            <span>🎵 $48</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[6ч 31м]</span>
+          <span class="event">Создан бит #62</span>
+          <div class="stats">
+            <span>💰 $5,187</span>
+            <span>⭐ 62</span>
+            <span>⚡ 0</span>
+            <span>🎵 $48</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[6ч 39м]</span>
+          <span class="event">Создан бит #63</span>
+          <div class="stats">
+            <span>💰 $5,602</span>
+            <span>⭐ 63</span>
+            <span>⚡ 1</span>
+            <span>🎵 $47</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[6ч 46м]</span>
+          <span class="event">Создан бит #64</span>
+          <div class="stats">
+            <span>💰 $5,970</span>
+            <span>⭐ 64</span>
+            <span>⚡ 0</span>
+            <span>🎵 $46</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[6ч 54м]</span>
+          <span class="event">Создан бит #65</span>
+          <div class="stats">
+            <span>💰 $6,391</span>
+            <span>⭐ 65</span>
+            <span>⚡ 1</span>
+            <span>🎵 $53</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[6ч 56м]</span>
+          <span class="event">⬆️ MC Flow → уровень 8</span>
+          <div class="stats">
+            <span>💰 $4,336</span>
+            <span>⭐ 65</span>
+            <span>⚡ 5</span>
+            
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[7ч 0м]</span>
+          <span class="event">⏰ Прошёл 7 час</span>
+          <div class="stats">
+            <span>💰 $4,584</span>
+            <span>⭐ 65</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[7ч 1м]</span>
+          <span class="event">Создан бит #66</span>
+          <div class="stats">
+            <span>💰 $4,699</span>
+            <span>⭐ 66</span>
+            <span>⚡ 0</span>
+            <span>🎵 $53</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[7ч 9м]</span>
+          <span class="event">Создан бит #67</span>
+          <div class="stats">
+            <span>💰 $5,248</span>
+            <span>⭐ 67</span>
+            <span>⚡ 1</span>
+            <span>🎵 $53</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[7ч 16м]</span>
+          <span class="event">Создан бит #68</span>
+          <div class="stats">
+            <span>💰 $5,731</span>
+            <span>⭐ 68</span>
+            <span>⚡ 0</span>
+            <span>🎵 $49</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[7ч 24м]</span>
+          <span class="event">Создан бит #69</span>
+          <div class="stats">
+            <span>💰 $6,280</span>
+            <span>⭐ 69</span>
+            <span>⚡ 1</span>
+            <span>🎵 $53</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[7ч 31м]</span>
+          <span class="event">Создан бит #70</span>
+          <div class="stats">
+            <span>💰 $6,769</span>
+            <span>⭐ 70</span>
+            <span>⚡ 0</span>
+            <span>🎵 $55</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[7ч 39м]</span>
+          <span class="event">Создан бит #71</span>
+          <div class="stats">
+            <span>💰 $7,312</span>
+            <span>⭐ 71</span>
+            <span>⚡ 1</span>
+            <span>🎵 $47</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[7ч 46м]</span>
+          <span class="event">Создан бит #72</span>
+          <div class="stats">
+            <span>💰 $7,800</span>
+            <span>⭐ 72</span>
+            <span>⚡ 0</span>
+            <span>🎵 $54</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[7ч 54м]</span>
+          <span class="event">Создан бит #73</span>
+          <div class="stats">
+            <span>💰 $8,346</span>
+            <span>⭐ 73</span>
+            <span>⚡ 1</span>
+            <span>🎵 $50</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[8ч 0м]</span>
+          <span class="event">⏰ Прошёл 8 час</span>
+          <div class="stats">
+            <span>💰 $8,718</span>
+            <span>⭐ 73</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[8ч 1м]</span>
+          <span class="event">Создан бит #74</span>
+          <div class="stats">
+            <span>💰 $8,831</span>
+            <span>⭐ 74</span>
+            <span>⚡ 0</span>
+            <span>🎵 $51</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[8ч 9м]</span>
+          <span class="event">Создан бит #75</span>
+          <div class="stats">
+            <span>💰 $9,374</span>
+            <span>⭐ 75</span>
+            <span>⚡ 1</span>
+            <span>🎵 $47</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[8ч 16м]</span>
+          <span class="event">Создан бит #76</span>
+          <div class="stats">
+            <span>💰 $9,859</span>
+            <span>⭐ 76</span>
+            <span>⚡ 0</span>
+            <span>🎵 $51</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[8ч 24м]</span>
+          <span class="event">Создан бит #77</span>
+          <div class="stats">
+            <span>💰 $10,411</span>
+            <span>⭐ 77</span>
+            <span>⚡ 1</span>
+            <span>🎵 $56</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[8ч 24м]</span>
+          <span class="event">⬆️ MC Flow → уровень 9</span>
+          <div class="stats">
+            <span>💰 $6,976</span>
+            <span>⭐ 77</span>
+            <span>⚡ 1</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[8ч 31м]</span>
+          <span class="event">Создан бит #78</span>
+          <div class="stats">
+            <span>💰 $7,605</span>
+            <span>⭐ 78</span>
+            <span>⚡ 0</span>
+            <span>🎵 $55</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[8ч 39м]</span>
+          <span class="event">Создан бит #79</span>
+          <div class="stats">
+            <span>💰 $8,312</span>
+            <span>⭐ 79</span>
+            <span>⚡ 1</span>
+            <span>🎵 $51</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[8ч 46м]</span>
+          <span class="event">Создан бит #80</span>
+          <div class="stats">
+            <span>💰 $8,944</span>
+            <span>⭐ 80</span>
+            <span>⚡ 0</span>
+            <span>🎵 $58</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[8ч 54м]</span>
+          <span class="event">Создан бит #81</span>
+          <div class="stats">
+            <span>💰 $9,657</span>
+            <span>⭐ 81</span>
+            <span>⚡ 1</span>
+            <span>🎵 $57</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[9ч 0м]</span>
+          <span class="event">⏰ Прошёл 9 час</span>
+          <div class="stats">
+            <span>💰 $10,149</span>
+            <span>⭐ 81</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[9ч 1м]</span>
+          <span class="event">Создан бит #82</span>
+          <div class="stats">
+            <span>💰 $10,281</span>
+            <span>⭐ 82</span>
+            <span>⚡ 0</span>
+            <span>🎵 $50</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[9ч 9м]</span>
+          <span class="event">Создан бит #83</span>
+          <div class="stats">
+            <span>💰 $10,986</span>
+            <span>⭐ 83</span>
+            <span>⚡ 1</span>
+            <span>🎵 $49</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[9ч 16м]</span>
+          <span class="event">Создан бит #84</span>
+          <div class="stats">
+            <span>💰 $11,614</span>
+            <span>⭐ 84</span>
+            <span>⚡ 0</span>
+            <span>🎵 $54</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[9ч 24м]</span>
+          <span class="event">Создан бит #85</span>
+          <div class="stats">
+            <span>💰 $12,325</span>
+            <span>⭐ 85</span>
+            <span>⚡ 1</span>
+            <span>🎵 $55</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[9ч 31м]</span>
+          <span class="event">Создан бит #86</span>
+          <div class="stats">
+            <span>💰 $12,954</span>
+            <span>⭐ 86</span>
+            <span>⚡ 0</span>
+            <span>🎵 $55</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[9ч 39м]</span>
+          <span class="event">Создан бит #87</span>
+          <div class="stats">
+            <span>💰 $13,666</span>
+            <span>⭐ 87</span>
+            <span>⚡ 1</span>
+            <span>🎵 $56</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[9ч 46м]</span>
+          <span class="event">Создан бит #88</span>
+          <div class="stats">
+            <span>💰 $14,294</span>
+            <span>⭐ 88</span>
+            <span>⚡ 0</span>
+            <span>🎵 $54</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[9ч 51м]</span>
+          <span class="event">📱 Улучшение Phone до уровня 6</span>
+          <div class="stats">
+            <span>💰 $4,939</span>
+            <span>⭐ 88</span>
+            <span>⚡ 10</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[9ч 54м]</span>
+          <span class="event">Создан бит #89</span>
+          <div class="stats">
+            <span>💰 $5,242</span>
+            <span>⭐ 89</span>
+            <span>⚡ 1</span>
+            <span>🎵 $57</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[10ч 0м]</span>
+          <span class="event">⏰ Прошёл 10 час</span>
+          <div class="stats">
+            <span>💰 $5,734</span>
+            <span>⭐ 89</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[10ч 1м]</span>
+          <span class="event">Создан бит #90</span>
+          <div class="stats">
+            <span>💰 $5,871</span>
+            <span>⭐ 90</span>
+            <span>⚡ 0</span>
+            <span>🎵 $55</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[10ч 9м]</span>
+          <span class="event">Создан бит #91</span>
+          <div class="stats">
+            <span>💰 $6,585</span>
+            <span>⭐ 91</span>
+            <span>⚡ 1</span>
+            <span>🎵 $58</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[10ч 16м]</span>
+          <span class="event">Создан бит #92</span>
+          <div class="stats">
+            <span>💰 $7,212</span>
+            <span>⭐ 92</span>
+            <span>⚡ 0</span>
+            <span>🎵 $53</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[10ч 24м]</span>
+          <span class="event">Создан бит #93</span>
+          <div class="stats">
+            <span>💰 $7,926</span>
+            <span>⭐ 93</span>
+            <span>⚡ 1</span>
+            <span>🎵 $58</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[10ч 31м]</span>
+          <span class="event">Создан бит #94</span>
+          <div class="stats">
+            <span>💰 $8,555</span>
+            <span>⭐ 94</span>
+            <span>⚡ 0</span>
+            <span>🎵 $55</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[10ч 39м]</span>
+          <span class="event">Создан бит #95</span>
+          <div class="stats">
+            <span>💰 $9,271</span>
+            <span>⭐ 95</span>
+            <span>⚡ 1</span>
+            <span>🎵 $60</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[10ч 46м]</span>
+          <span class="event">Создан бит #96</span>
+          <div class="stats">
+            <span>💰 $9,903</span>
+            <span>⭐ 96</span>
+            <span>⚡ 0</span>
+            <span>🎵 $58</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[10ч 54м]</span>
+          <span class="event">Создан бит #97</span>
+          <div class="stats">
+            <span>💰 $10,616</span>
+            <span>⭐ 97</span>
+            <span>⚡ 1</span>
+            <span>🎵 $57</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[11ч 0м]</span>
+          <span class="event">⏰ Прошёл 11 час</span>
+          <div class="stats">
+            <span>💰 $11,108</span>
+            <span>⭐ 97</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[11ч 1м]</span>
+          <span class="event">Создан бит #98</span>
+          <div class="stats">
+            <span>💰 $11,245</span>
+            <span>⭐ 98</span>
+            <span>⚡ 0</span>
+            <span>🎵 $55</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[11ч 9м]</span>
+          <span class="event">Создан бит #99</span>
+          <div class="stats">
+            <span>💰 $11,957</span>
+            <span>⭐ 99</span>
+            <span>⚡ 1</span>
+            <span>🎵 $56</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[11ч 16м]</span>
+          <span class="event">Создан бит #100</span>
+          <div class="stats">
+            <span>💰 $12,591</span>
+            <span>⭐ 100</span>
+            <span>⚡ 0</span>
+            <span>🎵 $60</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[11ч 24м]</span>
+          <span class="event">Создан бит #101</span>
+          <div class="stats">
+            <span>💰 $13,306</span>
+            <span>⭐ 101</span>
+            <span>⚡ 1</span>
+            <span>🎵 $59</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[11ч 31м]</span>
+          <span class="event">Создан бит #102</span>
+          <div class="stats">
+            <span>💰 $13,940</span>
+            <span>⭐ 102</span>
+            <span>⚡ 0</span>
+            <span>🎵 $60</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[11ч 39м]</span>
+          <span class="event">Создан бит #103</span>
+          <div class="stats">
+            <span>💰 $14,656</span>
+            <span>⭐ 103</span>
+            <span>⚡ 1</span>
+            <span>🎵 $60</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[11ч 46м]</span>
+          <span class="event">Создан бит #104</span>
+          <div class="stats">
+            <span>💰 $15,293</span>
+            <span>⭐ 104</span>
+            <span>⚡ 0</span>
+            <span>🎵 $63</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[11ч 54м]</span>
+          <span class="event">Создан бит #105</span>
+          <div class="stats">
+            <span>💰 $16,009</span>
+            <span>⭐ 105</span>
+            <span>⚡ 1</span>
+            <span>🎵 $60</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[12ч 0м]</span>
+          <span class="event">⬆️ MC Flow → уровень 10</span>
+          <div class="stats">
+            <span>💰 $11,004</span>
+            <span>⭐ 105</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[12ч 0м]</span>
+          <span class="event">⏰ Прошёл 12 час</span>
+          <div class="stats">
+            <span>💰 $11,004</span>
+            <span>⭐ 105</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[12ч 1м]</span>
+          <span class="event">Создан бит #106</span>
+          <div class="stats">
+            <span>💰 $11,173</span>
+            <span>⭐ 106</span>
+            <span>⚡ 0</span>
+            <span>🎵 $61</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[12ч 9м]</span>
+          <span class="event">Создан бит #107</span>
+          <div class="stats">
+            <span>💰 $12,093</span>
+            <span>⭐ 107</span>
+            <span>⚡ 1</span>
+            <span>🎵 $56</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[12ч 16м]</span>
+          <span class="event">Создан бит #108</span>
+          <div class="stats">
+            <span>💰 $12,912</span>
+            <span>⭐ 108</span>
+            <span>⚡ 0</span>
+            <span>🎵 $63</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[12ч 24м]</span>
+          <span class="event">Создан бит #109</span>
+          <div class="stats">
+            <span>💰 $13,838</span>
+            <span>⭐ 109</span>
+            <span>⚡ 1</span>
+            <span>🎵 $62</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[12ч 31м]</span>
+          <span class="event">Создан бит #110</span>
+          <div class="stats">
+            <span>💰 $14,660</span>
+            <span>⭐ 110</span>
+            <span>⚡ 0</span>
+            <span>🎵 $66</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[12ч 39м]</span>
+          <span class="event">Создан бит #111</span>
+          <div class="stats">
+            <span>💰 $15,588</span>
+            <span>⭐ 111</span>
+            <span>⚡ 1</span>
+            <span>🎵 $64</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[12ч 46м]</span>
+          <span class="event">Создан бит #112</span>
+          <div class="stats">
+            <span>💰 $16,407</span>
+            <span>⭐ 112</span>
+            <span>⚡ 0</span>
+            <span>🎵 $63</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[12ч 54м]</span>
+          <span class="event">Создан бит #113</span>
+          <div class="stats">
+            <span>💰 $17,336</span>
+            <span>⭐ 113</span>
+            <span>⚡ 1</span>
+            <span>🎵 $65</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[13ч 0м]</span>
+          <span class="event">⏰ Прошёл 13 час</span>
+          <div class="stats">
+            <span>💰 $17,984</span>
+            <span>⭐ 113</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[13ч 1м]</span>
+          <span class="event">Создан бит #114</span>
+          <div class="stats">
+            <span>💰 $18,152</span>
+            <span>⭐ 114</span>
+            <span>⚡ 0</span>
+            <span>🎵 $60</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[13ч 9м]</span>
+          <span class="event">Создан бит #115</span>
+          <div class="stats">
+            <span>💰 $19,076</span>
+            <span>⭐ 115</span>
+            <span>⚡ 1</span>
+            <span>🎵 $60</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[13ч 16м]</span>
+          <span class="event">Создан бит #116</span>
+          <div class="stats">
+            <span>💰 $19,894</span>
+            <span>⭐ 116</span>
+            <span>⚡ 0</span>
+            <span>🎵 $62</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[13ч 24м]</span>
+          <span class="event">Создан бит #117</span>
+          <div class="stats">
+            <span>💰 $20,817</span>
+            <span>⭐ 117</span>
+            <span>⚡ 1</span>
+            <span>🎵 $59</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[13ч 31м]</span>
+          <span class="event">Создан бит #118</span>
+          <div class="stats">
+            <span>💰 $21,639</span>
+            <span>⭐ 118</span>
+            <span>⚡ 0</span>
+            <span>🎵 $66</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[13ч 39м]</span>
+          <span class="event">Создан бит #119</span>
+          <div class="stats">
+            <span>💰 $22,562</span>
+            <span>⭐ 119</span>
+            <span>⚡ 1</span>
+            <span>🎵 $59</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[13ч 46м]</span>
+          <span class="event">Создан бит #120</span>
+          <div class="stats">
+            <span>💰 $23,386</span>
+            <span>⭐ 120</span>
+            <span>⚡ 0</span>
+            <span>🎵 $68</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[13ч 54м]</span>
+          <span class="event">Создан бит #121</span>
+          <div class="stats">
+            <span>💰 $24,312</span>
+            <span>⭐ 121</span>
+            <span>⚡ 1</span>
+            <span>🎵 $62</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[14ч 0м]</span>
+          <span class="event">⏰ Прошёл 14 час</span>
+          <div class="stats">
+            <span>💰 $24,960</span>
+            <span>⭐ 121</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[14ч 1м]</span>
+          <span class="event">Создан бит #122</span>
+          <div class="stats">
+            <span>💰 $25,128</span>
+            <span>⭐ 122</span>
+            <span>⚡ 0</span>
+            <span>🎵 $60</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[14ч 9м]</span>
+          <span class="event">Создан бит #123</span>
+          <div class="stats">
+            <span>💰 $26,057</span>
+            <span>⭐ 123</span>
+            <span>⚡ 1</span>
+            <span>🎵 $65</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[14ч 16м]</span>
+          <span class="event">Создан бит #124</span>
+          <div class="stats">
+            <span>💰 $26,875</span>
+            <span>⭐ 124</span>
+            <span>⚡ 0</span>
+            <span>🎵 $62</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[14ч 24м]</span>
+          <span class="event">Создан бит #125</span>
+          <div class="stats">
+            <span>💰 $27,801</span>
+            <span>⭐ 125</span>
+            <span>⚡ 1</span>
+            <span>🎵 $62</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[14ч 31м]</span>
+          <span class="event">Создан бит #126</span>
+          <div class="stats">
+            <span>💰 $28,623</span>
+            <span>⭐ 126</span>
+            <span>⚡ 0</span>
+            <span>🎵 $66</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[14ч 39м]</span>
+          <span class="event">Создан бит #127</span>
+          <div class="stats">
+            <span>💰 $29,554</span>
+            <span>⭐ 127</span>
+            <span>⚡ 1</span>
+            <span>🎵 $67</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[14ч 46м]</span>
+          <span class="event">Создан бит #128</span>
+          <div class="stats">
+            <span>💰 $30,379</span>
+            <span>⭐ 128</span>
+            <span>⚡ 0</span>
+            <span>🎵 $69</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[14ч 54м]</span>
+          <span class="event">Создан бит #129</span>
+          <div class="stats">
+            <span>💰 $31,311</span>
+            <span>⭐ 129</span>
+            <span>⚡ 1</span>
+            <span>🎵 $68</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[15ч 0м]</span>
+          <span class="event">⏰ Прошёл 15 час</span>
+          <div class="stats">
+            <span>💰 $31,959</span>
+            <span>⭐ 129</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[15ч 1м]</span>
+          <span class="event">Создан бит #130</span>
+          <div class="stats">
+            <span>💰 $32,129</span>
+            <span>⭐ 130</span>
+            <span>⚡ 0</span>
+            <span>🎵 $62</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[15ч 9м]</span>
+          <span class="event">Создан бит #131</span>
+          <div class="stats">
+            <span>💰 $33,061</span>
+            <span>⭐ 131</span>
+            <span>⚡ 1</span>
+            <span>🎵 $68</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[15ч 16м]</span>
+          <span class="event">Создан бит #132</span>
+          <div class="stats">
+            <span>💰 $33,887</span>
+            <span>⭐ 132</span>
+            <span>⚡ 0</span>
+            <span>🎵 $70</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[15ч 24м]</span>
+          <span class="event">Создан бит #133</span>
+          <div class="stats">
+            <span>💰 $34,822</span>
+            <span>⭐ 133</span>
+            <span>⚡ 1</span>
+            <span>🎵 $71</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[15ч 31м]</span>
+          <span class="event">Создан бит #134</span>
+          <div class="stats">
+            <span>💰 $35,645</span>
+            <span>⭐ 134</span>
+            <span>⚡ 0</span>
+            <span>🎵 $67</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[15ч 39м]</span>
+          <span class="event">Создан бит #135</span>
+          <div class="stats">
+            <span>💰 $36,580</span>
+            <span>⭐ 135</span>
+            <span>⚡ 1</span>
+            <span>🎵 $71</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[15ч 40м]</span>
+          <span class="event">📱 Улучшение Phone до уровня 7</span>
+          <div class="stats">
+            <span>💰 $12,274</span>
+            <span>⭐ 135</span>
+            <span>⚡ 3</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[15ч 46м]</span>
+          <span class="event">Создан бит #136</span>
+          <div class="stats">
+            <span>💰 $12,989</span>
+            <span>⭐ 136</span>
+            <span>⚡ 0</span>
+            <span>🎵 $67</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[15ч 54м]</span>
+          <span class="event">Создан бит #137</span>
+          <div class="stats">
+            <span>💰 $13,921</span>
+            <span>⭐ 137</span>
+            <span>⚡ 1</span>
+            <span>🎵 $68</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[16ч 0м]</span>
+          <span class="event">⏰ Прошёл 16 час</span>
+          <div class="stats">
+            <span>💰 $14,569</span>
+            <span>⭐ 137</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[16ч 1м]</span>
+          <span class="event">Создан бит #138</span>
+          <div class="stats">
+            <span>💰 $14,749</span>
+            <span>⭐ 138</span>
+            <span>⚡ 0</span>
+            <span>🎵 $72</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[16ч 9м]</span>
+          <span class="event">Создан бит #139</span>
+          <div class="stats">
+            <span>💰 $15,688</span>
+            <span>⭐ 139</span>
+            <span>⚡ 1</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[16ч 16м]</span>
+          <span class="event">Создан бит #140</span>
+          <div class="stats">
+            <span>💰 $16,517</span>
+            <span>⭐ 140</span>
+            <span>⚡ 0</span>
+            <span>🎵 $73</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[16ч 24м]</span>
+          <span class="event">Создан бит #141</span>
+          <div class="stats">
+            <span>💰 $17,455</span>
+            <span>⭐ 141</span>
+            <span>⚡ 1</span>
+            <span>🎵 $74</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[16ч 31м]</span>
+          <span class="event">Создан бит #142</span>
+          <div class="stats">
+            <span>💰 $18,285</span>
+            <span>⭐ 142</span>
+            <span>⚡ 0</span>
+            <span>🎵 $74</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[16ч 39м]</span>
+          <span class="event">Создан бит #143</span>
+          <div class="stats">
+            <span>💰 $19,219</span>
+            <span>⭐ 143</span>
+            <span>⚡ 1</span>
+            <span>🎵 $70</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[16ч 46м]</span>
+          <span class="event">Создан бит #144</span>
+          <div class="stats">
+            <span>💰 $20,046</span>
+            <span>⭐ 144</span>
+            <span>⚡ 0</span>
+            <span>🎵 $71</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[16ч 54м]</span>
+          <span class="event">Создан бит #145</span>
+          <div class="stats">
+            <span>💰 $20,984</span>
+            <span>⭐ 145</span>
+            <span>⚡ 1</span>
+            <span>🎵 $74</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[17ч 0м]</span>
+          <span class="event">⏰ Прошёл 17 час</span>
+          <div class="stats">
+            <span>💰 $21,632</span>
+            <span>⭐ 145</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[17ч 1м]</span>
+          <span class="event">Создан бит #146</span>
+          <div class="stats">
+            <span>💰 $21,813</span>
+            <span>⭐ 146</span>
+            <span>⚡ 0</span>
+            <span>🎵 $73</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[17ч 9м]</span>
+          <span class="event">Создан бит #147</span>
+          <div class="stats">
+            <span>💰 $22,752</span>
+            <span>⭐ 147</span>
+            <span>⚡ 1</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[17ч 16м]</span>
+          <span class="event">Создан бит #148</span>
+          <div class="stats">
+            <span>💰 $23,579</span>
+            <span>⭐ 148</span>
+            <span>⚡ 0</span>
+            <span>🎵 $71</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[17ч 24м]</span>
+          <span class="event">Создан бит #149</span>
+          <div class="stats">
+            <span>💰 $24,513</span>
+            <span>⭐ 149</span>
+            <span>⚡ 1</span>
+            <span>🎵 $70</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[17ч 31м]</span>
+          <span class="event">Создан бит #150</span>
+          <div class="stats">
+            <span>💰 $25,344</span>
+            <span>⭐ 150</span>
+            <span>⚡ 0</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[17ч 39м]</span>
+          <span class="event">Создан бит #151</span>
+          <div class="stats">
+            <span>💰 $26,283</span>
+            <span>⭐ 151</span>
+            <span>⚡ 1</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[17ч 46м]</span>
+          <span class="event">Создан бит #152</span>
+          <div class="stats">
+            <span>💰 $27,115</span>
+            <span>⭐ 152</span>
+            <span>⚡ 0</span>
+            <span>🎵 $76</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[17ч 54м]</span>
+          <span class="event">Создан бит #153</span>
+          <div class="stats">
+            <span>💰 $28,056</span>
+            <span>⭐ 153</span>
+            <span>⚡ 1</span>
+            <span>🎵 $77</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[18ч 0м]</span>
+          <span class="event">⏰ Прошёл 18 час</span>
+          <div class="stats">
+            <span>💰 $28,704</span>
+            <span>⭐ 153</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[18ч 1м]</span>
+          <span class="event">Создан бит #154</span>
+          <div class="stats">
+            <span>💰 $28,881</span>
+            <span>⭐ 154</span>
+            <span>⚡ 0</span>
+            <span>🎵 $69</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[18ч 9м]</span>
+          <span class="event">Создан бит #155</span>
+          <div class="stats">
+            <span>💰 $29,820</span>
+            <span>⭐ 155</span>
+            <span>⚡ 1</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[18ч 16м]</span>
+          <span class="event">Создан бит #156</span>
+          <div class="stats">
+            <span>💰 $30,652</span>
+            <span>⭐ 156</span>
+            <span>⚡ 0</span>
+            <span>🎵 $76</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[18ч 24м]</span>
+          <span class="event">Создан бит #157</span>
+          <div class="stats">
+            <span>💰 $31,585</span>
+            <span>⭐ 157</span>
+            <span>⚡ 1</span>
+            <span>🎵 $69</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[18ч 31м]</span>
+          <span class="event">Создан бит #158</span>
+          <div class="stats">
+            <span>💰 $32,412</span>
+            <span>⭐ 158</span>
+            <span>⚡ 0</span>
+            <span>🎵 $71</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[18ч 39м]</span>
+          <span class="event">Создан бит #159</span>
+          <div class="stats">
+            <span>💰 $33,349</span>
+            <span>⭐ 159</span>
+            <span>⚡ 1</span>
+            <span>🎵 $73</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[18ч 46м]</span>
+          <span class="event">Создан бит #160</span>
+          <div class="stats">
+            <span>💰 $34,178</span>
+            <span>⭐ 160</span>
+            <span>⚡ 0</span>
+            <span>🎵 $73</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[18ч 54м]</span>
+          <span class="event">Создан бит #161</span>
+          <div class="stats">
+            <span>💰 $35,121</span>
+            <span>⭐ 161</span>
+            <span>⚡ 1</span>
+            <span>🎵 $79</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[19ч 0м]</span>
+          <span class="event">⏰ Прошёл 19 час</span>
+          <div class="stats">
+            <span>💰 $35,769</span>
+            <span>⭐ 161</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[19ч 1м]</span>
+          <span class="event">Создан бит #162</span>
+          <div class="stats">
+            <span>💰 $35,953</span>
+            <span>⭐ 162</span>
+            <span>⚡ 0</span>
+            <span>🎵 $76</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[19ч 9м]</span>
+          <span class="event">Создан бит #163</span>
+          <div class="stats">
+            <span>💰 $36,888</span>
+            <span>⭐ 163</span>
+            <span>⚡ 1</span>
+            <span>🎵 $71</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[19ч 16м]</span>
+          <span class="event">Создан бит #164</span>
+          <div class="stats">
+            <span>💰 $37,721</span>
+            <span>⭐ 164</span>
+            <span>⚡ 0</span>
+            <span>🎵 $77</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[19ч 24м]</span>
+          <span class="event">Создан бит #165</span>
+          <div class="stats">
+            <span>💰 $38,663</span>
+            <span>⭐ 165</span>
+            <span>⚡ 1</span>
+            <span>🎵 $78</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[19ч 31м]</span>
+          <span class="event">Создан бит #166</span>
+          <div class="stats">
+            <span>💰 $39,497</span>
+            <span>⭐ 166</span>
+            <span>⚡ 0</span>
+            <span>🎵 $78</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[19ч 39м]</span>
+          <span class="event">Создан бит #167</span>
+          <div class="stats">
+            <span>💰 $40,432</span>
+            <span>⭐ 167</span>
+            <span>⚡ 1</span>
+            <span>🎵 $71</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[19ч 46м]</span>
+          <span class="event">Создан бит #168</span>
+          <div class="stats">
+            <span>💰 $41,264</span>
+            <span>⭐ 168</span>
+            <span>⚡ 0</span>
+            <span>🎵 $76</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[19ч 54м]</span>
+          <span class="event">Создан бит #169</span>
+          <div class="stats">
+            <span>💰 $42,205</span>
+            <span>⭐ 169</span>
+            <span>⚡ 1</span>
+            <span>🎵 $77</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[20ч 0м]</span>
+          <span class="event">⏰ Прошёл 20 час</span>
+          <div class="stats">
+            <span>💰 $42,853</span>
+            <span>⭐ 169</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[20ч 1м]</span>
+          <span class="event">Создан бит #170</span>
+          <div class="stats">
+            <span>💰 $43,036</span>
+            <span>⭐ 170</span>
+            <span>⚡ 0</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[20ч 9м]</span>
+          <span class="event">Создан бит #171</span>
+          <div class="stats">
+            <span>💰 $43,971</span>
+            <span>⭐ 171</span>
+            <span>⚡ 1</span>
+            <span>🎵 $71</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[20ч 16м]</span>
+          <span class="event">Создан бит #172</span>
+          <div class="stats">
+            <span>💰 $44,802</span>
+            <span>⭐ 172</span>
+            <span>⚡ 0</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[20ч 24м]</span>
+          <span class="event">Создан бит #173</span>
+          <div class="stats">
+            <span>💰 $45,746</span>
+            <span>⭐ 173</span>
+            <span>⚡ 1</span>
+            <span>🎵 $80</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[20ч 31м]</span>
+          <span class="event">Создан бит #174</span>
+          <div class="stats">
+            <span>💰 $46,584</span>
+            <span>⭐ 174</span>
+            <span>⚡ 0</span>
+            <span>🎵 $82</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[20ч 39м]</span>
+          <span class="event">Создан бит #175</span>
+          <div class="stats">
+            <span>💰 $47,526</span>
+            <span>⭐ 175</span>
+            <span>⚡ 1</span>
+            <span>🎵 $78</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[20ч 46м]</span>
+          <span class="event">Создан бит #176</span>
+          <div class="stats">
+            <span>💰 $48,355</span>
+            <span>⭐ 176</span>
+            <span>⚡ 0</span>
+            <span>🎵 $73</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[20ч 54м]</span>
+          <span class="event">Создан бит #177</span>
+          <div class="stats">
+            <span>💰 $49,301</span>
+            <span>⭐ 177</span>
+            <span>⚡ 1</span>
+            <span>🎵 $82</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[21ч 0м]</span>
+          <span class="event">⏰ Прошёл 21 час</span>
+          <div class="stats">
+            <span>💰 $49,949</span>
+            <span>⭐ 177</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[21ч 1м]</span>
+          <span class="event">Создан бит #178</span>
+          <div class="stats">
+            <span>💰 $50,138</span>
+            <span>⭐ 178</span>
+            <span>⚡ 0</span>
+            <span>🎵 $81</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[21ч 9м]</span>
+          <span class="event">Создан бит #179</span>
+          <div class="stats">
+            <span>💰 $51,077</span>
+            <span>⭐ 179</span>
+            <span>⚡ 1</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[21ч 16м]</span>
+          <span class="event">Создан бит #180</span>
+          <div class="stats">
+            <span>💰 $51,914</span>
+            <span>⭐ 180</span>
+            <span>⚡ 0</span>
+            <span>🎵 $81</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[21ч 24м]</span>
+          <span class="event">Создан бит #181</span>
+          <div class="stats">
+            <span>💰 $52,853</span>
+            <span>⭐ 181</span>
+            <span>⚡ 1</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[21ч 31м]</span>
+          <span class="event">Создан бит #182</span>
+          <div class="stats">
+            <span>💰 $53,688</span>
+            <span>⭐ 182</span>
+            <span>⚡ 0</span>
+            <span>🎵 $79</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[21ч 39м]</span>
+          <span class="event">Создан бит #183</span>
+          <div class="stats">
+            <span>💰 $54,628</span>
+            <span>⭐ 183</span>
+            <span>⚡ 1</span>
+            <span>🎵 $76</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[21ч 46м]</span>
+          <span class="event">Создан бит #184</span>
+          <div class="stats">
+            <span>💰 $55,466</span>
+            <span>⭐ 184</span>
+            <span>⚡ 0</span>
+            <span>🎵 $82</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[21ч 54м]</span>
+          <span class="event">Создан бит #185</span>
+          <div class="stats">
+            <span>💰 $56,404</span>
+            <span>⭐ 185</span>
+            <span>⚡ 1</span>
+            <span>🎵 $74</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[22ч 0м]</span>
+          <span class="event">⏰ Прошёл 22 час</span>
+          <div class="stats">
+            <span>💰 $57,052</span>
+            <span>⭐ 185</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[22ч 1м]</span>
+          <span class="event">Создан бит #186</span>
+          <div class="stats">
+            <span>💰 $57,236</span>
+            <span>⭐ 186</span>
+            <span>⚡ 0</span>
+            <span>🎵 $76</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[22ч 9м]</span>
+          <span class="event">Создан бит #187</span>
+          <div class="stats">
+            <span>💰 $58,183</span>
+            <span>⭐ 187</span>
+            <span>⚡ 1</span>
+            <span>🎵 $83</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[22ч 16м]</span>
+          <span class="event">Создан бит #188</span>
+          <div class="stats">
+            <span>💰 $59,014</span>
+            <span>⭐ 188</span>
+            <span>⚡ 0</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[22ч 24м]</span>
+          <span class="event">Создан бит #189</span>
+          <div class="stats">
+            <span>💰 $59,959</span>
+            <span>⭐ 189</span>
+            <span>⚡ 1</span>
+            <span>🎵 $81</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[22ч 31м]</span>
+          <span class="event">Создан бит #190</span>
+          <div class="stats">
+            <span>💰 $60,790</span>
+            <span>⭐ 190</span>
+            <span>⚡ 0</span>
+            <span>🎵 $75</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[22ч 39м]</span>
+          <span class="event">Создан бит #191</span>
+          <div class="stats">
+            <span>💰 $61,737</span>
+            <span>⭐ 191</span>
+            <span>⚡ 1</span>
+            <span>🎵 $83</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[22ч 46м]</span>
+          <span class="event">Создан бит #192</span>
+          <div class="stats">
+            <span>💰 $62,575</span>
+            <span>⭐ 192</span>
+            <span>⚡ 0</span>
+            <span>🎵 $82</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[22ч 54м]</span>
+          <span class="event">Создан бит #193</span>
+          <div class="stats">
+            <span>💰 $63,520</span>
+            <span>⭐ 193</span>
+            <span>⚡ 1</span>
+            <span>🎵 $81</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[23ч 0м]</span>
+          <span class="event">⏰ Прошёл 23 час</span>
+          <div class="stats">
+            <span>💰 $64,168</span>
+            <span>⭐ 193</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[23ч 1м]</span>
+          <span class="event">Создан бит #194</span>
+          <div class="stats">
+            <span>💰 $64,352</span>
+            <span>⭐ 194</span>
+            <span>⚡ 0</span>
+            <span>🎵 $76</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[23ч 9м]</span>
+          <span class="event">Создан бит #195</span>
+          <div class="stats">
+            <span>💰 $65,300</span>
+            <span>⭐ 195</span>
+            <span>⚡ 1</span>
+            <span>🎵 $84</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[23ч 16м]</span>
+          <span class="event">Создан бит #196</span>
+          <div class="stats">
+            <span>💰 $66,132</span>
+            <span>⭐ 196</span>
+            <span>⚡ 0</span>
+            <span>🎵 $76</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[23ч 24м]</span>
+          <span class="event">Создан бит #197</span>
+          <div class="stats">
+            <span>💰 $67,079</span>
+            <span>⭐ 197</span>
+            <span>⚡ 1</span>
+            <span>🎵 $83</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[23ч 31м]</span>
+          <span class="event">Создан бит #198</span>
+          <div class="stats">
+            <span>💰 $67,917</span>
+            <span>⭐ 198</span>
+            <span>⚡ 0</span>
+            <span>🎵 $82</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[23ч 39м]</span>
+          <span class="event">Создан бит #199</span>
+          <div class="stats">
+            <span>💰 $68,867</span>
+            <span>⭐ 199</span>
+            <span>⚡ 1</span>
+            <span>🎵 $86</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[23ч 46м]</span>
+          <span class="event">Создан бит #200</span>
+          <div class="stats">
+            <span>💰 $69,704</span>
+            <span>⭐ 200</span>
+            <span>⚡ 0</span>
+            <span>🎵 $81</span>
+          </div>
+        </div><div class="log-entry ">
+          <span class="minute">[23ч 54м]</span>
+          <span class="event">Создан бит #201</span>
+          <div class="stats">
+            <span>💰 $70,651</span>
+            <span>⭐ 201</span>
+            <span>⚡ 1</span>
+            <span>🎵 $83</span>
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[24ч 0м]</span>
+          <span class="event">⏰ Прошёл 24 час</span>
+          <div class="stats">
+            <span>💰 $71,299</span>
+            <span>⭐ 201</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div><div class="log-entry highlight">
+          <span class="minute">[24ч 0м]</span>
+          <span class="event">=== ИТОГИ ===</span>
+          <div class="stats">
+            <span>💰 $71,299</span>
+            <span>⭐ 201</span>
+            <span>⚡ 13</span>
+            
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    const chartData = [{"minute":0,"hour":0,"money":800,"reputation":0,"energy":150,"equipmentLevel":1,"beatPrice":0,"passiveIncome":0},{"minute":1,"hour":0.016666666666666666,"money":830,"reputation":1,"energy":135,"equipmentLevel":1,"beatPrice":30,"passiveIncome":0},{"minute":1,"hour":0.016666666666666666,"money":580,"reputation":1,"energy":135,"equipmentLevel":2,"beatPrice":0,"passiveIncome":0},{"minute":1,"hour":0.016666666666666666,"money":500,"reputation":1,"energy":135,"equipmentLevel":2,"beatPrice":0,"passiveIncome":6},{"minute":1,"hour":0.016666666666666666,"money":372,"reputation":1,"energy":135,"equipmentLevel":2,"beatPrice":0,"passiveIncome":9},{"minute":2,"hour":0.03333333333333333,"money":411,"reputation":2,"energy":122,"equipmentLevel":2,"beatPrice":30,"passiveIncome":9},{"minute":3,"hour":0.05,"money":450,"reputation":3,"energy":109,"equipmentLevel":2,"beatPrice":30,"passiveIncome":9},{"minute":4,"hour":0.06666666666666667,"money":489,"reputation":4,"energy":96,"equipmentLevel":2,"beatPrice":30,"passiveIncome":9},{"minute":5,"hour":0.08333333333333333,"money":529,"reputation":5,"energy":83,"equipmentLevel":2,"beatPrice":31,"passiveIncome":9},{"minute":6,"hour":0.1,"money":569,"reputation":6,"energy":70,"equipmentLevel":2,"beatPrice":31,"passiveIncome":9},{"minute":7,"hour":0.11666666666666667,"money":609,"reputation":7,"energy":57,"equipmentLevel":2,"beatPrice":31,"passiveIncome":9},{"minute":8,"hour":0.13333333333333333,"money":649,"reputation":8,"energy":44,"equipmentLevel":2,"beatPrice":31,"passiveIncome":9},{"minute":8,"hour":0.13333333333333333,"money":445,"reputation":8,"energy":44,"equipmentLevel":2,"beatPrice":0,"passiveIncome":13},{"minute":9,"hour":0.15,"money":489,"reputation":9,"energy":31,"equipmentLevel":2,"beatPrice":31,"passiveIncome":13},{"minute":10,"hour":0.16666666666666666,"money":533,"reputation":10,"energy":18,"equipmentLevel":2,"beatPrice":31,"passiveIncome":13},{"minute":11,"hour":0.18333333333333332,"money":582,"reputation":11,"energy":5,"equipmentLevel":2,"beatPrice":36,"passiveIncome":13},{"minute":16,"hour":0.26666666666666666,"money":679,"reputation":12,"energy":0,"equipmentLevel":2,"beatPrice":32,"passiveIncome":13},{"minute":24,"hour":0.4,"money":819,"reputation":13,"energy":1,"equipmentLevel":2,"beatPrice":36,"passiveIncome":13},{"minute":31,"hour":0.5166666666666667,"money":942,"reputation":14,"energy":0,"equipmentLevel":2,"beatPrice":32,"passiveIncome":13},{"minute":31,"hour":0.5166666666666667,"money":317,"reputation":14,"energy":0,"equipmentLevel":3,"beatPrice":0,"passiveIncome":13},{"minute":39,"hour":0.65,"money":457,"reputation":15,"energy":1,"equipmentLevel":3,"beatPrice":36,"passiveIncome":13},{"minute":46,"hour":0.7666666666666667,"money":584,"reputation":16,"energy":0,"equipmentLevel":3,"beatPrice":36,"passiveIncome":13},{"minute":54,"hour":0.9,"money":721,"reputation":17,"energy":1,"equipmentLevel":3,"beatPrice":33,"passiveIncome":13},{"minute":60,"hour":1,"money":799,"reputation":17,"energy":13,"equipmentLevel":3,"beatPrice":0,"passiveIncome":13},{"minute":61,"hour":1.0166666666666666,"money":850,"reputation":18,"energy":0,"equipmentLevel":3,"beatPrice":38,"passiveIncome":13},{"minute":69,"hour":1.15,"money":988,"reputation":19,"energy":1,"equipmentLevel":3,"beatPrice":34,"passiveIncome":13},{"minute":69,"hour":1.15,"money":661,"reputation":19,"energy":1,"equipmentLevel":3,"beatPrice":0,"passiveIncome":18},{"minute":76,"hour":1.2666666666666666,"money":826,"reputation":20,"energy":0,"equipmentLevel":3,"beatPrice":39,"passiveIncome":18},{"minute":84,"hour":1.4,"money":1007,"reputation":21,"energy":1,"equipmentLevel":3,"beatPrice":37,"passiveIncome":18},{"minute":91,"hour":1.5166666666666666,"money":1170,"reputation":22,"energy":0,"equipmentLevel":3,"beatPrice":37,"passiveIncome":18},{"minute":99,"hour":1.65,"money":1352,"reputation":23,"energy":1,"equipmentLevel":3,"beatPrice":38,"passiveIncome":18},{"minute":106,"hour":1.7666666666666666,"money":1512,"reputation":24,"energy":0,"equipmentLevel":3,"beatPrice":34,"passiveIncome":18},{"minute":110,"hour":1.8333333333333333,"money":1060,"reputation":24,"energy":8,"equipmentLevel":3,"beatPrice":0,"passiveIncome":25},{"minute":114,"hour":1.9,"money":1195,"reputation":25,"energy":1,"equipmentLevel":3,"beatPrice":35,"passiveIncome":25},{"minute":120,"hour":2,"money":1345,"reputation":25,"energy":13,"equipmentLevel":3,"beatPrice":0,"passiveIncome":25},{"minute":121,"hour":2.0166666666666666,"money":1410,"reputation":26,"energy":0,"equipmentLevel":3,"beatPrice":40,"passiveIncome":25},{"minute":129,"hour":2.15,"money":1648,"reputation":27,"energy":1,"equipmentLevel":3,"beatPrice":38,"passiveIncome":25},{"minute":136,"hour":2.2666666666666666,"money":1865,"reputation":28,"energy":0,"equipmentLevel":3,"beatPrice":42,"passiveIncome":25},{"minute":144,"hour":2.4,"money":2100,"reputation":29,"energy":1,"equipmentLevel":3,"beatPrice":35,"passiveIncome":25},{"minute":151,"hour":2.5166666666666666,"money":2317,"reputation":30,"energy":0,"equipmentLevel":3,"beatPrice":42,"passiveIncome":25},{"minute":153,"hour":2.55,"money":805,"reputation":30,"energy":4,"equipmentLevel":4,"beatPrice":0,"passiveIncome":25},{"minute":159,"hour":2.65,"money":997,"reputation":31,"energy":1,"equipmentLevel":4,"beatPrice":42,"passiveIncome":25},{"minute":166,"hour":2.7666666666666666,"money":1210,"reputation":32,"energy":0,"equipmentLevel":4,"beatPrice":38,"passiveIncome":25},{"minute":174,"hour":2.9,"money":1450,"reputation":33,"energy":1,"equipmentLevel":4,"beatPrice":40,"passiveIncome":25},{"minute":180,"hour":3,"money":1600,"reputation":33,"energy":13,"equipmentLevel":4,"beatPrice":0,"passiveIncome":25},{"minute":181,"hour":3.0166666666666666,"money":1670,"reputation":34,"energy":0,"equipmentLevel":4,"beatPrice":45,"passiveIncome":25},{"minute":189,"hour":3.15,"money":1911,"reputation":35,"energy":1,"equipmentLevel":4,"beatPrice":41,"passiveIncome":25},{"minute":196,"hour":3.2666666666666666,"money":2129,"reputation":36,"energy":0,"equipmentLevel":4,"beatPrice":43,"passiveIncome":25},{"minute":204,"hour":3.4,"money":2372,"reputation":37,"energy":1,"equipmentLevel":4,"beatPrice":43,"passiveIncome":25},{"minute":210,"hour":3.5,"money":1684,"reputation":37,"energy":13,"equipmentLevel":4,"beatPrice":0,"passiveIncome":34},{"minute":211,"hour":3.5166666666666666,"money":1765,"reputation":38,"energy":0,"equipmentLevel":4,"beatPrice":47,"passiveIncome":34},{"minute":219,"hour":3.65,"money":2077,"reputation":39,"energy":1,"equipmentLevel":4,"beatPrice":40,"passiveIncome":34},{"minute":226,"hour":3.7666666666666666,"money":2354,"reputation":40,"energy":0,"equipmentLevel":4,"beatPrice":39,"passiveIncome":34},{"minute":234,"hour":3.9,"money":2673,"reputation":41,"energy":1,"equipmentLevel":4,"beatPrice":47,"passiveIncome":34},{"minute":240,"hour":4,"money":2877,"reputation":41,"energy":13,"equipmentLevel":4,"beatPrice":0,"passiveIncome":34},{"minute":241,"hour":4.016666666666667,"money":2954,"reputation":42,"energy":0,"equipmentLevel":4,"beatPrice":43,"passiveIncome":34},{"minute":249,"hour":4.15,"money":3269,"reputation":43,"energy":1,"equipmentLevel":4,"beatPrice":43,"passiveIncome":34},{"minute":256,"hour":4.266666666666667,"money":3552,"reputation":44,"energy":0,"equipmentLevel":4,"beatPrice":45,"passiveIncome":34},{"minute":264,"hour":4.4,"money":3869,"reputation":45,"energy":1,"equipmentLevel":4,"beatPrice":45,"passiveIncome":34},{"minute":269,"hour":4.483333333333333,"money":2697,"reputation":45,"energy":11,"equipmentLevel":4,"beatPrice":0,"passiveIncome":46},{"minute":271,"hour":4.516666666666667,"money":2832,"reputation":46,"energy":0,"equipmentLevel":4,"beatPrice":43,"passiveIncome":46},{"minute":279,"hour":4.65,"money":3240,"reputation":47,"energy":1,"equipmentLevel":4,"beatPrice":40,"passiveIncome":46},{"minute":286,"hour":4.766666666666667,"money":3607,"reputation":48,"energy":0,"equipmentLevel":4,"beatPrice":45,"passiveIncome":46},{"minute":294,"hour":4.9,"money":4023,"reputation":49,"energy":1,"equipmentLevel":4,"beatPrice":48,"passiveIncome":46},{"minute":300,"hour":5,"money":4299,"reputation":49,"energy":13,"equipmentLevel":4,"beatPrice":0,"passiveIncome":46},{"minute":301,"hour":5.016666666666667,"money":4391,"reputation":50,"energy":0,"equipmentLevel":4,"beatPrice":46,"passiveIncome":46},{"minute":309,"hour":5.15,"money":4808,"reputation":51,"energy":1,"equipmentLevel":4,"beatPrice":49,"passiveIncome":46},{"minute":316,"hour":5.266666666666667,"money":5173,"reputation":52,"energy":0,"equipmentLevel":4,"beatPrice":43,"passiveIncome":46},{"minute":324,"hour":5.4,"money":5585,"reputation":53,"energy":1,"equipmentLevel":4,"beatPrice":44,"passiveIncome":46},{"minute":330,"hour":5.5,"money":1955,"reputation":53,"energy":13,"equipmentLevel":5,"beatPrice":0,"passiveIncome":46},{"minute":331,"hour":5.516666666666667,"money":2045,"reputation":54,"energy":0,"equipmentLevel":5,"beatPrice":44,"passiveIncome":46},{"minute":339,"hour":5.65,"money":2459,"reputation":55,"energy":1,"equipmentLevel":5,"beatPrice":46,"passiveIncome":46},{"minute":346,"hour":5.766666666666667,"money":2829,"reputation":56,"energy":0,"equipmentLevel":5,"beatPrice":48,"passiveIncome":46},{"minute":354,"hour":5.9,"money":3243,"reputation":57,"energy":1,"equipmentLevel":5,"beatPrice":46,"passiveIncome":46},{"minute":360,"hour":6,"money":3519,"reputation":57,"energy":13,"equipmentLevel":5,"beatPrice":0,"passiveIncome":46},{"minute":361,"hour":6.016666666666667,"money":3609,"reputation":58,"energy":0,"equipmentLevel":5,"beatPrice":44,"passiveIncome":46},{"minute":369,"hour":6.15,"money":4030,"reputation":59,"energy":1,"equipmentLevel":5,"beatPrice":53,"passiveIncome":46},{"minute":376,"hour":6.266666666666667,"money":4401,"reputation":60,"energy":0,"equipmentLevel":5,"beatPrice":49,"passiveIncome":46},{"minute":384,"hour":6.4,"money":4817,"reputation":61,"energy":1,"equipmentLevel":5,"beatPrice":48,"passiveIncome":46},{"minute":391,"hour":6.516666666666667,"money":5187,"reputation":62,"energy":0,"equipmentLevel":5,"beatPrice":48,"passiveIncome":46},{"minute":399,"hour":6.65,"money":5602,"reputation":63,"energy":1,"equipmentLevel":5,"beatPrice":47,"passiveIncome":46},{"minute":406,"hour":6.766666666666667,"money":5970,"reputation":64,"energy":0,"equipmentLevel":5,"beatPrice":46,"passiveIncome":46},{"minute":414,"hour":6.9,"money":6391,"reputation":65,"energy":1,"equipmentLevel":5,"beatPrice":53,"passiveIncome":46},{"minute":416,"hour":6.933333333333334,"money":4336,"reputation":65,"energy":5,"equipmentLevel":5,"beatPrice":0,"passiveIncome":62},{"minute":420,"hour":7,"money":4584,"reputation":65,"energy":13,"equipmentLevel":5,"beatPrice":0,"passiveIncome":62},{"minute":421,"hour":7.016666666666667,"money":4699,"reputation":66,"energy":0,"equipmentLevel":5,"beatPrice":53,"passiveIncome":62},{"minute":429,"hour":7.15,"money":5248,"reputation":67,"energy":1,"equipmentLevel":5,"beatPrice":53,"passiveIncome":62},{"minute":436,"hour":7.266666666666667,"money":5731,"reputation":68,"energy":0,"equipmentLevel":5,"beatPrice":49,"passiveIncome":62},{"minute":444,"hour":7.4,"money":6280,"reputation":69,"energy":1,"equipmentLevel":5,"beatPrice":53,"passiveIncome":62},{"minute":451,"hour":7.516666666666667,"money":6769,"reputation":70,"energy":0,"equipmentLevel":5,"beatPrice":55,"passiveIncome":62},{"minute":459,"hour":7.65,"money":7312,"reputation":71,"energy":1,"equipmentLevel":5,"beatPrice":47,"passiveIncome":62},{"minute":466,"hour":7.766666666666667,"money":7800,"reputation":72,"energy":0,"equipmentLevel":5,"beatPrice":54,"passiveIncome":62},{"minute":474,"hour":7.9,"money":8346,"reputation":73,"energy":1,"equipmentLevel":5,"beatPrice":50,"passiveIncome":62},{"minute":480,"hour":8,"money":8718,"reputation":73,"energy":13,"equipmentLevel":5,"beatPrice":0,"passiveIncome":62},{"minute":481,"hour":8.016666666666667,"money":8831,"reputation":74,"energy":0,"equipmentLevel":5,"beatPrice":51,"passiveIncome":62},{"minute":489,"hour":8.15,"money":9374,"reputation":75,"energy":1,"equipmentLevel":5,"beatPrice":47,"passiveIncome":62},{"minute":496,"hour":8.266666666666667,"money":9859,"reputation":76,"energy":0,"equipmentLevel":5,"beatPrice":51,"passiveIncome":62},{"minute":504,"hour":8.4,"money":10411,"reputation":77,"energy":1,"equipmentLevel":5,"beatPrice":56,"passiveIncome":62},{"minute":504,"hour":8.4,"money":6976,"reputation":77,"energy":1,"equipmentLevel":5,"beatPrice":0,"passiveIncome":82},{"minute":511,"hour":8.516666666666667,"money":7605,"reputation":78,"energy":0,"equipmentLevel":5,"beatPrice":55,"passiveIncome":82},{"minute":519,"hour":8.65,"money":8312,"reputation":79,"energy":1,"equipmentLevel":5,"beatPrice":51,"passiveIncome":82},{"minute":526,"hour":8.766666666666667,"money":8944,"reputation":80,"energy":0,"equipmentLevel":5,"beatPrice":58,"passiveIncome":82},{"minute":534,"hour":8.9,"money":9657,"reputation":81,"energy":1,"equipmentLevel":5,"beatPrice":57,"passiveIncome":82},{"minute":540,"hour":9,"money":10149,"reputation":81,"energy":13,"equipmentLevel":5,"beatPrice":0,"passiveIncome":82},{"minute":541,"hour":9.016666666666667,"money":10281,"reputation":82,"energy":0,"equipmentLevel":5,"beatPrice":50,"passiveIncome":82},{"minute":549,"hour":9.15,"money":10986,"reputation":83,"energy":1,"equipmentLevel":5,"beatPrice":49,"passiveIncome":82},{"minute":556,"hour":9.266666666666667,"money":11614,"reputation":84,"energy":0,"equipmentLevel":5,"beatPrice":54,"passiveIncome":82},{"minute":564,"hour":9.4,"money":12325,"reputation":85,"energy":1,"equipmentLevel":5,"beatPrice":55,"passiveIncome":82},{"minute":571,"hour":9.516666666666667,"money":12954,"reputation":86,"energy":0,"equipmentLevel":5,"beatPrice":55,"passiveIncome":82},{"minute":579,"hour":9.65,"money":13666,"reputation":87,"energy":1,"equipmentLevel":5,"beatPrice":56,"passiveIncome":82},{"minute":586,"hour":9.766666666666667,"money":14294,"reputation":88,"energy":0,"equipmentLevel":5,"beatPrice":54,"passiveIncome":82},{"minute":591,"hour":9.85,"money":4939,"reputation":88,"energy":10,"equipmentLevel":6,"beatPrice":0,"passiveIncome":82},{"minute":594,"hour":9.9,"money":5242,"reputation":89,"energy":1,"equipmentLevel":6,"beatPrice":57,"passiveIncome":82},{"minute":600,"hour":10,"money":5734,"reputation":89,"energy":13,"equipmentLevel":6,"beatPrice":0,"passiveIncome":82},{"minute":601,"hour":10.016666666666667,"money":5871,"reputation":90,"energy":0,"equipmentLevel":6,"beatPrice":55,"passiveIncome":82},{"minute":609,"hour":10.15,"money":6585,"reputation":91,"energy":1,"equipmentLevel":6,"beatPrice":58,"passiveIncome":82},{"minute":616,"hour":10.266666666666667,"money":7212,"reputation":92,"energy":0,"equipmentLevel":6,"beatPrice":53,"passiveIncome":82},{"minute":624,"hour":10.4,"money":7926,"reputation":93,"energy":1,"equipmentLevel":6,"beatPrice":58,"passiveIncome":82},{"minute":631,"hour":10.516666666666667,"money":8555,"reputation":94,"energy":0,"equipmentLevel":6,"beatPrice":55,"passiveIncome":82},{"minute":639,"hour":10.65,"money":9271,"reputation":95,"energy":1,"equipmentLevel":6,"beatPrice":60,"passiveIncome":82},{"minute":646,"hour":10.766666666666667,"money":9903,"reputation":96,"energy":0,"equipmentLevel":6,"beatPrice":58,"passiveIncome":82},{"minute":654,"hour":10.9,"money":10616,"reputation":97,"energy":1,"equipmentLevel":6,"beatPrice":57,"passiveIncome":82},{"minute":660,"hour":11,"money":11108,"reputation":97,"energy":13,"equipmentLevel":6,"beatPrice":0,"passiveIncome":82},{"minute":661,"hour":11.016666666666667,"money":11245,"reputation":98,"energy":0,"equipmentLevel":6,"beatPrice":55,"passiveIncome":82},{"minute":669,"hour":11.15,"money":11957,"reputation":99,"energy":1,"equipmentLevel":6,"beatPrice":56,"passiveIncome":82},{"minute":676,"hour":11.266666666666667,"money":12591,"reputation":100,"energy":0,"equipmentLevel":6,"beatPrice":60,"passiveIncome":82},{"minute":684,"hour":11.4,"money":13306,"reputation":101,"energy":1,"equipmentLevel":6,"beatPrice":59,"passiveIncome":82},{"minute":691,"hour":11.516666666666667,"money":13940,"reputation":102,"energy":0,"equipmentLevel":6,"beatPrice":60,"passiveIncome":82},{"minute":699,"hour":11.65,"money":14656,"reputation":103,"energy":1,"equipmentLevel":6,"beatPrice":60,"passiveIncome":82},{"minute":706,"hour":11.766666666666667,"money":15293,"reputation":104,"energy":0,"equipmentLevel":6,"beatPrice":63,"passiveIncome":82},{"minute":714,"hour":11.9,"money":16009,"reputation":105,"energy":1,"equipmentLevel":6,"beatPrice":60,"passiveIncome":82},{"minute":720,"hour":12,"money":11004,"reputation":105,"energy":13,"equipmentLevel":6,"beatPrice":0,"passiveIncome":108},{"minute":720,"hour":12,"money":11004,"reputation":105,"energy":13,"equipmentLevel":6,"beatPrice":0,"passiveIncome":82},{"minute":721,"hour":12.016666666666667,"money":11173,"reputation":106,"energy":0,"equipmentLevel":6,"beatPrice":61,"passiveIncome":108},{"minute":729,"hour":12.15,"money":12093,"reputation":107,"energy":1,"equipmentLevel":6,"beatPrice":56,"passiveIncome":108},{"minute":736,"hour":12.266666666666667,"money":12912,"reputation":108,"energy":0,"equipmentLevel":6,"beatPrice":63,"passiveIncome":108},{"minute":744,"hour":12.4,"money":13838,"reputation":109,"energy":1,"equipmentLevel":6,"beatPrice":62,"passiveIncome":108},{"minute":751,"hour":12.516666666666667,"money":14660,"reputation":110,"energy":0,"equipmentLevel":6,"beatPrice":66,"passiveIncome":108},{"minute":759,"hour":12.65,"money":15588,"reputation":111,"energy":1,"equipmentLevel":6,"beatPrice":64,"passiveIncome":108},{"minute":766,"hour":12.766666666666667,"money":16407,"reputation":112,"energy":0,"equipmentLevel":6,"beatPrice":63,"passiveIncome":108},{"minute":774,"hour":12.9,"money":17336,"reputation":113,"energy":1,"equipmentLevel":6,"beatPrice":65,"passiveIncome":108},{"minute":780,"hour":13,"money":17984,"reputation":113,"energy":13,"equipmentLevel":6,"beatPrice":0,"passiveIncome":108},{"minute":781,"hour":13.016666666666667,"money":18152,"reputation":114,"energy":0,"equipmentLevel":6,"beatPrice":60,"passiveIncome":108},{"minute":789,"hour":13.15,"money":19076,"reputation":115,"energy":1,"equipmentLevel":6,"beatPrice":60,"passiveIncome":108},{"minute":796,"hour":13.266666666666667,"money":19894,"reputation":116,"energy":0,"equipmentLevel":6,"beatPrice":62,"passiveIncome":108},{"minute":804,"hour":13.4,"money":20817,"reputation":117,"energy":1,"equipmentLevel":6,"beatPrice":59,"passiveIncome":108},{"minute":811,"hour":13.516666666666667,"money":21639,"reputation":118,"energy":0,"equipmentLevel":6,"beatPrice":66,"passiveIncome":108},{"minute":819,"hour":13.65,"money":22562,"reputation":119,"energy":1,"equipmentLevel":6,"beatPrice":59,"passiveIncome":108},{"minute":826,"hour":13.766666666666667,"money":23386,"reputation":120,"energy":0,"equipmentLevel":6,"beatPrice":68,"passiveIncome":108},{"minute":834,"hour":13.9,"money":24312,"reputation":121,"energy":1,"equipmentLevel":6,"beatPrice":62,"passiveIncome":108},{"minute":840,"hour":14,"money":24960,"reputation":121,"energy":13,"equipmentLevel":6,"beatPrice":0,"passiveIncome":108},{"minute":841,"hour":14.016666666666667,"money":25128,"reputation":122,"energy":0,"equipmentLevel":6,"beatPrice":60,"passiveIncome":108},{"minute":849,"hour":14.15,"money":26057,"reputation":123,"energy":1,"equipmentLevel":6,"beatPrice":65,"passiveIncome":108},{"minute":856,"hour":14.266666666666667,"money":26875,"reputation":124,"energy":0,"equipmentLevel":6,"beatPrice":62,"passiveIncome":108},{"minute":864,"hour":14.4,"money":27801,"reputation":125,"energy":1,"equipmentLevel":6,"beatPrice":62,"passiveIncome":108},{"minute":871,"hour":14.516666666666667,"money":28623,"reputation":126,"energy":0,"equipmentLevel":6,"beatPrice":66,"passiveIncome":108},{"minute":879,"hour":14.65,"money":29554,"reputation":127,"energy":1,"equipmentLevel":6,"beatPrice":67,"passiveIncome":108},{"minute":886,"hour":14.766666666666667,"money":30379,"reputation":128,"energy":0,"equipmentLevel":6,"beatPrice":69,"passiveIncome":108},{"minute":894,"hour":14.9,"money":31311,"reputation":129,"energy":1,"equipmentLevel":6,"beatPrice":68,"passiveIncome":108},{"minute":900,"hour":15,"money":31959,"reputation":129,"energy":13,"equipmentLevel":6,"beatPrice":0,"passiveIncome":108},{"minute":901,"hour":15.016666666666667,"money":32129,"reputation":130,"energy":0,"equipmentLevel":6,"beatPrice":62,"passiveIncome":108},{"minute":909,"hour":15.15,"money":33061,"reputation":131,"energy":1,"equipmentLevel":6,"beatPrice":68,"passiveIncome":108},{"minute":916,"hour":15.266666666666667,"money":33887,"reputation":132,"energy":0,"equipmentLevel":6,"beatPrice":70,"passiveIncome":108},{"minute":924,"hour":15.4,"money":34822,"reputation":133,"energy":1,"equipmentLevel":6,"beatPrice":71,"passiveIncome":108},{"minute":931,"hour":15.516666666666667,"money":35645,"reputation":134,"energy":0,"equipmentLevel":6,"beatPrice":67,"passiveIncome":108},{"minute":939,"hour":15.65,"money":36580,"reputation":135,"energy":1,"equipmentLevel":6,"beatPrice":71,"passiveIncome":108},{"minute":940,"hour":15.666666666666666,"money":12274,"reputation":135,"energy":3,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":946,"hour":15.766666666666667,"money":12989,"reputation":136,"energy":0,"equipmentLevel":7,"beatPrice":67,"passiveIncome":108},{"minute":954,"hour":15.9,"money":13921,"reputation":137,"energy":1,"equipmentLevel":7,"beatPrice":68,"passiveIncome":108},{"minute":960,"hour":16,"money":14569,"reputation":137,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":961,"hour":16.016666666666666,"money":14749,"reputation":138,"energy":0,"equipmentLevel":7,"beatPrice":72,"passiveIncome":108},{"minute":969,"hour":16.15,"money":15688,"reputation":139,"energy":1,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":976,"hour":16.266666666666666,"money":16517,"reputation":140,"energy":0,"equipmentLevel":7,"beatPrice":73,"passiveIncome":108},{"minute":984,"hour":16.4,"money":17455,"reputation":141,"energy":1,"equipmentLevel":7,"beatPrice":74,"passiveIncome":108},{"minute":991,"hour":16.516666666666666,"money":18285,"reputation":142,"energy":0,"equipmentLevel":7,"beatPrice":74,"passiveIncome":108},{"minute":999,"hour":16.65,"money":19219,"reputation":143,"energy":1,"equipmentLevel":7,"beatPrice":70,"passiveIncome":108},{"minute":1006,"hour":16.766666666666666,"money":20046,"reputation":144,"energy":0,"equipmentLevel":7,"beatPrice":71,"passiveIncome":108},{"minute":1014,"hour":16.9,"money":20984,"reputation":145,"energy":1,"equipmentLevel":7,"beatPrice":74,"passiveIncome":108},{"minute":1020,"hour":17,"money":21632,"reputation":145,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":1021,"hour":17.016666666666666,"money":21813,"reputation":146,"energy":0,"equipmentLevel":7,"beatPrice":73,"passiveIncome":108},{"minute":1029,"hour":17.15,"money":22752,"reputation":147,"energy":1,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1036,"hour":17.266666666666666,"money":23579,"reputation":148,"energy":0,"equipmentLevel":7,"beatPrice":71,"passiveIncome":108},{"minute":1044,"hour":17.4,"money":24513,"reputation":149,"energy":1,"equipmentLevel":7,"beatPrice":70,"passiveIncome":108},{"minute":1051,"hour":17.516666666666666,"money":25344,"reputation":150,"energy":0,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1059,"hour":17.65,"money":26283,"reputation":151,"energy":1,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1066,"hour":17.766666666666666,"money":27115,"reputation":152,"energy":0,"equipmentLevel":7,"beatPrice":76,"passiveIncome":108},{"minute":1074,"hour":17.9,"money":28056,"reputation":153,"energy":1,"equipmentLevel":7,"beatPrice":77,"passiveIncome":108},{"minute":1080,"hour":18,"money":28704,"reputation":153,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":1081,"hour":18.016666666666666,"money":28881,"reputation":154,"energy":0,"equipmentLevel":7,"beatPrice":69,"passiveIncome":108},{"minute":1089,"hour":18.15,"money":29820,"reputation":155,"energy":1,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1096,"hour":18.266666666666666,"money":30652,"reputation":156,"energy":0,"equipmentLevel":7,"beatPrice":76,"passiveIncome":108},{"minute":1104,"hour":18.4,"money":31585,"reputation":157,"energy":1,"equipmentLevel":7,"beatPrice":69,"passiveIncome":108},{"minute":1111,"hour":18.516666666666666,"money":32412,"reputation":158,"energy":0,"equipmentLevel":7,"beatPrice":71,"passiveIncome":108},{"minute":1119,"hour":18.65,"money":33349,"reputation":159,"energy":1,"equipmentLevel":7,"beatPrice":73,"passiveIncome":108},{"minute":1126,"hour":18.766666666666666,"money":34178,"reputation":160,"energy":0,"equipmentLevel":7,"beatPrice":73,"passiveIncome":108},{"minute":1134,"hour":18.9,"money":35121,"reputation":161,"energy":1,"equipmentLevel":7,"beatPrice":79,"passiveIncome":108},{"minute":1140,"hour":19,"money":35769,"reputation":161,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":1141,"hour":19.016666666666666,"money":35953,"reputation":162,"energy":0,"equipmentLevel":7,"beatPrice":76,"passiveIncome":108},{"minute":1149,"hour":19.15,"money":36888,"reputation":163,"energy":1,"equipmentLevel":7,"beatPrice":71,"passiveIncome":108},{"minute":1156,"hour":19.266666666666666,"money":37721,"reputation":164,"energy":0,"equipmentLevel":7,"beatPrice":77,"passiveIncome":108},{"minute":1164,"hour":19.4,"money":38663,"reputation":165,"energy":1,"equipmentLevel":7,"beatPrice":78,"passiveIncome":108},{"minute":1171,"hour":19.516666666666666,"money":39497,"reputation":166,"energy":0,"equipmentLevel":7,"beatPrice":78,"passiveIncome":108},{"minute":1179,"hour":19.65,"money":40432,"reputation":167,"energy":1,"equipmentLevel":7,"beatPrice":71,"passiveIncome":108},{"minute":1186,"hour":19.766666666666666,"money":41264,"reputation":168,"energy":0,"equipmentLevel":7,"beatPrice":76,"passiveIncome":108},{"minute":1194,"hour":19.9,"money":42205,"reputation":169,"energy":1,"equipmentLevel":7,"beatPrice":77,"passiveIncome":108},{"minute":1200,"hour":20,"money":42853,"reputation":169,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":1201,"hour":20.016666666666666,"money":43036,"reputation":170,"energy":0,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1209,"hour":20.15,"money":43971,"reputation":171,"energy":1,"equipmentLevel":7,"beatPrice":71,"passiveIncome":108},{"minute":1216,"hour":20.266666666666666,"money":44802,"reputation":172,"energy":0,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1224,"hour":20.4,"money":45746,"reputation":173,"energy":1,"equipmentLevel":7,"beatPrice":80,"passiveIncome":108},{"minute":1231,"hour":20.516666666666666,"money":46584,"reputation":174,"energy":0,"equipmentLevel":7,"beatPrice":82,"passiveIncome":108},{"minute":1239,"hour":20.65,"money":47526,"reputation":175,"energy":1,"equipmentLevel":7,"beatPrice":78,"passiveIncome":108},{"minute":1246,"hour":20.766666666666666,"money":48355,"reputation":176,"energy":0,"equipmentLevel":7,"beatPrice":73,"passiveIncome":108},{"minute":1254,"hour":20.9,"money":49301,"reputation":177,"energy":1,"equipmentLevel":7,"beatPrice":82,"passiveIncome":108},{"minute":1260,"hour":21,"money":49949,"reputation":177,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":1261,"hour":21.016666666666666,"money":50138,"reputation":178,"energy":0,"equipmentLevel":7,"beatPrice":81,"passiveIncome":108},{"minute":1269,"hour":21.15,"money":51077,"reputation":179,"energy":1,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1276,"hour":21.266666666666666,"money":51914,"reputation":180,"energy":0,"equipmentLevel":7,"beatPrice":81,"passiveIncome":108},{"minute":1284,"hour":21.4,"money":52853,"reputation":181,"energy":1,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1291,"hour":21.516666666666666,"money":53688,"reputation":182,"energy":0,"equipmentLevel":7,"beatPrice":79,"passiveIncome":108},{"minute":1299,"hour":21.65,"money":54628,"reputation":183,"energy":1,"equipmentLevel":7,"beatPrice":76,"passiveIncome":108},{"minute":1306,"hour":21.766666666666666,"money":55466,"reputation":184,"energy":0,"equipmentLevel":7,"beatPrice":82,"passiveIncome":108},{"minute":1314,"hour":21.9,"money":56404,"reputation":185,"energy":1,"equipmentLevel":7,"beatPrice":74,"passiveIncome":108},{"minute":1320,"hour":22,"money":57052,"reputation":185,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":1321,"hour":22.016666666666666,"money":57236,"reputation":186,"energy":0,"equipmentLevel":7,"beatPrice":76,"passiveIncome":108},{"minute":1329,"hour":22.15,"money":58183,"reputation":187,"energy":1,"equipmentLevel":7,"beatPrice":83,"passiveIncome":108},{"minute":1336,"hour":22.266666666666666,"money":59014,"reputation":188,"energy":0,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1344,"hour":22.4,"money":59959,"reputation":189,"energy":1,"equipmentLevel":7,"beatPrice":81,"passiveIncome":108},{"minute":1351,"hour":22.516666666666666,"money":60790,"reputation":190,"energy":0,"equipmentLevel":7,"beatPrice":75,"passiveIncome":108},{"minute":1359,"hour":22.65,"money":61737,"reputation":191,"energy":1,"equipmentLevel":7,"beatPrice":83,"passiveIncome":108},{"minute":1366,"hour":22.766666666666666,"money":62575,"reputation":192,"energy":0,"equipmentLevel":7,"beatPrice":82,"passiveIncome":108},{"minute":1374,"hour":22.9,"money":63520,"reputation":193,"energy":1,"equipmentLevel":7,"beatPrice":81,"passiveIncome":108},{"minute":1380,"hour":23,"money":64168,"reputation":193,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":1381,"hour":23.016666666666666,"money":64352,"reputation":194,"energy":0,"equipmentLevel":7,"beatPrice":76,"passiveIncome":108},{"minute":1389,"hour":23.15,"money":65300,"reputation":195,"energy":1,"equipmentLevel":7,"beatPrice":84,"passiveIncome":108},{"minute":1396,"hour":23.266666666666666,"money":66132,"reputation":196,"energy":0,"equipmentLevel":7,"beatPrice":76,"passiveIncome":108},{"minute":1404,"hour":23.4,"money":67079,"reputation":197,"energy":1,"equipmentLevel":7,"beatPrice":83,"passiveIncome":108},{"minute":1411,"hour":23.516666666666666,"money":67917,"reputation":198,"energy":0,"equipmentLevel":7,"beatPrice":82,"passiveIncome":108},{"minute":1419,"hour":23.65,"money":68867,"reputation":199,"energy":1,"equipmentLevel":7,"beatPrice":86,"passiveIncome":108},{"minute":1426,"hour":23.766666666666666,"money":69704,"reputation":200,"energy":0,"equipmentLevel":7,"beatPrice":81,"passiveIncome":108},{"minute":1434,"hour":23.9,"money":70651,"reputation":201,"energy":1,"equipmentLevel":7,"beatPrice":83,"passiveIncome":108},{"minute":1440,"hour":24,"money":71299,"reputation":201,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108},{"minute":1440,"hour":24,"money":71299,"reputation":201,"energy":13,"equipmentLevel":7,"beatPrice":0,"passiveIncome":108}];
+
+    const chartConfig = {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true,
+        }
+      }
+    };
+
+    // Money Chart
+    new Chart(document.getElementById('moneyChart'), {
+      type: 'line',
+      data: {
+        labels: chartData.map(d => d.hour.toFixed(1) + 'h'),
+        datasets: [{
+          label: 'Деньги ($)',
+          data: chartData.map(d => d.money),
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: chartConfig
+    });
+
+    // Beat Price Chart
+    new Chart(document.getElementById('beatPriceChart'), {
+      type: 'line',
+      data: {
+        labels: chartData.filter(d => d.beatPrice > 0).map(d => d.hour.toFixed(1) + 'h'),
+        datasets: [{
+          label: 'Цена бита ($)',
+          data: chartData.filter(d => d.beatPrice > 0).map(d => d.beatPrice),
+          borderColor: '#f093fb',
+          backgroundColor: 'rgba(240, 147, 251, 0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: chartConfig
+    });
+
+    // Energy Chart
+    new Chart(document.getElementById('energyChart'), {
+      type: 'line',
+      data: {
+        labels: chartData.map(d => d.hour.toFixed(1) + 'h'),
+        datasets: [{
+          label: 'Энергия',
+          data: chartData.map(d => d.energy),
+          borderColor: '#ffa600',
+          backgroundColor: 'rgba(255, 166, 0, 0.1)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: chartConfig
+    });
+
+    // Progress Chart
+    new Chart(document.getElementById('progressChart'), {
+      type: 'line',
+      data: {
+        labels: chartData.map(d => d.hour.toFixed(1) + 'h'),
+        datasets: [
+          {
+            label: 'Репутация',
+            data: chartData.map(d => d.reputation),
+            borderColor: '#4ecdc4',
+            backgroundColor: 'rgba(78, 205, 196, 0.1)',
+            yAxisID: 'y',
+            tension: 0.4
+          },
+          {
+            label: 'Уровень оборудования',
+            data: chartData.map(d => d.equipmentLevel),
+            borderColor: '#ff6b6b',
+            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+            yAxisID: 'y1',
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        ...chartConfig,
+        scales: {
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+            title: { display: true, text: 'Репутация' }
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            title: { display: true, text: 'Уровень оборудования' },
+            grid: { drawOnChartArea: false }
+          }
+        }
+      }
+    });
+
+    // Income Comparison Chart
+    new Chart(document.getElementById('incomeChart'), {
+      type: 'line',
+      data: {
+        labels: chartData.map(d => d.hour.toFixed(1) + 'h'),
+        datasets: [
+          {
+            label: 'Цена за бит (активный доход)',
+            data: chartData.map(d => d.beatPrice || null),
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            spanGaps: true
+          },
+          {
+            label: 'Пассивный доход ($/мин)',
+            data: chartData.map(d => d.passiveIncome),
+            borderColor: '#764ba2',
+            backgroundColor: 'rgba(118, 75, 162, 0.1)',
+            tension: 0.4
+          }
+        ]
+      },
+      options: chartConfig
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Producer Tycoon - The Next Big Thing</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 60px;
+      padding: 60px 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero:before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.1); opacity: 0.5; }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 900;
+      margin-bottom: 15px;
+      color: white;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .hero .tagline {
+      font-size: 1.5rem;
+      color: rgba(255,255,255,0.95);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .hero .subtitle {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.85);
+      font-style: italic;
+    }
+
+    .big-idea {
+      background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+      padding: 50px 40px;
+      border-radius: 20px;
+      margin-bottom: 40px;
+      border: 2px solid #667eea;
+      box-shadow: 0 10px 40px rgba(102, 126, 234, 0.2);
+    }
+
+    .big-idea h2 {
+      color: #95e1d3;
+      font-size: 2.5rem;
+      margin-bottom: 25px;
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .big-idea p {
+      font-size: 1.2rem;
+      line-height: 1.8;
+      color: #e0e0e0;
+      margin-bottom: 20px;
+    }
+
+    .big-idea .highlight {
+      background: rgba(102, 126, 234, 0.2);
+      padding: 25px;
+      border-radius: 12px;
+      border-left: 5px solid #667eea;
+      margin: 25px 0;
+    }
+
+    .big-idea .highlight strong {
+      color: #95e1d3;
+      font-size: 1.3rem;
+    }
+
+    .section {
+      background: #1a1a2e;
+      padding: 40px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      border: 1px solid #2a2a3e;
+    }
+
+    .section h2 {
+      color: #667eea;
+      font-size: 2rem;
+      margin-bottom: 25px;
+      font-weight: 700;
+    }
+
+    .section h3 {
+      color: #95e1d3;
+      font-size: 1.4rem;
+      margin: 25px 0 15px 0;
+      font-weight: 600;
+    }
+
+    .story-beats {
+      display: grid;
+      gap: 20px;
+      margin: 25px 0;
+    }
+
+    .story-beat {
+      background: #16213e;
+      padding: 25px;
+      border-radius: 12px;
+      border-left: 5px solid #764ba2;
+    }
+
+    .story-beat h4 {
+      color: #f093fb;
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .story-beat p {
+      color: #b0b0b0;
+      line-height: 1.6;
+    }
+
+    .proof-box {
+      background: linear-gradient(135deg, rgba(149, 225, 211, 0.15) 0%, rgba(102, 126, 234, 0.15) 100%);
+      padding: 30px;
+      border-radius: 15px;
+      border: 2px solid #95e1d3;
+      margin: 25px 0;
+    }
+
+    .proof-box h3 {
+      color: #95e1d3;
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .proof-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .proof-stat {
+      text-align: center;
+      padding: 20px;
+      background: rgba(22, 33, 62, 0.5);
+      border-radius: 10px;
+    }
+
+    .proof-stat .number {
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: #95e1d3;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .proof-stat .label {
+      color: #e0e0e0;
+      font-size: 1rem;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin: 25px 0;
+    }
+
+    .comparison-item {
+      padding: 25px;
+      border-radius: 12px;
+    }
+
+    .comparison-item.old {
+      background: rgba(255, 100, 100, 0.1);
+      border: 2px solid rgba(255, 100, 100, 0.3);
+    }
+
+    .comparison-item.new {
+      background: rgba(100, 255, 150, 0.1);
+      border: 2px solid rgba(100, 255, 150, 0.3);
+    }
+
+    .comparison-item h4 {
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+
+    .comparison-item.old h4 { color: #ff6b6b; }
+    .comparison-item.new h4 { color: #95e1d3; }
+
+    .comparison-item ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .comparison-item ul li {
+      padding: 8px 0;
+      padding-left: 25px;
+      position: relative;
+      color: #e0e0e0;
+    }
+
+    .comparison-item.old ul li:before {
+      content: "❌";
+      position: absolute;
+      left: 0;
+    }
+
+    .comparison-item.new ul li:before {
+      content: "✅";
+      position: absolute;
+      left: 0;
+    }
+
+    .genres {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+      justify-content: center;
+    }
+
+    .genre-tag {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .unique-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin: 25px 0;
+    }
+
+    .unique-card {
+      background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%);
+      padding: 25px;
+      border-radius: 12px;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .unique-card:hover {
+      border-color: #667eea;
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .unique-card .icon {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+
+    .unique-card h4 {
+      color: #667eea;
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .unique-card p {
+      color: #b0b0b0;
+      line-height: 1.6;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    ul li {
+      padding: 10px 0;
+      padding-left: 30px;
+      position: relative;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+
+    ul li:before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: #667eea;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .cta-box {
+      text-align: center;
+      margin-top: 60px;
+      padding: 50px 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+    }
+
+    .cta-box h2 {
+      color: white;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      font-weight: 900;
+    }
+
+    .cta-box p {
+      color: rgba(255,255,255,0.95);
+      font-size: 1.3rem;
+      line-height: 1.8;
+    }
+
+    .cta-box .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+
+    .cta-box .stat-item {
+      text-align: center;
+    }
+
+    .cta-box .stat-item .num {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #95e1d3;
+      display: block;
+    }
+
+    .cta-box .stat-item .lab {
+      color: white;
+      font-size: 1rem;
+      margin-top: 5px;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .comparison { grid-template-columns: 1fr; }
+      .unique-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <div class="hero-content">
+        <h1>🎵 Producer Tycoon</h1>
+        <p class="tagline">От уличного битмейкера до легенды индустрии</p>
+        <p class="subtitle">Idle RPG × Rhythm Game × Story-driven × Web3 GameFi</p>
+      </div>
+    </div>
+
+    <div class="big-idea">
+      <h2>💡 The Big Idea</h2>
+      <p>
+        Представь игру где <strong>каждое твоё действие имеет вес</strong>. Не просто кликать на кнопки и смотреть как цифры растут.
+        А <strong>реально играть в ритм-игру</strong>, бить ноты под музыку, чувствовать flow — и чем лучше играешь, тем больше зарабатываешь.
+      </p>
+      <p>
+        При этом это <strong>всё ещё idle-игра</strong>: можешь зайти на 5 минут, сделать пару битов, прокачать студию, нанять артиста —
+        и выйти. Твои артисты продолжат работать пока ты спишь. Через 4 часа вернёшься — заработал денег, купил новое оборудование,
+        поднялся на новый tier.
+      </p>
+
+      <div class="highlight">
+        <p><strong>Но главное — это история.</strong></p>
+        <p style="margin-top: 15px;">
+          Ты не просто фармишь ресурсы. Ты <strong>проживаешь путь музыкального продюсера</strong>: от уличного музыканта
+          который делает биты на телефоне в подвале, до владельца легендарной студии где записываются мировые звёзды.
+        </p>
+        <p style="margin-top: 15px;">
+          <strong>6 этапов карьеры. Десятки персонажей. Сотни диалогов. Выборы которые влияют на концовку.</strong>
+        </p>
+        <p style="margin-top: 15px; font-size: 1.4rem; color: #95e1d3;">
+          Это визуальная новелла, завёрнутая в ритм-игру, завёрнутая в idle-симулятор, завёрнутая в Web3 GameFi.
+        </p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📖 История в центре всего</h2>
+      <p style="font-size: 1.1rem; margin-bottom: 25px;">
+        Большинство idle-игр забывают про одну вещь: <strong>людям нужен смысл</strong>. Зачем я фармлю? Зачем качаюсь?
+        "Чтобы цифра стала больше" — это работает первые 2 дня, потом скучно.
+      </p>
+      <p style="font-size: 1.1rem; margin-bottom: 25px;">
+        Мы решили эту проблему через <strong>нарративную арку</strong>. Каждый tier открывает новую главу твоей истории.
+      </p>
+
+      <div class="story-beats">
+        <div class="story-beat">
+          <h4>🎧 Tier 1: Уличный музыкант</h4>
+          <p>
+            Ты в подвале, у тебя только телефон и Fire beats. Записываешь биты для местных рэперов за копейки.
+            Знакомишься с Metro Maximus (бывший профи), Street Poet (твой конкурент), DJ Vinyl (старая школа).
+            Они верят в тебя... или нет? <strong>Твой выбор определит союзников.</strong>
+          </p>
+        </div>
+
+        <div class="story-beat">
+          <h4>🎹 Tier 2-3: Региональная известность</h4>
+          <p>
+            Ты собрал денег, купил первую студию. Начинаешь работать с артистами города. Появляются враги —
+            Producer Envy завидует твоему успеху, Beat Baron крадёт твои идеи. Ты должен решить:
+            <strong>играть честно или использовать грязные трюки?</strong>
+          </p>
+        </div>
+
+        <div class="story-beat">
+          <h4>🏆 Tier 4-5: Национальный/Международный уровень</h4>
+          <p>
+            Ты работаешь с крупными артистами. Тебе предлагают контракт с лейблом — большие деньги, но потеря свободы.
+            Или остаться инди и рисковать всем? <strong>Выбор повлияет на концовку и доступных персонажей.</strong>
+          </p>
+        </div>
+
+        <div class="story-beat">
+          <h4>💎 Tier 6: Легенда индустрии</h4>
+          <p>
+            Ты построил империю. Но пришёл момент истины: стать богатым продюсером-продажником?
+            Или остаться верным искусству и создать шедевр который изменит музыку навсегда?
+            <strong>4 разных концовки в зависимости от твоих решений на протяжении игры.</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="highlight" style="background: rgba(240, 147, 251, 0.15); border-left-color: #f093fb; margin-top: 30px;">
+        <p style="font-size: 1.15rem; color: #e0e0e0;">
+          <strong style="color: #f093fb;">Это не просто текст между уровнями.</strong><br><br>
+          Персонажи развиваются. Твои решения имеют последствия. История адаптируется под твой стиль игры.
+          Каждый tier — это 10-15 минут нарратива (комиксы, диалоги, катсцены).
+          <strong>Общая длительность истории: 1.5-2 часа качественного storytelling.</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🎮 Почему это уникально?</h2>
+
+      <div class="unique-grid">
+        <div class="unique-card">
+          <div class="icon">🎸</div>
+          <h4>Skill-based idle</h4>
+          <p>
+            Первая idle-игра где твой скилл в ритм-игре напрямую влияет на прогресс. Играешь хорошо → лучшие биты →
+            больше денег → быстрее прокачка. Но можешь играть плохо и компенсировать AFK income.
+          </p>
+        </div>
+
+        <div class="unique-card">
+          <div class="icon">📚</div>
+          <h4>История как мотивация</h4>
+          <p>
+            Не "кликай 1000 раз для апгрейда". А "заработай $10K чтобы открыть следующую главу истории и узнать
+            что случилось с Metro Maximus". Эмоциональная привязка > механический гринд.
+          </p>
+        </div>
+
+        <div class="unique-card">
+          <div class="icon">🎵</div>
+          <h4>Реальная музыка</h4>
+          <p>
+            Играешь под настоящие треки через OSU beatmaps. Загружай любимую музыку и создавай биты под неё.
+            Интеграция с артистами: их треки в игре = промо для них, контент для нас.
+          </p>
+        </div>
+
+        <div class="unique-card">
+          <div class="icon">🎭</div>
+          <h4>Choices matter</h4>
+          <p>
+            4 концовки. Десятки выборов. Разные персонажи доступны в зависимости от твоего пути.
+            Replayability: захочешь пройти ещё раз чтобы увидеть другую концовку.
+          </p>
+        </div>
+
+        <div class="unique-card">
+          <div class="icon">💰</div>
+          <h4>Play-to-Earn (честный)</h4>
+          <p>
+            Не "мы обещаем что заработаешь". А "заработай $BEAT токены играя, конвертируй в TON через 60 дней на TGE".
+            F2P могут заработать $10-50, активные игроки $100-200, киты будут соревноваться за топ-1.
+          </p>
+        </div>
+
+        <div class="unique-card">
+          <div class="icon">🚀</div>
+          <h4>Viral by design</h4>
+          <p>
+            Telegram Mini App + реферальная система (приведи друга = бонусы) + leaderboard (соревнуйся с друзьями) +
+            shareability (скриншоты концовок в Stories). Natural viral growth.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>✅ Proof of Concept: Мы можем быстро</h2>
+
+      <div class="proof-box">
+        <h3>⚡ MVP за 30 часов работы</h3>
+
+        <div class="proof-stats">
+          <div class="proof-stat">
+            <span class="number">30</span>
+            <span class="label">часов разработки</span>
+          </div>
+          <div class="proof-stat">
+            <span class="number">70%</span>
+            <span class="label">готовности MVP</span>
+          </div>
+          <div class="proof-stat">
+            <span class="number">107</span>
+            <span class="label">AI-generated ассетов</span>
+          </div>
+          <div class="proof-stat">
+            <span class="number">~15</span>
+            <span class="label">core features working</span>
+          </div>
+        </div>
+
+        <p style="text-align: center; margin-top: 25px; font-size: 1.15rem; color: #e0e0e0;">
+          <strong>Что уже работает:</strong> Полный game loop (создание битов, rhythm game, апгрейды, артисты, скиллы, энергия,
+          репутация, 6 тиров), Supabase backend, AI generation (аватары + обложки), OSU beatmap support,
+          mobile-optimized UI, offline earnings, 107 готовых ассетов.
+        </p>
+
+        <p style="text-align: center; margin-top: 15px; font-size: 1.15rem; color: #95e1d3;">
+          <strong>Осталось ~20-25 часов:</strong> Telegram Stars, gacha, leaderboard, balance, polish.
+        </p>
+      </div>
+
+      <h3 style="margin-top: 40px; text-align: center; font-size: 1.8rem;">Эволюция после City Holder</h3>
+
+      <div class="comparison">
+        <div class="comparison-item old">
+          <h4>📚 City Holder: Lessons Learned</h4>
+          <ul>
+            <li>1.5 года разработки, прибыльный проект ✅</li>
+            <li>$600K на разработку → основные расходы на команду</li>
+            <li>Получили опыт, вес в индустрии, связи</li>
+            <li>Научились управлять большими проектами</li>
+            <li>Поняли что можно делать быстрее и дешевле</li>
+            <li>Теперь знаем как оптимизировать процессы</li>
+          </ul>
+        </div>
+
+        <div class="comparison-item new">
+          <h4>🚀 Producer Tycoon: Applied Knowledge</h4>
+          <ul>
+            <li>$60K budget (опыт позволяет сократить затраты 10x)</li>
+            <li>2-4 недели до launch (знаем что важно, что нет)</li>
+            <li>Маленькая эффективная команда 3-5 человек</li>
+            <li>Focus: MVP first, iterate based on metrics</li>
+            <li>Aggressive monetization с первого дня</li>
+            <li>Target: $1M+ Year 1, но быстрее и эффективнее</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="highlight" style="margin-top: 30px;">
+        <p style="font-size: 1.2rem;"><strong>Почему так дёшево и быстро?</strong></p>
+        <ul style="margin-top: 15px;">
+          <li><strong>AI для ассетов:</strong> fal.ai генерирует аватары/обложки за $0.05/штука вместо художников</li>
+          <li><strong>Готовые библиотеки:</strong> React, Next.js, Supabase, TON SDK — не пишем с нуля</li>
+          <li><strong>OSU beatmaps:</strong> Тысячи готовых ритм-карт, не надо создавать свои</li>
+          <li><strong>Telegram платформа:</strong> Не нужен app store, не нужен собственный backend для auth</li>
+          <li><strong>Lean approach:</strong> Запустили MVP → смотрим метрики → добавляем features если работает</li>
+          <li><strong>Outsource всё что можно:</strong> QA = community testers, marketing = organic growth + micro-influencers</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>💰 Монетизация: Агрессивная но честная</h2>
+
+      <p style="font-size: 1.1rem; margin-bottom: 25px;">
+        Мы не альтруисты. Это бизнес. Но мы делаем <strong>прозрачную и честную систему</strong> где все понимают правила игры.
+      </p>
+
+      <h3>Telegram Stars (основной доход):</h3>
+      <ul>
+        <li><strong>Gacha lootboxes:</strong> $1 Bronze → $50 Diamond крейты. Pity system (гарантированный Legendary за 90 pulls). Psychological hooks: near-miss эффект, suspense, FOMO banners</li>
+        <li><strong>Battle Pass:</strong> $10/месяц Premium track. Free track существует, но премиум даёт х2 прогресс</li>
+        <li><strong>Energy refills:</strong> Нетерпеливые игроки будут покупать чтобы играть больше</li>
+        <li><strong>Speed-ups:</strong> "Equipment upgrade: 24h. Skip for $3?" Киты будут скипать ВСЁ</li>
+        <li><strong>Artist slots:</strong> F2P = 3 слота, донат = до 10 слотов (больше пассивный доход)</li>
+      </ul>
+
+      <h3>Web3 (дополнительный доход + hype):</h3>
+      <ul>
+        <li><strong>NFT Sales:</strong> Producer ID Cards (~$7M projected), Equipment NFTs, Black Star Collabs</li>
+        <li><strong>Token Listing:</strong> $BEAT на DeDust/STON.fi. Мы держим 15% team allocation (2 year vesting)</li>
+        <li><strong>Secondary royalties:</strong> 5% от всех NFT trades = пассивный доход навсегда</li>
+        <li><strong>Leaderboard prizes:</strong> Топ-100 получают токены/NFT/реальные призы → киты донатят чтобы попасть</li>
+      </ul>
+
+      <div class="proof-stats" style="margin-top: 30px;">
+        <div class="proof-stat">
+          <span class="number" style="color: #667eea;">$1.2M</span>
+          <span class="label">Conservative Year 1</span>
+        </div>
+        <div class="proof-stat">
+          <span class="number" style="color: #667eea;">$5M+</span>
+          <span class="label">Best Case (viral)</span>
+        </div>
+        <div class="proof-stat">
+          <span class="number" style="color: #667eea;">$15</span>
+          <span class="label">Target ARPPU</span>
+        </div>
+        <div class="proof-stat">
+          <span class="number" style="color: #667eea;">100K+</span>
+          <span class="label">Users Goal</span>
+        </div>
+      </div>
+
+      <p style="margin-top: 25px; font-size: 1.05rem; color: #95e1d3; text-align: center;">
+        <strong>Reality check:</strong> 90% игроков не заработают (или потеряют время).
+        Топ 1% whales = 80% revenue. Но это норма для gacha games. Genshin Impact делает $4B/year с той же моделью.
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>🤝 Партнёрства: Music Industry Integration</h2>
+
+      <h3>Black Star Inc (в процессе):</h3>
+      <ul>
+        <li><strong>Музыкальный контент:</strong> Треки артистов лейбла в игре как официальный контент</li>
+        <li><strong>Black Star Edition NFTs:</strong> 100 карточек с реальными автографами артистов ($10K+ floor price)</li>
+        <li><strong>Образовательные курсы:</strong> "Как стать продюсером" от профессионалов лейбла</li>
+        <li><strong>Real-world prizes:</strong> Сессия в Black Star студии, мерч, meet & greet для топ-игроков</li>
+        <li><strong>Marketing:</strong> Анонсы в их соцсетях (миллионы подписчиков) = бесплатный охват</li>
+      </ul>
+
+      <h3>Молодые артисты:</h3>
+      <ul>
+        <li>Нужна аудитория → мы даём миллионы прослушиваний</li>
+        <li>Они дают контент (треки) → win-win модель</li>
+        <li>Revenue share: % от NFT продаж их коллабов</li>
+      </ul>
+
+      <p style="margin-top: 25px; font-size: 1.1rem;">
+        <strong>Это не просто игра. Это платформа для музыкальной индустрии.</strong>
+      </p>
+    </div>
+
+    <div class="section">
+      <h2>📅 Timeline: Fast Execution</h2>
+
+      <div style="background: #16213e; padding: 25px; border-radius: 12px; margin: 20px 0;">
+        <h3 style="color: #95e1d3; margin-bottom: 15px;">Week 1-2: MVP Finish (уже 70% готово!)</h3>
+        <p>Telegram Stars, gacha, leaderboard, balance, polish → <strong>запускаем в closed beta</strong></p>
+      </div>
+
+      <div style="background: #16213e; padding: 25px; border-radius: 12px; margin: 20px 0;">
+        <h3 style="color: #95e1d3; margin-bottom: 15px;">Week 3: Metrics & Iteration</h3>
+        <p>1000 тестеров → смотрим DAU, retention, ARPPU → если работает = погнали дальше</p>
+      </div>
+
+      <div style="background: #16213e; padding: 25px; border-radius: 12px; margin: 20px 0;">
+        <h3 style="color: #95e1d3; margin-bottom: 15px;">Week 4-8: Public Launch & Growth</h3>
+        <p>Marketing push, инфлюенсеры, первые NFT drops, Battle Pass, события, контент-обновления</p>
+      </div>
+
+      <div style="background: #16213e; padding: 25px; border-radius: 12px; margin: 20px 0;">
+        <h3 style="color: #95e1d3; margin-bottom: 15px;">Day 60: TGE 🚀</h3>
+        <p>$BEAT токен на DEX, конвертация фантиков, airdrop топ-100, празднование, выход на прибыль</p>
+      </div>
+
+      <div style="background: #16213e; padding: 25px; border-radius: 12px; margin: 20px 0;">
+        <h3 style="color: #95e1d3; margin-bottom: 15px;">Post-TGE: Scale or Exit</h3>
+        <p>Если метрики хорошие → Season 2, NFT marketplace, стейкинг, новый контент<br>
+        Если плохие → закрываем с прибылью и идём дальше (не 3 года страданий!)</p>
+      </div>
+    </div>
+
+    <div class="cta-box">
+      <h2>🚀 This is the One</h2>
+      <p>
+        Мы нашли <strong>идеальный баланс</strong>: крутая механика + эмоциональная история + доказанная execution скорость +
+        агрессивная монетизация + music industry connections.
+      </p>
+      <p style="margin-top: 20px;">
+        City Holder дал нам опыт и связи. Теперь мы знаем как делать быстрее, дешевле и эффективнее.
+      </p>
+      <p style="margin-top: 20px; font-size: 1.4rem; color: #95e1d3;">
+        <strong>2-4 недели до launch. $60K budget. Опыт команды = конкурентное преимущество.</strong>
+      </p>
+
+      <div class="stats">
+        <div class="stat-item">
+          <span class="num">70%</span>
+          <span class="lab">MVP Ready</span>
+        </div>
+        <div class="stat-item">
+          <span class="num">2-4</span>
+          <span class="lab">Weeks to Launch</span>
+        </div>
+        <div class="stat-item">
+          <span class="num">$1M+</span>
+          <span class="lab">Year 1 Target</span>
+        </div>
+      </div>
+
+      <p style="margin-top: 40px; font-size: 1.2rem;">
+        <strong>Producer Tycoon</strong> — это не просто игра.<br>
+        Это эволюция нашей команды: опыт City Holder + новые технологии + lean approach.<br>
+        Это proof что мы можем делать качественные проекты быстро и эффективно.<br>
+        <strong>Это наш следующий шаг.</strong> 🎯
+      </p>
+    </div>
+  </div>
+</body>
+</html>
