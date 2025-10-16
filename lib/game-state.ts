@@ -9,7 +9,7 @@ export interface GameState {
   money: number
   reputation: number
   energy: number
-  // gems removed - was never used in game mechanics
+  gems: number
 
   // Progress
   currentStage: number
@@ -19,7 +19,7 @@ export interface GameState {
   totalBeatsCreated: number
   totalMoneyEarned: number
   totalBeatsEarnings: number
-  totalArtistsHired: number // RENAMED: was totalCollabs - tracks unique artists hired
+  totalCollabs: number
 
   // Equipment levels
   equipment: {
@@ -200,12 +200,13 @@ export const INITIAL_GAME_STATE: GameState = {
   money: 800,
   reputation: 0,
   energy: 150, // UPDATED: было 100, стало 150 для лучшего flow
+  gems: 0,
   currentStage: 1,
   stageProgress: 0,
   totalBeatsCreated: 0,
   totalMoneyEarned: 0,
   totalBeatsEarnings: 0,
-  totalArtistsHired: 0,
+  totalCollabs: 0,
   equipment: {
     phone: 1,
     headphones: 0,
