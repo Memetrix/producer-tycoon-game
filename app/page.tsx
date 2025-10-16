@@ -11,11 +11,18 @@ import { Onboarding } from "@/components/onboarding"
 import { CharacterCreation, type CharacterData } from "@/components/character-creation"
 import { AvatarConfirmation } from "@/components/avatar-confirmation"
 import { BottomNav } from "@/components/bottom-nav"
-import { type GameState, INITIAL_GAME_STATE, ENERGY_CONFIG } from "@/lib/game-state"
-import { loadGameState, saveGameState, createPlayer } from "@/lib/game-storage"
-import { getTotalEnergyBonus, getTotalPassiveIncome, calculateOfflineEarnings } from "@/lib/game-state"
+import {
+  getTotalEnergyBonus,
+  getTotalPassiveIncome,
+  calculateOfflineEarnings,
+  getLabelDealsPassiveIncome,
+  getSkillMaxEnergyBonus,
+  getSkillEnergyRegenBonus,
+} from "@/lib/game-state"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { type GameState, INITIAL_GAME_STATE, ENERGY_CONFIG } from "@/lib/game-state"
+import { loadGameState, saveGameState, createPlayer } from "@/lib/game-storage"
 
 export type Screen = "home" | "stage" | "studio" | "artists" | "upgrades" | "skills"
 
@@ -69,8 +76,10 @@ export default function Page() {
     async function initGame() {
       const savedState = await loadGameState()
       if (savedState) {
-        const passiveIncome = getTotalPassiveIncome(savedState.artists)
-        const offlineData = calculateOfflineEarnings(savedState.lastActive, passiveIncome)
+        const artistIncome = getTotalPassiveIncome(savedState.artists)
+        const labelIncome = getLabelDealsPassiveIncome(savedState.labelDeals)
+        const totalPassiveIncome = artistIncome + labelIncome
+        const offlineData = calculateOfflineEarnings(savedState.lastActive, totalPassiveIncome)
 
         if (offlineData.earnings > 0) {
           savedState.money += offlineData.earnings
@@ -108,15 +117,17 @@ export default function Page() {
     const interval = setInterval(() => {
       setGameState((prev) => {
         const energyBonus = getTotalEnergyBonus(prev.artists)
-        // UPDATED: New energy regen system - 2 energy per minute (was 1)
-        const baseRecovery = ENERGY_CONFIG.ENERGY_REGEN_PER_MINUTE / 6 // Divided by 6 because interval runs every 10 seconds (6 times per minute)
+        const skillRegenBonus = getSkillEnergyRegenBonus(prev.skills)
+        const baseRecovery = (ENERGY_CONFIG.ENERGY_REGEN_PER_MINUTE + skillRegenBonus) / 6 // Divided by 6 because interval runs every 10 seconds
         const bonusMultiplier = 1 + energyBonus / 100
         const recoveryAmount = baseRecovery * bonusMultiplier
 
-        // UPDATED: New max energy - 150 base (was 100)
         let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
-        if (prev.musicStyle === "electronic") maxEnergy = 150 + 30 // Electronic style bonus
-        if (prev.startingBonus === "energizer") maxEnergy = 150 + 50 // Energizer bonus
+        const skillMaxEnergyBonus = getSkillMaxEnergyBonus(prev.skills)
+        maxEnergy = Math.floor(maxEnergy * (1 + skillMaxEnergyBonus))
+
+        if (prev.musicStyle === "electronic") maxEnergy += 30 // Electronic style bonus
+        if (prev.startingBonus === "energizer") maxEnergy += 50 // Energizer bonus
 
         const newEnergy = Math.min(maxEnergy, Math.round(prev.energy + recoveryAmount))
 
@@ -136,13 +147,16 @@ export default function Page() {
 
     const incomeInterval = setInterval(() => {
       setGameState((prev) => {
-        const passiveIncome = getTotalPassiveIncome(prev.artists)
-        if (passiveIncome === 0) return prev
+        const artistIncome = getTotalPassiveIncome(prev.artists)
+        const labelIncome = getLabelDealsPassiveIncome(prev.labelDeals)
+        const totalPassiveIncome = artistIncome + labelIncome
+
+        if (totalPassiveIncome === 0) return prev
 
         return {
           ...prev,
-          money: prev.money + passiveIncome,
-          totalMoneyEarned: prev.totalMoneyEarned + passiveIncome,
+          money: prev.money + totalPassiveIncome,
+          totalMoneyEarned: prev.totalMoneyEarned + totalPassiveIncome,
         }
       })
     }, 60000)

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
-import { getStageTitle } from "@/lib/game-state"
+import { getStageTitle, getReputationTier } from "@/lib/game-state"
 import { OfflineEarningsModal } from "@/components/offline-earnings-modal"
 
 interface HomeScreenProps {
@@ -27,6 +27,9 @@ export function HomeScreen({
   onOfflineEarningsShown,
 }: HomeScreenProps) {
   const [showOfflineModal, setShowOfflineModal] = React.useState(false)
+
+  const currentStage = getReputationTier(gameState.reputation)
+  const currentStageTitle = getStageTitle(currentStage)
 
   useEffect(() => {
     if (offlineEarnings && offlineEarnings.earnings > 0) {
@@ -78,7 +81,7 @@ export function HomeScreen({
             <h1 className="text-xl font-bold tracking-tight truncate text-foreground">
               {gameState.playerName || "Producer"}
             </h1>
-            <p className="text-sm text-muted-foreground">{getStageTitle(gameState.currentStage)}</p>
+            <p className="text-sm text-muted-foreground">{currentStageTitle}</p>
           </div>
         </div>
 
@@ -116,7 +119,7 @@ export function HomeScreen({
         <Card className="p-6 bg-gradient-to-br from-card via-card to-primary/10 border-primary/30 shadow-lg animate-slide-in-up">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-xl font-semibold mb-1">Этап {gameState.currentStage}: Улица</h2>
+              <h2 className="text-xl font-semibold mb-1">Этап {currentStage}: Улица</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Ты начинаешь с нуля. Создавай биты на телефоне, продавай местным рэперам и зарабатывай репутацию.
                 Впереди путь от уличного битмейкера до мирового продюсера.

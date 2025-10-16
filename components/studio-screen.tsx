@@ -7,7 +7,7 @@ import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
 import type React from "react"
 import { saveEquipmentUpgrade } from "@/lib/game-storage"
-import { EQUIPMENT_TIERS, getEquipmentTier } from "@/lib/game-state"
+import { EQUIPMENT_TIERS, getEquipmentTier, getReputationTier } from "@/lib/game-state"
 
 interface StudioScreenProps {
   gameState: GameState
@@ -130,6 +130,8 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       0.3,
   )
 
+  const currentStage = getReputationTier(gameState.reputation)
+
   return (
     <div className="flex flex-col h-screen">
       <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
@@ -163,10 +165,8 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
           <div className="relative text-center space-y-3">
             <div className="text-6xl">🎧</div>
             <div>
-              <h2 className="text-xl font-semibold">
-                {gameState.currentStage === 1 ? "Уличная установка" : "Домашняя студия"}
-              </h2>
-              <p className="text-sm text-muted-foreground">Этап {gameState.currentStage}</p>
+              <h2 className="text-xl font-semibold">{currentStage === 1 ? "Уличная установка" : "Домашняя студия"}</h2>
+              <p className="text-sm text-muted-foreground">Этап {currentStage}</p>
             </div>
             <div className="flex items-center justify-center gap-2 text-sm">
               <Zap className="w-4 h-4 text-primary" />
@@ -269,7 +269,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-muted-foreground">Следующий этап:</span>
                 <span className="font-semibold text-secondary">
-                  {gameState.currentStage === 1 ? "Домашняя студия" : "Первый контракт"}
+                  {currentStage === 1 ? "Домашняя студия" : "Первый контракт"}
                 </span>
               </div>
             </div>

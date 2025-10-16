@@ -99,7 +99,6 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
         0.3, // Reduced from 0.5 to 0.3
     )
 
-    // Skill bonus from Phase 3
     const skillBonus = getSkillQualityBonus(gameState.skills)
 
     return Math.min(100, baseQuality + rhythmBonus + difficultyBonus + equipmentBonus + skillBonus)
@@ -111,10 +110,8 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     const difficultyMultiplier = 1 + (difficulty - 1) * 0.3
     const reputationBonus = Math.floor(gameState.reputation * 0.05)
 
-    // Phase 1: Tier price multiplier based on reputation
     const tierMultiplier = getTierPriceMultiplier(gameState.reputation)
 
-    // Phase 3: Skill price multiplier
     const skillMultiplier = getSkillPriceMultiplier(gameState.skills)
 
     const finalPrice = Math.floor(
