@@ -6,6 +6,7 @@ import { parseOszFile, type OsuBeatmap } from "@/lib/osz-parser"
 import { convertOsuToRhythmPlus } from "@/lib/rhythm-plus-converter"
 import { Button } from "@/components/ui/button"
 import { PlayCircle } from "lucide-react"
+import { DrumSynthesizer } from "@/lib/drum-sounds"
 
 interface RhythmGameRhythmPlusProps {
   difficulty: number
@@ -21,6 +22,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
   const backgroundMusicRef = useRef<AudioBufferSourceNode | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const gameCompletedRef = useRef(false)
+  const drumSynthRef = useRef<DrumSynthesizer | null>(null)
 
   const [isLoading, setIsLoading] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -210,6 +212,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
       game.destroy()
       backgroundMusicRef.current?.stop()
       audioContextRef.current?.close()
+      drumSynthRef.current?.destroy()
     }
   }, [beatmapUrl, updateHighwayWidth])
 
@@ -217,22 +220,11 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
    * Play drum hit sound effect
    */
   const playDrumSound = useCallback((sound: string) => {
-    if (!audioContextRef.current) return
-
-    const oscillator = audioContextRef.current.createOscillator()
-    const gainNode = audioContextRef.current.createGain()
-
-    oscillator.connect(gainNode)
-    gainNode.connect(audioContextRef.current.destination)
-
-    oscillator.frequency.value = 800
-    oscillator.type = "sine"
-
-    gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 0.1)
-
-    oscillator.start(audioContextRef.current.currentTime)
-    oscillator.stop(audioContextRef.current.currentTime + 0.1)
+    if (!drumSynthRef.current) {
+      drumSynthRef.current = new DrumSynthesizer()
+      drumSynthRef.current.init()
+    }
+    drumSynthRef.current.play(sound)
   }, [])
 
   /**
