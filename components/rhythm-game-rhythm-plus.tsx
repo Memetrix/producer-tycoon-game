@@ -303,50 +303,41 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
     setIsPlaying(true)
   }, [])
 
+  // Update highway width when canvas resizes or game initializes
   useEffect(() => {
-    let frameId: number
-    let isActive = true
-    let checkCount = 0
+    if (!beatmapLoaded || isLoading) return
 
     const updateHighwayWidth = () => {
-      if (!isActive) return
-
-      if (!gameInstanceRef.current || !canvasRef.current) {
-        if (checkCount < 100) {
-          // Keep checking for 100 frames (~1.6 seconds)
-          checkCount++
-          frameId = requestAnimationFrame(updateHighwayWidth)
-        }
-        return
-      }
+      if (!gameInstanceRef.current) return
 
       const tracks = gameInstanceRef.current.dropTrackArr
-
-      if (tracks.length === 0 || tracks[0].width === 0) {
-        if (checkCount < 100) {
-          checkCount++
-          frameId = requestAnimationFrame(updateHighwayWidth)
-        }
-        return
-      }
+      if (tracks.length === 0 || tracks[0].width === 0) return
 
       const firstTrack = tracks[0]
       const lastTrack = tracks[tracks.length - 1]
       const totalWidth = lastTrack.x + lastTrack.width - firstTrack.x
 
-      if (Math.abs(totalWidth - highwayWidth) > 1) {
+      if (totalWidth > 0 && Math.abs(totalWidth - highwayWidth) > 1) {
         console.log("[Rhythm Plus] Highway width updated:", totalWidth)
         setHighwayWidth(totalWidth)
       }
-
-      frameId = requestAnimationFrame(updateHighwayWidth)
     }
 
-    updateHighwayWidth()
+    // Initial update
+    const initialTimer = setTimeout(updateHighwayWidth, 100)
+
+    // Watch for canvas resize
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateHighwayWidth()
+    })
+    resizeObserver.observe(canvas)
 
     return () => {
-      isActive = false
-      if (frameId) cancelAnimationFrame(frameId)
+      clearTimeout(initialTimer)
+      resizeObserver.disconnect()
     }
   }, [beatmapLoaded, isLoading, highwayWidth])
 
@@ -354,6 +345,8 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
    * Update UI with game state
    */
   useEffect(() => {
+    if (!isPlaying) return // Don't run updateUI loop if not playing
+
     const updateUI = () => {
       if (!gameInstanceRef.current) return
 
@@ -365,10 +358,11 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
         setAccuracy(Math.round(acc * 100) / 100)
       }
 
+      // Check for game over condition
       if (gameInstanceRef.current.health <= 0 && isPlaying) {
-        console.log("[Rhythm Plus] Game Over - HP reached 0")
+        console.log("[Rhythm Plus] Game Over - HP reached 0, ending game")
         handleSkip()
-        return
+        return // Stop the update loop
       }
 
       requestAnimationFrame(updateUI)

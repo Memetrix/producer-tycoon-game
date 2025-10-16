@@ -110,7 +110,15 @@ export function HomeScreen({
               <Bolt className="w-3.5 h-3.5 text-accent" />
               <span className="text-xs text-muted-foreground">Энергия</span>
             </div>
-            <p className="text-lg font-bold text-accent">{Math.round(gameState.energy)}/100</p>
+            <p className="text-lg font-bold text-accent">
+              {Math.round(gameState.energy)}/{(() => {
+                const ENERGY_CONFIG = { BASE_MAX_ENERGY: 150 }
+                let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
+                if (gameState.musicStyle === "electronic") maxEnergy += 30
+                if (gameState.startingBonus === "energizer") maxEnergy += 50
+                return maxEnergy
+              })()}
+            </p>
           </div>
         </div>
       </div>
