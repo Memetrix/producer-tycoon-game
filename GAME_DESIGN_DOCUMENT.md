@@ -1,15 +1,19 @@
 # Producer Tycoon - Game Design Document
 
-**Version:** 3.0 (October 2025)
-**Last Updated:** Post Phase 1-3 Rebalancing + Skills/Label Deals Integration
+**Version:** 3.1 (October 2025)
+**Last Updated:** October 16, 2025 - Added Visual Style, Monetization Strategy, Player Types Analysis, Business Context
 
 ## Table of Contents
 1. [Core Mechanics Overview](#core-mechanics-overview)
-2. [Economy System V3](#economy-system-v3)
-3. [Progression Timeline](#progression-timeline)
-4. [Phase 3 Systems](#phase-3-systems)
-5. [Detailed Systems Breakdown](#detailed-systems-breakdown)
-6. [Balance Analysis](#balance-analysis)
+2. [Visual Style & Art Direction](#visual-style--art-direction)
+3. [Economy System V3](#economy-system-v3)
+4. [Progression Timeline](#progression-timeline)
+5. [Phase 3 Systems](#phase-3-systems)
+6. [Detailed Systems Breakdown](#detailed-systems-breakdown)
+7. [Balance Analysis](#balance-analysis)
+8. [Player Types & Economy Analysis](#player-types--economy-analysis)
+9. [Monetization Strategy](#monetization-strategy)
+10. [Business Context & Launch Strategy](#business-context--launch-strategy)
 
 ---
 
@@ -31,6 +35,118 @@
 
 **Removed Resources:**
 - ~~Gems~~ - Removed from game (was never used)
+
+---
+
+## Visual Style & Art Direction
+
+**⚠️ CRITICAL:** This section defines the visual identity of the game. **NEVER** assume a realistic or photorealistic style!
+
+### Core Visual Style
+
+**Style:** **CEL SHADING** (toon shading) inspired by:
+- **Jet Set Radio** (primary reference!) - Bold outlines, vibrant colors, urban graffiti aesthetic
+- **Hi-Fi Rush** - Modern cel shading, music-themed visuals
+- **Persona 5** - Stylized UI, bold color choices
+- **Spider-Man: Into the Spider-Verse** - Comic book effects, halftone patterns
+- **Gorillaz Art (Jamie Hewlett)** - Urban hip-hop culture aesthetic
+
+### Visual Characteristics
+
+**Rendering:**
+- **Thick black outlines** around all objects (comic book style)
+- **Flat colors** with 2-3 tones maximum per object
+- **Simple shadows** - no realistic lighting
+- **Halftone patterns** for shading (comic book dots)
+- **Bold color blocking** - high contrast, saturated colors
+
+**Art Assets:**
+- All images use **--niji 6 --style raw** (Midjourney anime engine)
+- **Cel shaded art style** explicitly specified in all prompts
+- **NO photorealism, NO realistic rendering**
+
+### Color Schemes by Tier
+
+**Tier 1 (Street Musician):**
+- **Primary:** Orange, Yellow, Black
+- **Vibe:** Warm street hustle, graffiti, underground
+- **Lighting:** Warm overhead lights, phone screen glow
+
+**Tier 2 (Local Producer):**
+- **Primary:** Blue, Cyan, Purple
+- **Vibe:** Neon night city, bedroom studio
+- **Lighting:** LED strips, neon signs, city lights
+
+**Tier 3 (Regional Master):**
+- **Primary:** Green, Magenta, Gold
+- **Vibe:** Success, energy, money flowing
+- **Lighting:** Professional LED lighting, green/magenta gradients
+
+**Tier 4-6 (National/International/Legend):**
+- **Primary:** Purple, Gold, White, Black
+- **Vibe:** Luxury, prestige, legendary status
+- **Lighting:** Studio spotlights, golden highlights
+
+### Character Design Guidelines
+
+**Hero/Protagonist:**
+- **NEVER SHOW FACE!** This is critical - each player has custom avatar
+- Use **POV (first-person view)** shots - see hands/phone, never face
+- Use **over-shoulder / back view** - see hoodie/back of head, never face
+- **NO full-body front-facing shots** of protagonist
+
+**NPCs/Characters:**
+- Full cel shading with thick black outlines
+- Stylized proportions (Jet Set Radio style, not realistic)
+- Expressive poses and gestures
+- Clear silhouettes
+
+### Environment Design
+
+**Studio/Location Aesthetics:**
+- **Tier 1:** Dark basement, graffiti walls, makeshift setup, single lightbulb
+- **Tier 2:** Bedroom studio, acoustic foam, LED strips, organized cables
+- **Tier 3:** Professional studio, clean setup, multiple monitors, proper lighting
+- **Tier 4-6:** Luxury studios, high-end equipment, expansive spaces
+
+**Urban Elements:**
+- Graffiti tags (Jet Set Radio style)
+- Spray paint effects
+- Urban street culture
+- Hip-hop aesthetic (2000s era)
+
+### UI/Visual Effects
+
+**In-Game Effects:**
+- **Cel shaded 3D** for rhythm game (canvas-based rendering)
+- **Flat shading** with bold outlines
+- **Comic-style burst effects** for celebrations
+- **Halftone patterns** for transitions
+- **Vibrant color gradients** for backgrounds
+
+**Visual References:**
+All art assets follow this style - see `art-brief-vlad.html` for detailed Midjourney prompts and examples.
+
+### Technical Implementation
+
+**Art Generation:**
+- Using fal.ai with Midjourney-style prompts
+- All prompts include: "cel shaded art style, thick black outlines, Jet Set Radio aesthetic"
+- All prompts include: "--niji 6 --style raw" parameters
+- Format: PNG, 1920x1080 for scenes, 1080x1080 for portraits
+
+**Asset Library:**
+- 107+ AI-generated assets already created
+- Character portraits (Metro Maximus, Street Poet, DJ Vinyl, Producer Envy)
+- Scene illustrations (basement studio, meetings, recording sessions)
+- Equipment tier visuals (phone-1.jpg through phone-10.jpg, etc.)
+
+**Why Cel Shading?**
+- **Performance:** Simpler rendering, better mobile performance
+- **Style:** Timeless aesthetic, won't look dated
+- **Clarity:** Bold outlines make UI elements readable on small screens
+- **Brand:** Unique visual identity in market of realistic games
+- **Culture:** Perfect fit for hip-hop/urban music theme
 
 ---
 
@@ -908,6 +1024,487 @@ offlineEarnings = minutesAway * totalPassiveIncome
 - Generate AI portraits for all 8 artists
 - Use art-generator system already in place
 - Match artist descriptions (genre, tier, vibe)
+
+---
+
+## Player Types & Economy Analysis
+
+**Source:** 60-day simulation with 3 player archetypes (see `economy-v3-full-analysis.html`)
+
+### Player Archetypes
+
+#### 1. Casual Player (F2P)
+**Profile:**
+- 2 sessions per day
+- 2 beats per session (4 total/day)
+- $0 spent on donations
+- Plays for story and casual fun
+
+**60-Day Results:**
+- **Final Money:** $43,006,732
+- **Reputation:** 3,152
+- **Tier Reached:** 4/6 (Национальная звезда)
+- **Equipment:** 12 items
+- **Time Investment:** ~10-15 mins/day
+
+**Analysis:**
+- Completes 2/3 of content (Tier 4/6) as F2P - **good!**
+- Passive income becomes dominant after Week 3
+- Can enjoy full story without paying
+- Progression slows significantly in Tier 4
+
+#### 2. Active Player (Low Spender)
+**Profile:**
+- 6 sessions per day (every 4 hours)
+- 2 beats per session (12 total/day)
+- $10-20 spent (Battle Pass, energy boosts)
+- Core target audience
+
+**60-Day Results:**
+- **Final Money:** $88,646,906
+- **Reputation:** 7,186
+- **Tier Reached:** 4/6
+- **Equipment:** 15 items
+- **Total Spent:** $10
+- **Time Investment:** 20-30 mins/day
+
+**Analysis:**
+- **2x money** compared to Casual despite only spending $10
+- Still reaches Tier 4 (same as Casual)
+- Much smoother progression curve
+- Better equipment = higher quality beats = more satisfaction
+- **Target ARPPU: $10-30** for this segment
+
+#### 3. Whale Player (High Spender)
+**Profile:**
+- 12 sessions per day (playing constantly)
+- 3 beats per session (36 total/day)
+- $100-200 spent (speed-ups, energy refills, skip grinds)
+- Competitive, wants leaderboard dominance
+
+**60-Day Results:**
+- **Final Money:** $97,792,729
+- **Reputation:** 18,324
+- **Tier Reached:** 5/6 (Международный уровень)
+- **Equipment:** 21 items (nearly maxed)
+- **Total Spent:** $110
+- **Time Investment:** 1-2 hours/day
+
+**Analysis:**
+- **Only player to reach Tier 5** (15K+ reputation)
+- Close to Tier 6 (needs 50K, has 18.3K)
+- Spending gives **clear competitive advantage** for leaderboards
+- Not pay-to-win (can't buy skills), but pay-to-progress-faster
+- **Target: 1-3% of players, 70-80% of revenue**
+
+### Key Economy Insights
+
+**Progression Balance:**
+- Casual & Active both reach **Tier 4** (same endpoint)
+- Whale reaches **Tier 5** (+1 tier advantage)
+- **Nobody reaches Tier 6 in 60 days** = post-game content works!
+
+**Monetization Viability:**
+- F2P can complete main story (Tiers 1-4)
+- Low spenders get smoother experience ($10-30 value is clear)
+- Whales get prestige (leaderboard, Tier 5, faster progress)
+- **No content locked behind paywall** = not pay-to-win ✅
+
+**Retention Drivers:**
+- **Casual:** Daily tasks, streak rewards, story progression
+- **Active:** Daily check-ins (4-hour energy cycle), equipment goals
+- **Whale:** Leaderboard competition, being first to Tier 6, prestige
+
+**Revenue Projections:**
+- Casual: $0 (90% of players)
+- Active: $15 average (8% of players) = core revenue
+- Whale: $150 average (2% of players) = majority of revenue
+
+**With 100K players:**
+- 90K casuals × $0 = $0
+- 8K active × $15 = $120,000
+- 2K whales × $150 = $300,000
+- **Total: $420K from 100K players = $4.20 ARPPU**
+
+**With viral growth (500K players, conservative):**
+- **Total: $2.1M from 500K players**
+
+### Visual Progression Comparison
+
+See `economy-v3-full-analysis.html` for interactive charts showing:
+1. **Money over time** - All 3 player types
+2. **Reputation progression** - Clear separation by spending
+3. **Tier advancement** - Whale gets +1 tier advantage
+4. **Equipment acquisition** - Whale maxes faster
+
+### Balance Validation
+
+✅ **F2P can complete story** (Tier 4 = main narrative complete)
+✅ **Low spenders feel value** ($10-20 = smoother experience, not required)
+✅ **Whales have goals** (Tier 5-6, leaderboards, prestige)
+✅ **No content paywalled** (all tiers accessible to F2P eventually)
+✅ **Spending = speed, not power** (skill-based rhythm game still matters)
+
+---
+
+## Monetization Strategy
+
+**Philosophy:** **Aggressive but Transparent** - We're not altruists, this is a business. But we're honest about the odds and what players get.
+
+**Reality Check:** 90% of players won't earn real money. Top 1-3% whales = 70-80% of revenue. This is standard for F2P games (see Genshin Impact: $4B/year, same model).
+
+### Revenue Streams
+
+#### 1. Telegram Stars (Primary Revenue - 70%)
+
+**Telegram Stars** = Telegram's in-app payment system (no app store fees!)
+
+**Gacha Lootboxes:**
+- **Bronze Crate:** $1 - Common/Rare items, cosmetics, small boosts
+- **Silver Crate:** $5 - Rare/Epic items, bigger boosts, exclusive skins
+- **Gold Crate:** $10 - Epic items, significant boosts, rare cosmetics
+- **Platinum Crate:** $25 - Legendary items, major boosts, limited skins
+- **Diamond Crate:** $50 - Guaranteed legendary, whale flex items
+
+**Pity System** (честно!):
+- Guaranteed Legendary item after 90 pulls
+- Near-miss psychology (4 legendaries in 10-pull? Show it!)
+- **Suspense**: Slow animation reveal, particle effects
+- **FOMO**: "Limited Edition - 48 hours remaining!"
+
+**Battle Pass ($10/month):**
+- **Free Track:** Everyone gets rewards (casual-friendly)
+- **Premium Track:** 2x rewards, exclusive cosmetics, energy boosts
+- **Elite Track:** $20, includes gacha pulls + premium rewards
+
+**Energy Refills:**
+- **Small Refill:** $2 - +50 energy (instant)
+- **Large Refill:** $5 - +150 energy (instant)
+- **Max Energy Boost:** $10 - +50% max energy (permanent)
+
+**Speed-Ups:**
+- **Skip 1 Hour:** $1
+- **Skip 6 Hours:** $5
+- **Skip 24 Hours:** $15
+- Whale meta: "Skip all cooldowns to hit leaderboard #1"
+
+**Skip Grind Packs:**
+- **Tier 1 Complete:** $10 - All Tier 1 equipment unlocked
+- **Tier 2 Complete:** $20 - All Tier 2 equipment unlocked
+- **Tier 3 Complete:** $30 - All Tier 3 equipment unlocked
+- Target: Impatient players or second accounts
+
+**Artist Slots:**
+- **Base:** 3 artist slots (F2P)
+- **+2 Slots:** $10 (5 total)
+- **+5 Slots:** $20 (8 total = all artists!)
+- More passive income = faster progression
+
+#### 2. Web3 / TON Blockchain (Secondary Revenue - 20%)
+
+**$BEAT Token:**
+- Players earn in-game $BEAT currency while playing
+- **TGE (Token Generation Event) at Day 60**
+- Convert $BEAT → TON at TGE
+- F2P can earn $10-50, Active $100-200, Whale $500+
+- **We hold 15% team allocation** (2-year vesting)
+
+**NFT Sales:**
+- **Producer ID Cards:** Limited collection of 10K unique cards (~$50-100 each)
+  - Projected revenue: $500K - $1M
+- **Equipment NFTs:** Legendary skins, visual upgrades (~$20-50)
+- **Black Star Collaboration:** 100 cards with real autographs (~$500-1000)
+  - Projected revenue: $50K - $100K
+- **Artist Collaboration NFTs:** Partner with indie artists for unique drops
+
+**Secondary Royalties:**
+- **5% royalty** on all NFT trades
+- Passive income forever from marketplace activity
+- Example: $1M trading volume = $50K royalties
+
+**Staking (Post-TGE):**
+- Stake $BEAT for rewards (more $BEAT or exclusive NFTs)
+- Encourages holding, reduces sell pressure
+- APY: 20-50% (adjust based on tokenomics)
+
+#### 3. Partnerships & Sponsorships (10%)
+
+**Black Star Inc (В процессе):**
+- Official tracks in game
+- Co-branded NFTs with real autographs
+- Marketing: Announcements to millions of followers
+- Revenue share on Black Star NFT sales
+
+**Indie Artists:**
+- Exposure: millions of plays in-game
+- Revenue share: % of NFT sales for their collabs
+- Win-win: they need audience, we need content
+
+**Educational Courses:**
+- "How to become a producer" courses ($50-200)
+- Taught by industry professionals (Black Star, Metro Maximus, etc.)
+- Affiliate revenue share
+
+### Revenue Projections
+
+**Conservative (100K players, Year 1):**
+- Telegram Stars: $840K (70%)
+- Web3/NFTs: $240K (20%)
+- Partnerships: $120K (10%)
+- **Total: $1.2M Year 1**
+
+**Best Case (500K players, viral):**
+- Telegram Stars: $3.5M (70%)
+- Web3/NFTs: $1M (20%)
+- Partnerships: $500K (10%)
+- **Total: $5M Year 1**
+
+**Optimistic (1M+ players, hit game):**
+- Telegram Stars: $10.5M (70%)
+- Web3/NFTs: $3M (20%)
+- Partnerships: $1.5M (10%)
+- **Total: $15M Year 1**
+
+### Key Monetization Metrics
+
+**Target ARPPU:** $15
+- Casual: $0 (90%)
+- Active: $15 (8%)
+- Whale: $150 (2%)
+
+**Conversion Rate Goals:**
+- **Day 1:** 5% make first purchase
+- **Day 7:** 15% have spent money
+- **Day 30:** 25% are paying users
+- **Day 60:** 30% lifetime conversion
+
+**Retention Goals:**
+- **Day 1:** 50%
+- **Day 7:** 30%
+- **Day 30:** 15%
+- **Day 60:** 10% (TGE event!)
+
+### Psychological Hooks (честно но эффективно)
+
+**FOMO (Fear of Missing Out):**
+- Limited-time offers (48-hour sales)
+- Seasonal items (only available during event)
+- Leaderboard prizes (Top 100 get exclusive rewards)
+
+**Social Proof:**
+- "1,234 players bought this today!"
+- "John just pulled a Legendary!"
+- Leaderboards (show whale progress)
+
+**Near-Miss Effect:**
+- Gacha: Show 4 legendaries in 10-pull (even if didn't get)
+- "So close!" → encourages another try
+
+**Sunken Cost:**
+- Daily login rewards (breaking streak = lost value)
+- Battle Pass progress (paid but not finished = guilt)
+- "You're 90% to guaranteed Legendary... one more pull?"
+
+**Anchoring:**
+- Show $50 pack first, then $10 pack looks cheap
+- "Best Value!" badge on $25 pack
+
+### Честность (Важно!)
+
+**We DON'T:**
+- ❌ Lie about drop rates
+- ❌ Hide pity system
+- ❌ Lock story content behind paywall
+- ❌ Make game unplayable without paying
+
+**We DO:**
+- ✅ Show exact drop rates (Legendary: 0.6%)
+- ✅ Explain pity system (90 pulls = guaranteed)
+- ✅ Allow F2P to complete story (Tier 4)
+- ✅ Make spending = convenience, not requirement
+
+**Why Честность Works:**
+- Players trust us → willing to spend
+- Less refund requests
+- Better reviews
+- Long-term retention > short-term cash grab
+
+### Launch Monetization Strategy
+
+**Week 1-2 (Soft Launch):**
+- Battle Pass only ($10)
+- Energy refills ($2-5)
+- No gacha yet (test conversion)
+
+**Week 3-4 (Add Gacha):**
+- Introduce lootboxes gradually
+- First purchase bonus (2x value)
+- Monitor ARPPU and adjust
+
+**Week 5-8 (Full Monetization):**
+- All monetization active
+- Limited-time events
+- Seasonal content
+
+**Day 60 (TGE):**
+- **MASSIVE EVENT** - Token launch!
+- Top 100 leaderboard prizes
+- Airdrop for loyal players
+- NFT marketplace opens
+- Media coverage, influencers, hype!
+
+---
+
+## Business Context & Launch Strategy
+
+**Background:** Team previously built **City Holder** (TON NFT game):
+- 1.5 years development
+- $600K invested (mostly team/development costs)
+- Successful project: profitable, gained industry experience & connections
+- Learned valuable lessons about project management and execution speed
+
+**Evolution:** Producer Tycoon applies lessons learned from City Holder with 10x efficiency improvements.
+
+### Why We Can Do This Fast & Cheap
+
+**City Holder:** $600K, 1.5 years
+**Producer Tycoon:** $60K, 2-4 weeks to launch
+
+**How?**
+1. **AI for Assets:** fal.ai generates art for $0.05/image (vs hiring artists)
+2. **Ready Libraries:** React, Next.js, Supabase, TON SDK - don't build from scratch
+3. **OSU Beatmaps:** Thousands of ready rhythm-maps, don't create own
+4. **Telegram Platform:** No app store, no custom backend for auth
+5. **Lean Approach:** MVP first → metrics → iterate (not 18-month waterfall)
+6. **Outsource Everything:** QA = community testers, marketing = organic growth
+7. **Experience:** Know what matters and what doesn't from City Holder
+
+### Current State (Proof of Concept)
+
+**MVP Progress:** ~70% complete in 30 hours of development!
+
+**Working Features:**
+- ✅ Full game loop (beat creation, rhythm game, upgrades, artists, skills, energy)
+- ✅ 6-tier reputation system
+- ✅ Supabase backend
+- ✅ AI generation (avatars + covers)
+- ✅ OSU beatmap support (29+ tracks uploaded)
+- ✅ Mobile-optimized UI
+- ✅ Offline earnings
+- ✅ 107 generated art assets
+
+**Remaining (~20-25 hours):**
+- ⏳ Telegram Stars integration
+- ⏳ Gacha system
+- ⏳ Leaderboards
+- ⏳ Final balance tuning
+- ⏳ Polish & bug fixes
+
+### Launch Timeline
+
+**Week 1-2: MVP Finish**
+- Telegram Stars integration
+- Gacha lootboxes
+- Leaderboards
+- Balance polish
+- **→ Closed Beta Launch (1K testers)**
+
+**Week 3: Metrics & Iteration**
+- Monitor: DAU, retention, ARPPU, session length
+- Adjust: balance, prices, difficulty
+- **If metrics good → proceed**
+- **If metrics bad → pivot or kill (not 3 years of suffering!)**
+
+**Week 4-8: Public Launch & Growth**
+- Marketing push (influencers, Twitter, Telegram channels)
+- First NFT drops
+- Battle Pass Season 1
+- Content updates (new tracks, artists, skins)
+- Daily/weekly events
+
+**Day 60: TGE (Token Generation Event) 🚀**
+- $BEAT token launches on DeDust/STON.fi
+- Airdrop to top 100 + loyal players
+- NFT marketplace opens
+- Media coverage
+- Celebration event in-game
+
+**Post-TGE: Scale or Exit**
+- **If successful:** Season 2, more content, NFT marketplace, staking
+- **If not:** Close with profit (not 3-year commitment) and move to next project
+
+### Partnership Strategy
+
+**Black Star Inc (Music Label):**
+- **Status:** In discussions
+- **What They Give:**
+  - Official artist tracks in game
+  - Marketing to millions of followers
+  - Industry credibility
+  - Real-world prizes (studio sessions, meet & greets)
+- **What We Give:**
+  - Exposure for their artists
+  - Co-branded NFTs with revenue share
+  - Educational platform for aspiring producers
+
+**Indie Artists:**
+- **Model:** Win-win exposure
+- **They Get:** Millions of plays, audience growth, revenue share on NFT collabs
+- **We Get:** Exclusive content, variety, authentic partnerships
+
+**TON Ecosystem:**
+- **Integration:** Native TON wallet, $BEAT on TON, NFTs on TON
+- **Benefits:** TON Foundation support, ecosystem grants, cross-promotion
+- **Legitimacy:** Being part of established blockchain ecosystem
+
+### Risk Mitigation
+
+**What Could Go Wrong:**
+1. **Low Retention:** Players don't stick around
+   - **Mitigation:** Fast iteration, A/B testing, listen to feedback
+2. **Low Conversion:** Players don't spend
+   - **Mitigation:** Test pricing, adjust value propositions, Battle Pass model
+3. **Rhythm Game Too Hard:** Casual players can't play
+   - **Mitigation:** Difficulty options, forgiving hit windows (100px), auto-play option
+4. **Token Crash:** $BEAT value tanks after TGE
+   - **Mitigation:** 2-year vesting for team, staking rewards, utility in game
+5. **Can't Scale:** Infrastructure fails with growth
+   - **Mitigation:** Supabase scales automatically, TON handles transactions
+
+**What Makes Us Confident:**
+- ✅ **Proof of Concept:** 70% done in 30 hours
+- ✅ **Experience:** City Holder taught us what works
+- ✅ **Small Budget:** $60K not $600K - can afford to fail
+- ✅ **Fast Execution:** 2-4 weeks not 18 months - can pivot quickly
+- ✅ **Unique Concept:** No other idle rhythm + story + Web3 game
+- ✅ **Market Timing:** Telegram gaming boom (Hamster Kombat = 300M users)
+
+### Success Metrics
+
+**Launch Goals (Week 1):**
+- 10K players
+- 40% Day 1 retention
+- 2% conversion rate
+- $500+ revenue (prove concept)
+
+**Month 1 Goals:**
+- 100K players
+- 25% Day 7 retention
+- 10% conversion
+- $100K revenue
+
+**Month 2 Goals (TGE):**
+- 500K players
+- 15% Day 30 retention
+- 20% conversion
+- $1M revenue
+- **Successful TGE**
+
+**Year 1 Target:**
+- $1.2M+ revenue (conservative)
+- Profitable operation
+- Active community
+- Proven concept for Season 2
 
 ---
 
