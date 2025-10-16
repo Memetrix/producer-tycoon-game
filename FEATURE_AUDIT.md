@@ -449,28 +449,69 @@
 ### 7.1 Character Creation
 **Status:** ✅ DONE
 
+**Implementation:** components/onboarding.tsx + components/character-creation.tsx + components/avatar-confirmation.tsx
+
 #### ✅ DONE:
-- [x] Avatar generation with AI
+- [x] Onboarding screen with welcome message
+- [x] Avatar generation with AI (fal.ai API)
 - [x] Music style selection (Hip-Hop, Trap, R&B, Pop, Electronic)
 - [x] Starting bonus selection (Producer, Hustler, Connector, Energizer)
+- [x] Avatar regeneration option
 - [x] Confirmation screen
-- [x] Starting resources applied
+- [x] Starting resources applied correctly (verified in app/page.tsx:251-277)
 
 ---
 
 ### 7.2 Main Navigation
-**Status:** ✅ DONE
+**Status:** 🐛 HAS ISSUES
+
+**Implementation:** components/bottom-nav.tsx (44 lines) + app/page.tsx (routing)
 
 #### ✅ DONE:
-- [x] Bottom nav bar (Studio, Artists, Upgrades, Profile, Tasks)
-- [x] Screen transitions
+- [x] Bottom nav bar with 5 tabs (bottom-nav.tsx:12-18)
+- [x] Screen transitions with fade animation (app/page.tsx:285-290)
 - [x] Responsive design
+- [x] Active tab highlighting
+- [x] Tab icons (Home, Music, Zap, Users, BookOpen)
+
+#### 🐛 NAVIGATION ISSUES FOUND:
+
+**1. Missing Screens:**
+- ❌ **"Profile" tab** - references in bottom-nav but NO ProfileScreen component exists!
+- ❌ **"Tasks" tab** - labeled as "Обучение" but uses `upgrades` screen (confusing!)
+- ❌ **"Contracts" tab** - system fully designed but no UI access
+- ❌ **"Story" tab** - no narrative UI
+- ❌ **"Shop" tab** - no monetization UI
+- ❌ **"Leaderboards" tab** - no competitive UI
+
+**2. Naming Confusion:**
+Bottom nav shows "Обучение" (Training) but actually shows `upgrades-screen.tsx` which contains:
+- Daily Tasks ✅
+- Free Training ✅
+- Label Deals ✅
+- Streak Rewards ✅
+
+This is **MISLEADING** - tab should be "Задания" (Tasks) not "Обучение"!
+
+**3. Screen Type Definition:**
+```typescript
+// app/page.tsx:27
+export type Screen = "home" | "stage" | "studio" | "artists" | "upgrades" | "skills"
+```
+Only 6 screens defined, but need:
+- "contracts" (Beat Contracts UI)
+- "shop" (Telegram Stars monetization)
+- "leaderboards" (Competitive rankings)
+- "story" (Narrative system)
+
+**4. Skills Screen Access:**
+Skills screen exists (skills-screen.tsx) but NOT in bottom nav! Only accessible from upgrades screen → "Древо навыков" card.
 
 #### ❌ NOT STARTED:
-- [ ] **Shop tab** (for monetization!)
-- [ ] **Leaderboard tab**
-- [ ] **Contracts tab**
-- [ ] **Story/Narrative tab**
+- [ ] **Shop tab/screen** (CRITICAL - monetization!)
+- [ ] **Leaderboards tab/screen** (CRITICAL - retention!)
+- [ ] **Contracts tab/screen** (logic ready, just needs UI!)
+- [ ] **Story/Narrative tab/screen** (CRITICAL - differentiator!)
 
 ---
 
