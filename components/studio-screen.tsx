@@ -82,9 +82,9 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       key: "phone" as keyof GameState["equipment"],
       name: EQUIPMENT_TIERS.phone.name,
       level: gameState.equipment.phone,
-      maxLevel: 10, // UPDATED: было 5, стало 10
+      maxLevel: 10,
       basePrice: 80,
-      bonus: "+5% качество",
+      bonus: "+2 качество/уровень",
       icon: Monitor,
       color: "primary",
     },
@@ -92,9 +92,9 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       key: "headphones" as keyof GameState["equipment"],
       name: EQUIPMENT_TIERS.headphones.name,
       level: gameState.equipment.headphones,
-      maxLevel: 10, // UPDATED: было 5, стало 10
+      maxLevel: 10,
       basePrice: 120,
-      bonus: "+5% качество",
+      bonus: "+2 качество/уровень",
       icon: Headphones,
       color: "secondary",
     },
@@ -102,9 +102,9 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       key: "microphone" as keyof GameState["equipment"],
       name: EQUIPMENT_TIERS.microphone.name,
       level: gameState.equipment.microphone,
-      maxLevel: 10, // UPDATED: было 5, стало 10
+      maxLevel: 10,
       basePrice: 200,
-      bonus: "+10% качество",
+      bonus: "+3 качество/уровень",
       icon: Mic,
       color: "accent",
     },
@@ -112,19 +112,23 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       key: "computer" as keyof GameState["equipment"],
       name: EQUIPMENT_TIERS.computer.name,
       level: gameState.equipment.computer,
-      maxLevel: 10, // UPDATED: было 5, стало 10
+      maxLevel: 10,
       basePrice: 400,
-      bonus: "+15% качество",
+      bonus: "+5 качество/уровень",
       icon: Home,
       color: "primary",
     },
   ]
 
-  const totalQualityBonus =
-    gameState.equipment.phone * 5 +
-    gameState.equipment.headphones * 5 +
-    gameState.equipment.microphone * 10 +
-    gameState.equipment.computer * 15
+  const totalQualityBonus = Math.floor(
+    (gameState.equipment.phone * 2 +
+      gameState.equipment.headphones * 2 +
+      gameState.equipment.microphone * 3 +
+      gameState.equipment.computer * 5 +
+      (gameState.equipment.midi || 0) * 2 +
+      (gameState.equipment.audioInterface || 0) * 4) *
+      0.3,
+  )
 
   return (
     <div className="flex flex-col h-screen">

@@ -179,7 +179,7 @@ export async function saveGameState(gameState: GameState): Promise<boolean> {
       total_money_earned: gameState.totalMoneyEarned,
       total_beats_earnings: gameState.totalBeatsEarnings || 0,
       updated_at: new Date().toISOString(),
-      last_active: gameState.lastActive,
+      last_active: gameState.lastActive || new Date().toISOString(),
     })
     .eq("player_id", player.id)
 
@@ -194,51 +194,57 @@ export async function saveGameState(gameState: GameState): Promise<boolean> {
       if (gameState.trainingProgress?.freeSeminar) trainingProgress.push("seminar")
       if (gameState.trainingProgress?.freeBookChapter) trainingProgress.push("bookChapter")
 
-      // Phase 3: Prepare skills array
-      const skillsUnlocked: string[] = []
-      if (gameState.skills?.caffeineRush) skillsUnlocked.push("caffeineRush")
-      if (gameState.skills?.stamina) skillsUnlocked.push("stamina")
-      if (gameState.skills?.flowState) skillsUnlocked.push("flowState")
-      if (gameState.skills?.earTraining) skillsUnlocked.push("earTraining")
-      if (gameState.skills?.musicTheory) skillsUnlocked.push("musicTheory")
-      if (gameState.skills?.perfectionist) skillsUnlocked.push("perfectionist")
-      if (gameState.skills?.negotiator) skillsUnlocked.push("negotiator")
-      if (gameState.skills?.businessman) skillsUnlocked.push("businessman")
-      if (gameState.skills?.mogul) skillsUnlocked.push("mogul")
-
-      // Phase 3: Prepare beat contracts JSON
-      const beatContractsJSON = {
-        available: gameState.beatContracts?.availableContracts || [],
-        active: gameState.beatContracts?.activeContracts || [],
-        completed: gameState.beatContracts?.completedContracts || [],
-        lastRefresh: gameState.beatContracts?.lastRefreshDate || "",
-      }
-
-      // Phase 3: Prepare label deals array
-      const labelDeals: string[] = []
-      if (gameState.labelDeals?.indie) labelDeals.push("indie")
-      if (gameState.labelDeals?.small) labelDeals.push("small")
-      if (gameState.labelDeals?.major) labelDeals.push("major")
-
-      const { error: dailyTasksError } = await supabase
+      await supabase
         .from("game_state")
         .update({
           daily_tasks_completed: gameState.dailyTasks.completedTaskIds || [],
           daily_tasks_last_reset: gameState.dailyTasks.lastCompletedDate || new Date().toISOString(),
           daily_streak: gameState.dailyTasks.currentStreak || 0,
           training_progress: trainingProgress,
-          skills_unlocked: skillsUnlocked,
-          beat_contracts: beatContractsJSON,
-          label_deals: labelDeals,
         })
         .eq("player_id", player.id)
-
-      if (dailyTasksError) {
-        console.error("[v0] Failed to save daily tasks:", dailyTasksError.message)
-      }
     }
   } catch (error) {
-    // Silently skip if columns don't exist yet
+    console.log("[v0] Daily tasks columns not available yet (run migration)")
+  }
+
+  try {
+    // Phase 3: Prepare skills array
+    const skillsUnlocked: string[] = []
+    if (gameState.skills?.caffeineRush) skillsUnlocked.push("caffeineRush")
+    if (gameState.skills?.stamina) skillsUnlocked.push("stamina")
+    if (gameState.skills?.flowState) skillsUnlocked.push("flowState")
+    if (gameState.skills?.earTraining) skillsUnlocked.push("earTraining")
+    if (gameState.skills?.musicTheory) skillsUnlocked.push("musicTheory")
+    if (gameState.skills?.perfectionist) skillsUnlocked.push("perfectionist")
+    if (gameState.skills?.negotiator) skillsUnlocked.push("negotiator")
+    if (gameState.skills?.businessman) skillsUnlocked.push("businessman")
+    if (gameState.skills?.mogul) skillsUnlocked.push("mogul")
+
+    // Phase 3: Prepare beat contracts JSON
+    const beatContractsJSON = {
+      available: gameState.beatContracts?.availableContracts || [],
+      active: gameState.beatContracts?.activeContracts || [],
+      completed: gameState.beatContracts?.completedContracts || [],
+      lastRefresh: gameState.beatContracts?.lastRefreshDate || "",
+    }
+
+    // Phase 3: Prepare label deals array
+    const labelDeals: string[] = []
+    if (gameState.labelDeals?.indie) labelDeals.push("indie")
+    if (gameState.labelDeals?.small) labelDeals.push("small")
+    if (gameState.labelDeals?.major) labelDeals.push("major")
+
+    await supabase
+      .from("game_state")
+      .update({
+        skills_unlocked: skillsUnlocked,
+        beat_contracts: beatContractsJSON,
+        label_deals: labelDeals,
+      })
+      .eq("player_id", player.id)
+  } catch (error) {
+    console.log("[v0] Phase 3 columns not available yet (run migration 004_add_phase3_columns.sql)")
   }
 
   return true

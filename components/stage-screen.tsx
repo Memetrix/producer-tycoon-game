@@ -7,9 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 import type { Screen } from "@/app/page"
-import { type GameState, type Beat, BEAT_NAMES, ENERGY_CONFIG } from "@/lib/game-state"
+import {
+  type GameState,
+  type Beat,
+  BEAT_NAMES,
+  ENERGY_CONFIG,
+  getSkillQualityBonus,
+  getSkillPriceMultiplier,
+  getSkillEnergyCostReduction,
+  getTierPriceMultiplier,
+} from "@/lib/game-state"
 import { saveBeat, sellBeats } from "@/lib/game-storage"
 import { RhythmGameRhythmPlus } from "@/components/rhythm-game-rhythm-plus"
+import { RhythmGameResults } from "@/components/rhythm-game-results"
 import { OSZ_TRACKS, type OszTrack } from "@/lib/music-config"
 
 interface StageScreenProps {
@@ -25,6 +35,9 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null)
   const [isGeneratingCover, setIsGeneratingCover] = useState(false)
   const [isSelling, setIsSelling] = useState(false)
+
+  const [showResults, setShowResults] = useState(false)
+  const [rhythmAccuracy, setRhythmAccuracy] = useState(0)
 
   // Track and difficulty selection
   const [showTrackSelector, setShowTrackSelector] = useState(false)
@@ -66,28 +79,48 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     loadTracks()
   }, [])
 
-  const ENERGY_COST = ENERGY_CONFIG.ENERGY_COST_PER_BEAT // UPDATED: было 20, теперь 15
+  const baseEnergyCost = ENERGY_CONFIG.ENERGY_COST_PER_BEAT
+  const energyCostReduction = getSkillEnergyCostReduction(gameState.skills)
+  const ENERGY_COST = Math.floor(baseEnergyCost * (1 - energyCostReduction))
 
   const calculateQuality = (rhythmAccuracy: number, difficulty: number) => {
-    const baseQuality = 20 // Reduced base from 40 to 20
-    const rhythmBonus = Math.floor(rhythmAccuracy * 0.6) // Increased from 0.4 to 0.6 (up to 60 points)
-    const difficultyBonus = difficulty * 3 // Reduced from 5 to 3
+    const baseQuality = 20
+    const rhythmBonus = Math.floor(rhythmAccuracy * 0.6) // Up to 60 points from rhythm
+    const difficultyBonus = difficulty * 3
+
+    // Equipment bonus (reduced impact)
     const equipmentBonus = Math.floor(
       (gameState.equipment.phone * 2 +
         gameState.equipment.headphones * 2 +
         gameState.equipment.microphone * 3 +
-        gameState.equipment.computer * 5) *
-        0.5, // Reduced equipment impact by 50%
+        gameState.equipment.computer * 5 +
+        (gameState.equipment.midi || 0) * 2 +
+        (gameState.equipment.audioInterface || 0) * 4) *
+        0.3, // Reduced from 0.5 to 0.3
     )
-    return Math.min(100, baseQuality + rhythmBonus + difficultyBonus + equipmentBonus)
+
+    // Skill bonus from Phase 3
+    const skillBonus = getSkillQualityBonus(gameState.skills)
+
+    return Math.min(100, baseQuality + rhythmBonus + difficultyBonus + equipmentBonus + skillBonus)
   }
 
   const calculatePrice = (quality: number, difficulty: number) => {
     const basePrice = 30
     const qualityBonus = Math.floor((quality - 60) * 1.5)
-    const difficultyMultiplier = 1 + (difficulty - 1) * 0.3 // Each difficulty adds 30% to price
+    const difficultyMultiplier = 1 + (difficulty - 1) * 0.3
     const reputationBonus = Math.floor(gameState.reputation * 0.05)
-    const finalPrice = Math.floor((basePrice + qualityBonus + reputationBonus) * difficultyMultiplier)
+
+    // Phase 1: Tier price multiplier based on reputation
+    const tierMultiplier = getTierPriceMultiplier(gameState.reputation)
+
+    // Phase 3: Skill price multiplier
+    const skillMultiplier = getSkillPriceMultiplier(gameState.skills)
+
+    const finalPrice = Math.floor(
+      (basePrice + qualityBonus + reputationBonus) * difficultyMultiplier * tierMultiplier * skillMultiplier,
+    )
+
     return Math.max(10, finalPrice)
   }
 
@@ -95,21 +128,29 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     if (!currentBeat || isSelling) return
 
     setIsSelling(true)
-    console.log("[v0] Selling beat:", currentBeat.id)
+    console.log("[v0] Selling beat:", currentBeat.id, "Quality:", currentBeat.quality, "Price:", currentBeat.price)
 
     try {
       await sellBeats([currentBeat.id])
       console.log("[v0] Beat sold successfully")
 
-      setGameState((prev) => ({
-        ...prev,
-        beats: [currentBeat, ...prev.beats],
-        money: prev.money + currentBeat.price,
-        reputation: prev.reputation + Math.floor(currentBeat.quality / 5),
-        totalMoneyEarned: prev.totalMoneyEarned + currentBeat.price,
-        totalBeatsEarnings: (prev.totalBeatsEarnings || 0) + currentBeat.price,
-        stageProgress: Math.min(100, prev.stageProgress + 5),
-      }))
+      const reputationGain = Math.floor(currentBeat.quality / 5)
+      console.log("[v0] Reputation gain:", reputationGain, "(quality:", currentBeat.quality, "/ 5)")
+
+      setGameState((prev) => {
+        const newReputation = prev.reputation + reputationGain
+        console.log("[v0] New reputation:", newReputation, "(was:", prev.reputation, ")")
+
+        return {
+          ...prev,
+          beats: [currentBeat, ...prev.beats],
+          money: prev.money + currentBeat.price,
+          reputation: newReputation,
+          totalMoneyEarned: prev.totalMoneyEarned + currentBeat.price,
+          totalBeatsEarnings: (prev.totalBeatsEarnings || 0) + currentBeat.price,
+          stageProgress: Math.min(100, prev.stageProgress + 5),
+        }
+      })
 
       setCurrentBeat(null)
     } catch (error) {
@@ -124,11 +165,18 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     console.log("[v0] Rhythm game completed with accuracy:", accuracy)
     setIsPlayingRhythm(false)
     onRhythmGameStateChange?.(false)
-    setSelectedTrack(null) // Clear selected track to return to main screen after completion
+
+    setRhythmAccuracy(accuracy)
+    setShowResults(true)
+  }
+
+  const handleResultsContinue = async () => {
+    setShowResults(false)
+    setSelectedTrack(null)
     setIsCreating(true)
 
     const randomName = BEAT_NAMES[Math.floor(Math.random() * BEAT_NAMES.length)]
-    const quality = calculateQuality(accuracy, selectedDifficulty)
+    const quality = calculateQuality(rhythmAccuracy, selectedDifficulty)
     const price = calculatePrice(quality, selectedDifficulty)
 
     setIsGeneratingCover(true)
@@ -210,6 +258,10 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     onRhythmGameStateChange?.(true)
   }
 
+  if (showResults) {
+    return <RhythmGameResults accuracy={rhythmAccuracy} onContinue={handleResultsContinue} />
+  }
+
   // Fullscreen rhythm game mode
   if (isPlayingRhythm && selectedTrack) {
     console.log("[Stage] Rendering rhythm game. Track:", selectedTrack.name, "URL:", selectedTrack.oszUrl)
@@ -230,9 +282,6 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
       </div>
     )
   }
-
-  // Debug: Show current state
-  console.log("[Stage] State:", { isPlayingRhythm, hasSelectedTrack: !!selectedTrack, showTrackSelector })
 
   // Track selection screen
   if (showTrackSelector) {
