@@ -1,8 +1,12 @@
+import * as dotenv from "dotenv"
 import * as fal from "@fal-ai/serverless-client"
 import { put } from "@vercel/blob"
 import * as fs from "fs"
 import * as path from "path"
 import { parse } from "csv-parse/sync"
+
+// Load environment variables from .env.local
+dotenv.config({ path: ".env.local" })
 
 fal.config({
   credentials: process.env.FAL_KEY,
@@ -15,7 +19,7 @@ interface ArtAsset {
   Quantity?: string
   Size: string
   Format: string
-  Prompt: string
+  Specific_Prompt: string
   Filename: string
   Priority: string
 }
@@ -42,9 +46,10 @@ async function generateImage(prompt: string, filename: string) {
       },
     })
 
-    if (result.data && result.data.images && result.data.images[0]) {
-      const imageUrl = result.data.images[0].url
-      console.log(`[v0] Generated: ${filename}`)
+    // result from fal.subscribe is directly the data, not wrapped in .data
+    if (result.images && result.images[0]) {
+      const imageUrl = result.images[0].url
+      console.log(`[v0] Generated: ${filename} - ${imageUrl}`)
 
       // Download image
       const response = await fetch(imageUrl)
@@ -61,6 +66,7 @@ async function generateImage(prompt: string, filename: string) {
       return blob.url
     } else {
       console.error(`[v0] No image generated for ${filename}`)
+      console.error(`[v0] Result:`, JSON.stringify(result, null, 2))
       return null
     }
   } catch (error) {
@@ -89,7 +95,7 @@ async function processCSV(csvPath: string) {
     //   continue
     // }
 
-    const url = await generateImage(record.Prompt, record.Filename)
+    const url = await generateImage(record.Specific_Prompt, record.Filename)
     results.push({ filename: record.Filename, url })
 
     // Add delay to avoid rate limiting
@@ -104,10 +110,7 @@ async function main() {
   console.log("[v0] Using fal-ai/flux/dev model")
 
   const csvFiles = [
-    "art-assets-01-equipment.csv",
-    "art-assets-02-artists.csv",
-    "art-assets-03-ui-elements.csv",
-    "art-assets-04-backgrounds.csv",
+    "art-assets-detailed.csv",
   ]
 
   const allResults: { filename: string; url: string | null }[] = []
