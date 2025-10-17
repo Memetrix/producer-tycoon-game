@@ -35,6 +35,9 @@ export interface GameState {
   // Beats inventory
   beats: Beat[]
 
+  // NFT collection (beats minted as NFTs on TON blockchain)
+  nfts: BeatNFT[]
+
   artists: {
     // Tier 1: Street (0-500 rep)
     "mc-flow": number
@@ -108,6 +111,21 @@ export interface Beat {
   quality: number
   cover: string
   createdAt: number
+}
+
+// NFT (Non-Fungible Token) for beats minted on TON blockchain
+export interface BeatNFT {
+  id: string // NFT token ID on blockchain
+  beatId: string // Reference to original beat
+  name: string
+  cover: string
+  quality: number
+  rarity: "common" | "rare" | "epic" | "legendary"
+  mintedAt: number // Timestamp
+  transactionHash?: string // TON blockchain transaction hash
+  ipfsUrl?: string // IPFS URL for metadata
+  price?: number // Current listing price (if for sale)
+  isListed: boolean // Whether NFT is listed on marketplace
 }
 
 export interface Artist {
@@ -220,6 +238,7 @@ export const INITIAL_GAME_STATE: GameState = {
     audioInterface: 0,
   },
   beats: [],
+  nfts: [],
   artists: {
     // Tier 1: Street (0-500 rep)
     "mc-flow": 0,
@@ -1090,4 +1109,46 @@ export function getLabelDealsPassiveIncome(labelDeals: GameState["labelDeals"]):
   if (labelDeals.major) incomePerHour += LABEL_DEALS_CONFIG.major.passiveIncomePerHour
 
   return Math.floor(incomePerHour / 60) // Convert to per minute
+}
+
+// ============================================================================
+// NFT SYSTEM
+// ============================================================================
+
+// Determine NFT rarity based on beat quality
+export function getNFTRarity(quality: number): BeatNFT["rarity"] {
+  if (quality >= 90) return "legendary"
+  if (quality >= 75) return "epic"
+  if (quality >= 60) return "rare"
+  return "common"
+}
+
+// Get rarity display color
+export function getRarityColor(rarity: BeatNFT["rarity"]): string {
+  switch (rarity) {
+    case "legendary":
+      return "#FFD700" // Gold
+    case "epic":
+      return "#9333EA" // Purple
+    case "rare":
+      return "#3B82F6" // Blue
+    case "common":
+      return "#6B7280" // Gray
+  }
+}
+
+// Calculate NFT mint cost based on quality and rarity
+export function calculateNFTMintCost(quality: number): number {
+  const rarity = getNFTRarity(quality)
+
+  switch (rarity) {
+    case "legendary":
+      return 100 // 100 Telegram Stars
+    case "epic":
+      return 75
+    case "rare":
+      return 50
+    case "common":
+      return 25
+  }
 }

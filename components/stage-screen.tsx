@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { ArrowLeft, Play, Music, Sparkles } from "lucide-react"
+import { ArrowLeft, Play, Music, Sparkles, Image as ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
@@ -21,6 +21,7 @@ import { saveBeat, sellBeats } from "@/lib/game-storage"
 import { RhythmGameRhythmPlus } from "@/components/rhythm-game-rhythm-plus"
 import { RhythmGameResults } from "@/components/rhythm-game-results"
 import { OSZ_TRACKS, type OszTrack } from "@/lib/music-config"
+import { NftMintModal } from "@/components/nft-mint-modal"
 
 interface StageScreenProps {
   gameState: GameState
@@ -39,6 +40,8 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
   const [showResults, setShowResults] = useState(false)
   const [rhythmAccuracy, setRhythmAccuracy] = useState(0)
+
+  const [showNftModal, setShowNftModal] = useState(false)
 
   // Track and difficulty selection
   const [showTrackSelector, setShowTrackSelector] = useState(false)
@@ -566,21 +569,33 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
             </div>
 
             {currentBeat ? (
-              <Button
-                size="lg"
-                className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition-transform"
-                onClick={handleSellBeat}
-                disabled={isGeneratingName || isGeneratingCover || isSelling}
-              >
-                <Sparkles className="w-5 h-5 mr-2" />
-                {isGeneratingName
-                  ? "Придумываю название..."
-                  : isGeneratingCover
-                    ? "Создаю обложку..."
-                    : isSelling
-                      ? "Продаю..."
-                      : `Продать бит ($${currentBeat?.price})`}
-              </Button>
+              <div className="w-full space-y-2">
+                <Button
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition-transform"
+                  onClick={handleSellBeat}
+                  disabled={isGeneratingName || isGeneratingCover || isSelling}
+                >
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  {isGeneratingName
+                    ? "Придумываю название..."
+                    : isGeneratingCover
+                      ? "Создаю обложку..."
+                      : isSelling
+                        ? "Продаю..."
+                        : `Продать бит ($${currentBeat?.price})`}
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full border-primary/30 hover:bg-primary/10"
+                  onClick={() => setShowNftModal(true)}
+                  disabled={isGeneratingName || isGeneratingCover}
+                >
+                  <ImageIcon className="w-5 h-5 mr-2" />
+                  Создать NFT
+                </Button>
+              </div>
             ) : (
               <div className="w-full space-y-2">
                 <Button
@@ -646,6 +661,9 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
           </div>
         )}
       </div>
+
+      {/* NFT Mint Modal */}
+      {showNftModal && currentBeat && <NftMintModal beat={currentBeat} onClose={() => setShowNftModal(false)} />}
     </div>
   )
 }
