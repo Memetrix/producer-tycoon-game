@@ -354,16 +354,22 @@ export default function Page() {
   if (!authChecked || (isAuthenticated && isLoading)) {
     return (
       <div className="min-h-screen bg-background dark flex items-center justify-center p-4">
-        <div className="text-center space-y-4 max-w-sm">
+        <div className="text-center space-y-6 max-w-sm">
           <div className="w-16 h-16 border-4 border-[oklch(0.65_0.25_250)] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-[oklch(0.7_0_0)]">Загрузка...</p>
-          <p className="text-xs text-[oklch(0.6_0_0)]">Если загрузка затягивается, попробуй начать заново</p>
+          <div className="space-y-2">
+            <p className="text-[oklch(0.7_0_0)] text-lg font-semibold">Загрузка...</p>
+            <p className="text-xs text-[oklch(0.6_0_0)]">Если загрузка затягивается, попробуй начать заново</p>
+          </div>
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              console.log("[v0] Reset button clicked")
               setIsLoading(false)
               setShowOnboarding(true)
             }}
-            className="mt-4 px-4 py-2 bg-[oklch(0.65_0.25_250)] text-white rounded-lg text-sm hover:opacity-90 transition-opacity"
+            className="w-full px-6 py-3 bg-[oklch(0.65_0.25_250)] text-white rounded-lg text-sm font-semibold hover:bg-[oklch(0.6_0.25_250)] active:scale-95 transition-all cursor-pointer pointer-events-auto"
+            type="button"
           >
             Начать заново
           </button>
