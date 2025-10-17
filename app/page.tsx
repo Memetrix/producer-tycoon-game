@@ -124,15 +124,16 @@ export default function Page() {
           setShowCharacterSelection(false)
           setShowAvatarConfirmation(false)
           setShowTutorial(false)
+          setIsLoading(false)
         } else {
           console.log("[v0] No saved state found - showing onboarding")
           setShowOnboarding(true)
+          setIsLoading(false)
         }
       } catch (error) {
         console.error("[v0] Failed to load game state:", error)
         clearTimeout(timeoutId)
         setShowOnboarding(true)
-      } finally {
         setIsLoading(false)
       }
     }
@@ -367,7 +368,8 @@ export default function Page() {
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              console.log("[v0] Reset button clicked")
+              console.log("[v0] Reset button clicked - clearing hasInitialized flag")
+              hasInitialized.current = false
               setIsLoading(false)
               setShowOnboarding(true)
             }}
