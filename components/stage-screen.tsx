@@ -172,6 +172,23 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     setShowResults(false)
     setIsCreating(true)
 
+    // Calculate quality and price first
+    const quality = calculateQuality(rhythmAccuracy, selectedDifficulty)
+    const price = calculatePrice(quality, selectedDifficulty)
+
+    // Create beat with placeholder data immediately
+    const newBeat: Beat = {
+      id: crypto.randomUUID(),
+      name: "Создаю...", // Temporary name
+      price: price,
+      quality: quality,
+      cover: "/placeholder.svg?height=400&width=400", // Temporary cover
+      createdAt: Date.now(),
+    }
+
+    setCurrentBeat(newBeat)
+
+    // Now generate AI assets in the background
     setIsGeneratingName(true)
     let beatName = BEAT_NAMES[Math.floor(Math.random() * BEAT_NAMES.length)]
 
@@ -195,6 +212,9 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
         const nameData = JSON.parse(responseText)
         beatName = nameData.beatName
         console.log("[v0] Generated beat name:", beatName)
+
+        // Update beat name immediately
+        setCurrentBeat((prev) => (prev ? { ...prev, name: beatName } : null))
       } else {
         console.error("[v0] Failed to generate beat name. Status:", nameResponse.status, "Body:", responseText)
       }
@@ -207,9 +227,6 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     } finally {
       setIsGeneratingName(false)
     }
-
-    const quality = calculateQuality(rhythmAccuracy, selectedDifficulty)
-    const price = calculatePrice(quality, selectedDifficulty)
 
     setIsGeneratingCover(true)
 
@@ -232,21 +249,28 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
         const coverData = JSON.parse(coverResponseText)
         console.log("[v0] Generated cover URL:", coverData.coverUrl)
 
-        const newBeat: Beat = {
-          id: crypto.randomUUID(),
-          name: beatName,
-          price: price,
-          quality: quality,
-          cover: coverData.coverUrl,
-          createdAt: Date.now(),
-        }
-
-        console.log("[v0] Beat created with AI assets:", newBeat.id)
-        setCurrentBeat(newBeat)
-        await saveBeat(newBeat)
+        // Update beat with final data
+        setCurrentBeat((prev) => {
+          if (!prev) return null
+          const finalBeat = {
+            ...prev,
+            name: beatName,
+            cover: coverData.coverUrl,
+          }
+          // Save to database
+          saveBeat(finalBeat)
+          console.log("[v0] Beat created with AI assets:", finalBeat.id)
+          return finalBeat
+        })
       } else {
         console.error("[v0] Failed to generate cover. Status:", coverResponse.status, "Body:", coverResponseText)
-        throw new Error("Cover generation failed")
+        // Keep placeholder cover
+        setCurrentBeat((prev) => {
+          if (!prev) return null
+          const finalBeat = { ...prev, name: beatName }
+          saveBeat(finalBeat)
+          return finalBeat
+        })
       }
     } catch (error) {
       console.error("[v0] Failed to generate cover:", error)
@@ -254,16 +278,13 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       })
-      const newBeat: Beat = {
-        id: crypto.randomUUID(),
-        name: beatName,
-        price: price,
-        quality: quality,
-        cover: "/placeholder.svg?height=400&width=400",
-        createdAt: Date.now(),
-      }
-      setCurrentBeat(newBeat)
-      await saveBeat(newBeat)
+      // Keep placeholder cover
+      setCurrentBeat((prev) => {
+        if (!prev) return null
+        const finalBeat = { ...prev, name: beatName }
+        saveBeat(finalBeat)
+        return finalBeat
+      })
     } finally {
       setIsGeneratingCover(false)
       setIsCreating(false)
