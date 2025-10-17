@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Producer Tycoon - Narrative Guide для Ангелины</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 50%, #0a0a0f 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(74, 222, 128, 0.15) 0%, transparent 50%);
+            padding: 40px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background:
+                repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(138, 43, 226, 0.03) 50px, rgba(138, 43, 226, 0.03) 51px),
+                repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(74, 222, 128, 0.03) 50px, rgba(74, 222, 128, 0.03) 51px);
+            animation: grid-move 20s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #4ade80 0%, #8b5cf6 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 80px rgba(138, 43, 226, 0.5);
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        .hero .subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: #a0a0a0;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .hero .tagline {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: #fff;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 20px 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 10px 40px rgba(139, 92, 246, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 15px 60px rgba(139, 92, 246, 0.6); }
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.6);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        .section {
+            margin-bottom: 100px;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #4ade80, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 50px;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4ade80, #8b5cf6, #ec4899);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.3);
+        }
+
+        .card:hover::before {
+            transform: translateX(0);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .card-text {
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        .character-card {
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .character-card:hover {
+            border-color: rgba(139, 92, 246, 0.8);
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.4);
+            transform: translateX(10px);
+        }
+
+        .character-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .character-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+        }
+
+        .character-info h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .character-info .archetype {
+            color: #8b5cf6;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .character-arc {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border-left: 4px solid #4ade80;
+        }
+
+        .arc-level {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .arc-level::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #4ade80;
+            font-weight: 700;
+        }
+
+        .arc-level strong {
+            color: #4ade80;
+        }
+
+        .gameplay-impact {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .gameplay-impact h4 {
+            color: #4ade80;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .gameplay-impact ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .gameplay-impact li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .gameplay-impact li::before {
+            content: '🎮';
+            position: absolute;
+            left: 0;
+        }
+
+        .example-box {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 4px solid #8b5cf6;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 10px;
+        }
+
+        .example-box h4 {
+            color: #8b5cf6;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .dialogue {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+
+        .dialogue .speaker {
+            color: #8b5cf6;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .dialogue .text {
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+
+        .choice {
+            background: rgba(74, 222, 128, 0.1);
+            border-left: 3px solid #4ade80;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .choice:hover {
+            background: rgba(74, 222, 128, 0.2);
+            transform: translateX(5px);
+        }
+
+        .choice .choice-text {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .choice .choice-result {
+            color: #4ade80;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .technique-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .technique-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .technique-card .game-reference {
+            color: #8b5cf6;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .technique-card .how-it-works {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .technique-card .how-it-works h4 {
+            color: #4ade80;
+            margin-bottom: 10px;
+        }
+
+        .technique-card .application {
+            background: rgba(74, 222, 128, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #4ade80;
+        }
+
+        .technique-card .application h4 {
+            color: #4ade80;
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: rgba(26, 26, 46, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(139, 92, 246, 0.8);
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #4ade80, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #888;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .quote-box {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+            border-left: 5px solid #8b5cf6;
+            padding: 30px;
+            margin: 40px 0;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #fff;
+        }
+
+        .quote-author {
+            margin-top: 15px;
+            text-align: right;
+            color: #8b5cf6;
+            font-weight: 700;
+            font-style: normal;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #4ade80, #8b5cf6, #ec4899);
+        }
+
+        .timeline-item {
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) {
+            padding-right: 55%;
+        }
+
+        .timeline-item:nth-child(even) {
+            padding-left: 55%;
+        }
+
+        .timeline-content {
+            background: rgba(26, 26, 46, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
+        }
+
+        .formula {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #4ade80;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .formula-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4ade80;
+            margin-bottom: 20px;
+        }
+
+        .formula-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .formula-item {
+            background: rgba(74, 222, 128, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .formula-item h4 {
+            color: #4ade80;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .formula-item p {
+            color: #ccc;
+            font-size: 0.85rem;
+        }
+
+        canvas {
+            max-height: 400px;
+            margin: 20px 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: rgba(26, 26, 46, 0.8);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: #fff;
+            padding: 20px;
+            text-align: left;
+            font-weight: 700;
+        }
+
+        .comparison-table td {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .badge-red {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .badge-yellow {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        .badge-green {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            border: 1px solid #4ade80;
+        }
+
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 30px;
+            }
+
+            .timeline-item:nth-child(odd),
+            .timeline-item:nth-child(even) {
+                padding-left: 80px;
+                padding-right: 0;
+            }
+
+            .timeline-icon {
+                left: 30px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .highlight {
+            color: #8b5cf6;
+            font-weight: 700;
+        }
+
+        .emphasis {
+            color: #4ade80;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Producer Tycoon</h1>
+            <p class="subtitle">Narrative Design Brief для Ангелины</p>
+            <p class="tagline">Визуальная новелла × Дружба & Предательство × Музыкальная индустрия</p>
+            <a href="#problem" class="cta-button">Погнали! 🚀</a>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- ПРОБЛЕМА -->
+        <section class="section" id="problem">
+            <h2 class="section-title">🎯 Главная Проблема</h2>
+            <p class="section-subtitle">Почему нам нужна ТВОЯ магия</p>
+
+            <div class="quote-box">
+                "You are not designing a game. You are designing an experience."
+                <div class="quote-author">— Jesse Schell, "The Art of Game Design"</div>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <span class="card-icon">✅</span>
+                    <h3 class="card-title">Что работает</h3>
+                    <p class="card-text">
+                        <strong class="highlight">Технология: 9/10</strong><br>
+                        Telegram WebApp, Next.js, Supabase, NFT интеграция, Rhythm Plus engine
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">❌</span>
+                    <h3 class="card-title">Что не работает</h3>
+                    <p class="card-text">
+                        <strong class="badge-red">История: 4/10</strong><br>
+                        Нет драмы, персонажей, эмоций. Игрок не чувствует связи с миром.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">💡</span>
+                    <h3 class="card-title">Решение</h3>
+                    <p class="card-text">
+                        <strong class="emphasis">Отношения с людьми!</strong><br>
+                        Дружба, предательство, жертва = эмоциональное ядро игры.
+                    </p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">60+</div>
+                    <div class="stat-label">Коммитов за неделю</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">107</div>
+                    <div class="stat-label">AI-генерированных артов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">29</div>
+                    <div class="stat-label">OSU треков</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4/10</div>
+                    <div class="stat-label">Эмоции (надо исправить!)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ЭМОЦИИ -->
+        <section class="section">
+            <h2 class="section-title">🎭 Линза Эмоций</h2>
+            <p class="section-subtitle">Какие эмоции должен испытывать игрок?</p>
+
+            <canvas id="emotionsChart"></canvas>
+
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Эмоция</th>
+                        <th>Сейчас</th>
+                        <th>Цель</th>
+                        <th>Как достичь</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>😰 <strong>Страх</strong></td>
+                        <td><span class="badge badge-red">0/10</span></td>
+                        <td><span class="badge badge-green">7/10</span></td>
+                        <td>Риск провала контракта, потери репутации</td>
+                    </tr>
+                    <tr>
+                        <td>🎉 <strong>Эйфория</strong></td>
+                        <td><span class="badge badge-yellow">5/10</span></td>
+                        <td><span class="badge badge-green">9/10</span></td>
+                        <td>Момент первого хита, прорыва, признания</td>
+                    </tr>
+                    <tr>
+                        <td>🤝 <strong>Связь (Дружба)</strong></td>
+                        <td><span class="badge badge-red">1/10</span></td>
+                        <td><span class="badge badge-green">8/10</span></td>
+                        <td><strong class="highlight">Глубокие отношения с командой (друзья, менторы, rivals)</strong></td>
+                    </tr>
+                    <tr>
+                        <td>💰 <strong>Искушение</strong></td>
+                        <td><span class="badge badge-red">0/10</span></td>
+                        <td><span class="badge badge-green">7/10</span></td>
+                        <td>Продать душу за деньги vs остаться честным</td>
+                    </tr>
+                    <tr>
+                        <td>😢 <strong>Потеря</strong></td>
+                        <td><span class="badge badge-red">0/10</span></td>
+                        <td><span class="badge badge-yellow">6/10</span></td>
+                        <td>Артист уходит, мечта рушится</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- ПЕРСОНАЖИ -->
+        <section class="section">
+            <h2 class="section-title">👥 Персонажи как Social Links</h2>
+            <p class="section-subtitle">Каждый персонаж = эмоциональная арка + геймплей влияние (как в Persona 5)</p>
+
+            <!-- MC Flow -->
+            <div class="character-card">
+                <div class="character-header">
+                    <div class="character-avatar">🎤</div>
+                    <div class="character-info">
+                        <h3>MC Flow</h3>
+                        <div class="archetype">Архетип: Tsundere / Skeptical Friend</div>
+                        <div style="color: #888; font-size: 0.9rem; margin-top: 5px;">Возраст: 21 • Твой первый клиент</div>
+                    </div>
+                </div>
+                <p style="margin-bottom: 20px; color: #ccc;">
+                    Уличный рэпер из твоего района. Сначала не верит в тебя, но если докажешь — становится loyal af.
+                </p>
+
+                <div class="character-arc">
+                    <h4 style="color: #4ade80; margin-bottom: 15px;">📈 Эмоциональная арка:</h4>
+                    <div class="arc-level">
+                        <strong>Lvl 1-3:</strong> Недоверие, проверяет на прочность
+                        <div class="dialogue">
+                            <div class="speaker">MC Flow:</div>
+                            <div class="text">"Покажи что умеешь, тогда поговорим."</div>
+                        </div>
+                    </div>
+                    <div class="arc-level">
+                        <strong>Lvl 4-6:</strong> Начинает уважать, делится страхами
+                        <div class="dialogue">
+                            <div class="speaker">MC Flow:</div>
+                            <div class="text">"Знаешь, я боюсь, что так и останусь никем. А с тобой как будто шанс есть."</div>
+                        </div>
+                    </div>
+                    <div class="arc-level">
+                        <strong>Lvl 7-10:</strong> Становится братом, защищает тебя
+                        <div class="dialogue">
+                            <div class="speaker">MC Flow:</div>
+                            <div class="text">"Кто-то тронул тебя? Я разберусь. Ты мне дал надежду, я тебя не брошу."</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gameplay-impact">
+                    <h4>🎮 Геймплей-влияние:</h4>
+                    <ul>
+                        <li><strong>Lvl 5:</strong> Приводит других артистов (+репутация)</li>
+                        <li><strong>Lvl 8:</strong> Unlock "underground battles" (новый контент)</li>
+                        <li><strong>Lvl 10:</strong> Становится продюсером твоего лейбла (passive income boost)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Lil Dreamer -->
+            <div class="character-card">
+                <div class="character-header">
+                    <div class="character-avatar">💭</div>
+                    <div class="character-info">
+                        <h3>Lil Dreamer</h3>
+                        <div class="archetype">Архетип: Soft Boi / Artsy Dreamer / Loyal Friend</div>
+                        <div style="color: #888; font-size: 0.9rem; margin-top: 5px;">Возраст: 19 • Талантливый но неуверенный</div>
+                    </div>
+                </div>
+                <p style="margin-bottom: 20px; color: #ccc;">
+                    Пишет лирику в блокноте, мечтает о большом, но боится провала. Становится твоим closest friend — почти как брат/сестра.
+                </p>
+
+                <div class="character-arc">
+                    <h4 style="color: #4ade80; margin-bottom: 15px;">📈 Эмоциональная арка:</h4>
+                    <div class="arc-level">
+                        <strong>Lvl 1-3:</strong> Робкий, просит совета
+                        <div class="dialogue">
+                            <div class="speaker">Lil Dreamer:</div>
+                            <div class="text">"Ты правда думаешь, что из меня что-то выйдет?"</div>
+                        </div>
+                    </div>
+                    <div class="arc-level">
+                        <strong>Lvl 4-6:</strong> Открывается, показывает уязвимость
+                        <div class="dialogue">
+                            <div class="speaker">Lil Dreamer:</div>
+                            <div class="text">"Никто не верил в меня. Кроме тебя. Ты для меня... особенный/особенная."</div>
+                        </div>
+                    </div>
+                    <div class="arc-level">
+                        <strong>Lvl 7-10:</strong> Момент истины — выбор между ним и деньгами
+                        <div class="dialogue">
+                            <div class="speaker">Sofia (A&R):</div>
+                            <div class="text">"Мы подпишем тебя. Но не его. Он не наш уровень."</div>
+                        </div>
+                        <div class="dialogue">
+                            <div class="speaker">Lil Dreamer (шёпотом):</div>
+                            <div class="text">"Соглашайся. Я пойму. Это твой шанс."</div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <div class="choice">
+                                <div class="choice-text">🤝 "Без него я не подпишу контракт."</div>
+                                <div class="choice-result">→ Теряешь major deal, но дружба навсегда</div>
+                            </div>
+                            <div class="choice">
+                                <div class="choice-text">💰 "Извини, bro... Это business."</div>
+                                <div class="choice-result">→ Major deal, но дружба разрушена</div>
+                            </div>
+                            <div class="choice">
+                                <div class="choice-text">💡 "Дай мне доказать, что он достоин."</div>
+                                <div class="choice-result">→ Challenge mode: успей за 7 дней создать хит для него</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gameplay-impact">
+                    <h4>🎮 Геймплей-влияние:</h4>
+                    <ul>
+                        <li><strong>Lvl 5:</strong> Пишет тексты специально под твои биты (quality +15%)</li>
+                        <li><strong>Lvl 8:</strong> Дуэты с другими артистами (новый тип контента)</li>
+                        <li><strong>Lvl 10:</strong> Становится со-founder'ом твоего лейбла (равные партнеры) + unique ending "Brotherhood"</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Street Poet -->
+            <div class="character-card">
+                <div class="character-header">
+                    <div class="character-avatar">📜</div>
+                    <div class="character-info">
+                        <h3>Street Poet</h3>
+                        <div class="archetype">Архетип: Wise Elder / Fallen Star / Mentor</div>
+                        <div style="color: #888; font-size: 0.9rem; margin-top: 5px;">Возраст: 35 • Бывшая звезда</div>
+                    </div>
+                </div>
+                <p style="margin-bottom: 20px; color: #ccc;">
+                    Был звездой 10 лет назад, но сгорел из-за drugs/label drama. Пытается вернуться через тебя.
+                </p>
+
+                <div class="character-arc">
+                    <h4 style="color: #4ade80; margin-bottom: 15px;">📈 Эмоциональная арка:</h4>
+                    <div class="arc-level">
+                        <strong>Lvl 1-3:</strong> Циничный, предупреждает о темной стороне
+                        <div class="dialogue">
+                            <div class="speaker">Street Poet:</div>
+                            <div class="text">"Ты думаешь это весело? Я потерял все. Семью, деньги, себя."</div>
+                        </div>
+                    </div>
+                    <div class="arc-level">
+                        <strong>Lvl 4-6:</strong> Видит в тебе надежду на redemption
+                        <div class="dialogue">
+                            <div class="speaker">Street Poet:</div>
+                            <div class="text">"Может, ты сможешь избежать моих ошибок. Дай я покажу тебе настоящую игру."</div>
+                        </div>
+                    </div>
+                    <div class="arc-level">
+                        <strong>Lvl 7-10:</strong> Находит смысл через тебя, отцовская фигура
+                        <div class="dialogue">
+                            <div class="speaker">Street Poet:</div>
+                            <div class="text">"Я не смог стать звездой снова. Но ты можешь. И это важнее."</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gameplay-impact">
+                    <h4>🎮 Геймплей-влияние:</h4>
+                    <ul>
+                        <li><strong>Lvl 5:</strong> Учит advanced production (unlock новые mechanics)</li>
+                        <li><strong>Lvl 8:</strong> Контакты в индустрии (major label deals)</li>
+                        <li><strong>Lvl 10:</strong> Sacrifice ending — отдает права на старые треки (huge boost)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; padding: 30px; background: rgba(139, 92, 246, 0.1); border-radius: 15px;">
+                <p style="font-size: 1.1rem; color: #ccc; margin-bottom: 15px;">
+                    И еще 3 персонажа: <strong class="highlight">Young Legend</strong> (Rival),
+                    <strong class="highlight">Sofia</strong> (A&R Gatekeeper),
+                    <strong class="highlight">DJ Nova</strong> (Wild Card)
+                </p>
+                <p style="color: #888;">
+                    Всего <strong class="emphasis">6 полноценных арок</strong> с визуальными новеллами,
+                    choices и multiple endings!
+                </p>
+            </div>
+        </section>
+
+        <!-- ТЕХНИКИ ИЗ ЛЕГЕНДАРНЫХ ИГР -->
+        <section class="section">
+            <h2 class="section-title">🎮 Техники "выжимания" эмоций</h2>
+            <p class="section-subtitle">Как легендарные игры заставляют плакать — и как мы это применим</p>
+
+            <!-- MGS3 -->
+            <div class="technique-card">
+                <h3>1. Agency (Выбор игрока)</h3>
+                <div class="game-reference">📦 Metal Gear Solid 3: Убийство The Boss</div>
+
+                <div class="how-it-works">
+                    <h4>Как работает:</h4>
+                    <p style="color: #ccc;">
+                        Игра <strong class="emphasis">заставляет ТЕБЯ нажать курок</strong> — не cutscene!
+                        Таймера нет, можешь ждать бесконечно. После убийства узнаешь: она всегда была на твоей стороне.
+                    </p>
+                </div>
+
+                <div class="application">
+                    <h4>🎯 Для Producer Tycoon:</h4>
+                    <p style="color: #ccc; margin-bottom: 10px;">
+                        <strong>Сцена:</strong> Street Poet рецидив наркомании. Просит денег "последний раз..."
+                    </p>
+                    <div class="choice">
+                        <div class="choice-text">💵 Дать деньги</div>
+                        <div class="choice-result">→ Он исчезает, relationship падает</div>
+                    </div>
+                    <div class="choice">
+                        <div class="choice-text">🚫 Отказать</div>
+                        <div class="choice-result">→ Злится, но потом благодарит</div>
+                    </div>
+                    <div class="choice">
+                        <div class="choice-text">🏥 Предложить реабилитацию</div>
+                        <div class="choice-result">→ Дорого, но он излечивается</div>
+                    </div>
+                    <p style="color: #ef4444; margin-top: 15px; font-weight: 600;">
+                        ⚠️ Если дал деньги 3 раза — он умирает от передоза. Игра не предупреждает.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Persona 5 -->
+            <div class="technique-card">
+                <h3>2. Investment (Время/Эмоции)</h3>
+                <div class="game-reference">🎭 Persona 5: Social Links</div>
+
+                <div class="how-it-works">
+                    <h4>Как работает:</h4>
+                    <p style="color: #ccc;">
+                        Ты тратишь <strong class="emphasis">20+ часов</strong> на каждого персонажа.
+                        Каждый разговор раскрывает их драму. Если не уделил время — они не получают happy ending.
+                    </p>
+                </div>
+
+                <div class="application">
+                    <h4>🎯 Для Producer Tycoon:</h4>
+                    <p style="color: #ccc;">
+                        <strong>Механика:</strong> У тебя 30 игровых дней. Каждый день выбор:
+                    </p>
+                    <ul style="list-style: none; padding-left: 0; margin-top: 10px;">
+                        <li style="padding: 8px 0; color: #ccc;">🎵 Создавать биты (деньги)</li>
+                        <li style="padding: 8px 0; color: #ccc;">🤝 Тусить с артистами (relationship)</li>
+                        <li style="padding: 8px 0; color: #ccc;">⬆️ Апгрейдить оборудование (progression)</li>
+                    </ul>
+                    <p style="color: #4ade80; margin-top: 15px; font-weight: 600;">
+                        Финал показывает, кто пришел на твой концерт. Если не уделял время — они не приходят.
+                        Cutscene где ты один на сцене = 💔
+                    </p>
+                </div>
+            </div>
+
+            <!-- Walking Dead -->
+            <div class="technique-card">
+                <h3>3. Helplessness (Бессилие)</h3>
+                <div class="game-reference">🧟 The Walking Dead: Lee's Death</div>
+
+                <div class="how-it-works">
+                    <h4>Как работает:</h4>
+                    <p style="color: #ccc;">
+                        Ты 12 часов защищаешь Clementine (8-летнюю девочку). Lee укушен, времени нет.
+                        В последние минуты учишь ее выживать. Финальный выбор: попросить убить тебя ДО превращения или уйти.
+                    </p>
+                    <div class="dialogue" style="margin-top: 15px;">
+                        <div class="speaker">Lee:</div>
+                        <div class="text">"You're going to be okay, sweet pea."</div>
+                    </div>
+                    <div class="dialogue">
+                        <div class="speaker">Clementine (плачет):</div>
+                        <div class="text">"I don't want you to go..."</div>
+                    </div>
+                    <p style="color: #888; margin-top: 10px; font-style: italic;">
+                        Black screen. Звук выстрела. Тишина.
+                    </p>
+                </div>
+
+                <div class="application">
+                    <h4>🎯 Для Producer Tycoon:</h4>
+                    <p style="color: #ccc; margin-bottom: 15px;">
+                        <strong>Сцена:</strong> MC Flow арестован за наркотики. У тебя деньги на залог, но это ВСЕ твои деньги.
+                    </p>
+                    <div class="choice">
+                        <div class="choice-text">💰 Помочь ему (0$)</div>
+                        <div class="choice-result">→ Он остается с тобой forever</div>
+                    </div>
+                    <div class="choice">
+                        <div class="choice-text">💼 Оставить (деньги сохранены)</div>
+                        <div class="choice-result">→ Он пропадает из игры</div>
+                    </div>
+                    <p style="color: #4ade80; margin-top: 15px;">
+                        <strong>Emotional payoff:</strong> В финале, если помог — он говорит "Ты единственный, кто верил в меня".
+                        Если нет — видишь его в конце игры, сломленного, на минималке.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ФОРМУЛА -->
+        <section class="section">
+            <h2 class="section-title">🧪 Формула Эмоционального Выжимания</h2>
+
+            <div class="formula">
+                <div class="formula-text">
+                    Эмоциональное выжимание = Agency + Investment + Subversion + Helplessness + Consequences
+                </div>
+                <div class="formula-breakdown">
+                    <div class="formula-item">
+                        <h4>Agency</h4>
+                        <p>Игрок сам делает выбор</p>
+                    </div>
+                    <div class="formula-item">
+                        <h4>Investment</h4>
+                        <p>Время/эмоции вложены</p>
+                    </div>
+                    <div class="formula-item">
+                        <h4>Subversion</h4>
+                        <p>Неожиданный поворот</p>
+                    </div>
+                    <div class="formula-item">
+                        <h4>Helplessness</h4>
+                        <p>Момент бессилия</p>
+                    </div>
+                    <div class="formula-item">
+                        <h4>Consequences</h4>
+                        <p>Последствия видны</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <h4>🎯 Пример полного цикла для Producer Tycoon:</h4>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-icon">💰</div>
+                        <div class="timeline-content">
+                            <h4 style="color: #fff; margin-bottom: 10px;">1. Investment</h4>
+                            <p style="color: #ccc;">Игрок 20 часов работает с Lil Dreamer</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">🎯</div>
+                        <div class="timeline-content">
+                            <h4 style="color: #fff; margin-bottom: 10px;">2. Agency</h4>
+                            <p style="color: #ccc;">Major label: "Мы подпишем ТЕБЯ, но не его"</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">😰</div>
+                        <div class="timeline-content">
+                            <h4 style="color: #fff; margin-bottom: 10px;">3. Helplessness</h4>
+                            <p style="color: #ccc;">Нет способа взять обоих — надо выбирать</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">💔</div>
+                        <div class="timeline-content">
+                            <h4 style="color: #fff; margin-bottom: 10px;">4. Subversion</h4>
+                            <p style="color: #ccc;">Если отказался от него — он уходит навсегда</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">🎬</div>
+                        <div class="timeline-content">
+                            <h4 style="color: #fff; margin-bottom: 10px;">5. Consequences</h4>
+                            <p style="color: #ccc;">Финал: либо богатый и одинокий, либо вдвоем без денег но счастливые</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ЧТО ТЕБЕ НУЖНО СДЕЛАТЬ -->
+        <section class="section">
+            <h2 class="section-title">📝 Твоя Роль, Ангелина</h2>
+            <p class="section-subtitle">Что конкретно тебе нужно написать</p>
+
+            <div class="grid">
+                <div class="card">
+                    <span class="card-icon">📖</span>
+                    <h3 class="card-title">Визуальные новеллы</h3>
+                    <p class="card-text">
+                        20+ сцен с диалогами, выборами и последствиями.
+                        Формат: диалог + 3 choice варианта + emotional payoff.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">👥</span>
+                    <h3 class="card-title">6 Персонажей</h3>
+                    <p class="card-text">
+                        Полные эмоциональные арки для каждого (10 уровней relationship).
+                        От недоверия до любви/уважения/redemption.
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">🎭</span>
+                    <h3 class="card-title">5 Endings</h3>
+                    <p class="card-text">
+                        Mogul (богатый но одинокий), True Artist (indie legend),
+                        Romance, Redemption, Bad Ending.
+                    </p>
+                </div>
+            </div>
+
+            <div style="background: rgba(139, 92, 246, 0.1); padding: 40px; border-radius: 20px; border: 2px solid rgba(139, 92, 246, 0.5); margin-top: 40px;">
+                <h3 style="color: #fff; margin-bottom: 20px; font-size: 1.8rem;">💡 Главное правило:</h3>
+                <p style="font-size: 1.2rem; color: #ccc; line-height: 1.8; margin-bottom: 20px;">
+                    Каждая сцена должна отвечать на вопрос: <strong class="highlight">"Что чувствует игрок ПРЯМО СЕЙЧАС?"</strong>
+                </p>
+                <p style="color: #888; font-size: 1rem;">
+                    Не "что происходит", а <strong class="emphasis">"что чувствуется"</strong>.
+                </p>
+                <p style="color: #888; font-size: 1rem; margin-top: 15px;">
+                    Это не игра про биты. Это игра про людей, которые делают музыку вместе.
+                </p>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <h3 style="color: #fff; margin-bottom: 20px; font-size: 1.5rem;">🎯 Вопросы для каждой сцены:</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h4 style="color: #4ade80; margin-bottom: 10px;">1. Эмоция</h4>
+                        <p style="color: #ccc; font-size: 0.95rem;">Какую эмоцию я хочу вызвать?</p>
+                    </div>
+                    <div class="card">
+                        <h4 style="color: #4ade80; margin-bottom: 10px;">2. Выбор</h4>
+                        <p style="color: #ccc; font-size: 0.95rem;">Есть ли значимый выбор у игрока?</p>
+                    </div>
+                    <div class="card">
+                        <h4 style="color: #4ade80; margin-bottom: 10px;">3. Последствия</h4>
+                        <p style="color: #ccc; font-size: 0.95rem;">Какие последствия у выбора?</p>
+                    </div>
+                    <div class="card">
+                        <h4 style="color: #4ade80; margin-bottom: 10px;">4. Тема</h4>
+                        <p style="color: #ccc; font-size: 0.95rem;">Как это связано с темой (dreams vs reality, art vs commerce)?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- РЕФЕРЕНСЫ -->
+        <section class="section">
+            <h2 class="section-title">🎮 Референсы для изучения</h2>
+            <p class="section-subtitle">Игры, которые делают это правильно</p>
+
+            <div class="grid">
+                <div class="card">
+                    <span class="card-icon">💕</span>
+                    <h3 class="card-title">Doki Doki Literature Club</h3>
+                    <p class="card-text">
+                        Неожиданные повороты, настоящие эмоции, meta-narrative
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">👨‍👧‍👦</span>
+                    <h3 class="card-title">Dream Daddy</h3>
+                    <p class="card-text">
+                        Warmth, юмор, разнообразие персонажей, inclusivity
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">🎭</span>
+                    <h3 class="card-title">Persona 5</h3>
+                    <p class="card-text">
+                        Social links система, время-менеджмент, глубокие арки
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">🍸</span>
+                    <h3 class="card-title">VA-11 Hall-A</h3>
+                    <p class="card-text">
+                        Bartending + deep conversations, слушать истории
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">☕</span>
+                    <h3 class="card-title">Coffee Talk</h3>
+                    <p class="card-text">
+                        Давать советы, слушать, влиять на судьбы персонажей
+                    </p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">🧟</span>
+                    <h3 class="card-title">The Walking Dead</h3>
+                    <p class="card-text">
+                        Choices matter, emotional sacrifice, parental bond
+                    </p>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <h3 style="color: #fff; margin-bottom: 20px; font-size: 1.5rem;">🎬 Музыка индустрия драма:</h3>
+                <div class="grid">
+                    <div class="card">
+                        <h4 style="color: #4ade80; margin-bottom: 10px;">8 Mile</h4>
+                        <p style="color: #ccc; font-size: 0.9rem;">Struggle, breakthrough, батлы</p>
+                    </div>
+                    <div class="card">
+                        <h4 style="color: #4ade80; margin-bottom: 10px;">Straight Outta Compton</h4>
+                        <p style="color: #ccc; font-size: 0.9rem;">Friendship, betrayal, индустрия</p>
+                    </div>
+                    <div class="card">
+                        <h4 style="color: #4ade80; margin-bottom: 10px;">Whiplash</h4>
+                        <p style="color: #ccc; font-size: 0.9rem;">Cost of perfection, mentor-student</p>
+                    </div>
+                    <div class="card">
+                        <h4 style="color: #4ade80; margin-bottom: 10px;">Empire (TV)</h4>
+                        <p style="color: #ccc; font-size: 0.9rem;">Music industry drama, семейное</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROADMAP -->
+        <section class="section">
+            <h2 class="section-title">🚀 Roadmap</h2>
+            <p class="section-subtitle">Как мы будем это делать</p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon">📝</div>
+                    <div class="timeline-content">
+                        <h4 style="color: #fff; margin-bottom: 10px;">Phase 1: Prototype (2 недели)</h4>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li style="padding: 5px 0; color: #ccc;">✅ Базовый dialogue system</li>
+                            <li style="padding: 5px 0; color: #ccc;">✅ 1 персонаж полностью (MC Flow)</li>
+                            <li style="padding: 5px 0; color: #ccc;">✅ 3 сцены визуальной новеллы</li>
+                            <li style="padding: 5px 0; color: #ccc;">✅ Система relationship points</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon">🎨</div>
+                    <div class="timeline-content">
+                        <h4 style="color: #fff; margin-bottom: 10px;">Phase 2: Core Content (4 недели)</h4>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li style="padding: 5px 0; color: #ccc;">📖 Все 6 персонажей с полными арками</li>
+                            <li style="padding: 5px 0; color: #ccc;">📖 20+ сцен визуальной новеллы</li>
+                            <li style="padding: 5px 0; color: #ccc;">🎨 Character art (портреты, эмоции)</li>
+                            <li style="padding: 5px 0; color: #ccc;">🎨 Background art (локации)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-icon">✨</div>
+                    <div class="timeline-content">
+                        <h4 style="color: #fff; margin-bottom: 10px;">Phase 3: Polish (2 недели)</h4>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li style="padding: 5px 0; color: #ccc;">🖼️ CG иллюстрации для ключевых моментов</li>
+                            <li style="padding: 5px 0; color: #ccc;">🎵 Sound design (музыка под сцены)</li>
+                            <li style="padding: 5px 0; color: #ccc;">🎭 Multiple endings testing</li>
+                            <li style="padding: 5px 0; color: #ccc;">🌍 Localization (если нужно)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ГЛУБОКИЙ АНАЛИЗ -->
+        <section class="section" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1)); padding: 60px 40px; border-radius: 30px; border: 2px solid rgba(139, 92, 246, 0.3);">
+            <h2 class="section-title">📚 Полный Нарративный Анализ</h2>
+            <p class="section-subtitle">Детальный разбор всех персонажей, сцен и механик</p>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <div style="display: inline-block; background: rgba(26, 26, 46, 0.8); padding: 40px; border-radius: 20px; border: 2px solid #4ade80;">
+                    <div class="stat-value" style="font-size: 4rem;">4,400+</div>
+                    <div class="stat-label" style="font-size: 1.2rem; margin-bottom: 20px;">строк глубокого анализа</div>
+
+                    <div style="text-align: left; margin: 30px 0; color: #ccc;">
+                        <strong style="color: #4ade80; font-size: 1.2rem; display: block; margin-bottom: 15px;">📖 Что внутри:</strong>
+                        <div style="margin: 10px 0;">✅ <strong>6 персонажей</strong> — полные арки от Act 1 до Act 3</div>
+                        <div style="margin: 10px 0;">✅ <strong>48+ сцен</strong> — детальные диалоги с выборами</div>
+                        <div style="margin: 10px 0;">✅ <strong>17 линз Шелла</strong> — применены к игре</div>
+                        <div style="margin: 10px 0;">✅ <strong>20+ эндингов</strong> — полное разветвление</div>
+                        <div style="margin: 10px 0;">✅ <strong>Эмоциональная карта</strong> — minute-by-minute</div>
+                        <div style="margin: 10px 0;">✅ <strong>Формула драмы</strong> — Aristotle applied</div>
+                        <div style="margin: 10px 0;">✅ <strong>Гайд для писателя</strong> — все правила и примеры</div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <a href="DEEP_NARRATIVE_ANALYSIS.md" class="cta-button" style="display: inline-block; padding: 20px 40px; font-size: 1.1rem;">
+                            Открыть Полный Анализ 📖
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 50px;">
+                <h3 style="color: #fff; font-size: 1.8rem; margin-bottom: 25px; text-align: center;">🌟 Highlights из Deep Analysis:</h3>
+
+                <div class="grid">
+                    <div class="card">
+                        <span class="card-icon">🎭</span>
+                        <h3 class="card-title">Все Арки Персонажей</h3>
+                        <p class="card-text" style="margin-bottom: 15px;">
+                            8 детальных сцен для каждого персонажа — от первой встречи до эпического финала.
+                        </p>
+                        <div style="font-size: 0.85rem; color: #888;">
+                            <div>• MC Flow — от скептика к брату</div>
+                            <div>• Lil Dreamer — от неуверенности к самопринятию</div>
+                            <div>• Street Poet — redemption arc</div>
+                            <div>• Young Legend — от rival к ally</div>
+                            <div>• Sofia — от холодного A&R к человеку</div>
+                            <div>• DJ Nova — раскрытие тайны</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <span class="card-icon">🎯</span>
+                        <h3 class="card-title">17 Линз Шелла</h3>
+                        <p class="card-text" style="margin-bottom: 15px;">
+                            Каждая линза применена с конкретными примерами для Producer Tycoon.
+                        </p>
+                        <div style="font-size: 0.85rem; color: #888;">
+                            <div>• Эмоций, Проблем, Любопытства</div>
+                            <div>• Выбора, Навыка, Риска</div>
+                            <div>• Сотрудничества, Выражения</div>
+                            <div>• Препятствий, Достижений</div>
+                            <div>• Контраста, Тайн, Времени</div>
+                            <div>• Последствий, История Игрока</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <span class="card-icon">🎬</span>
+                        <h3 class="card-title">Сценарии Сцен</h3>
+                        <p class="card-text" style="margin-bottom: 15px;">
+                            Готовые диалоги, выборы и последствия — сразу в production.
+                        </p>
+                        <div style="font-size: 0.85rem; color: #888;">
+                            <div>• Формат: Location → Dialogue → Choice → Consequence</div>
+                            <div>• Relationship points детально расписаны</div>
+                            <div>• Triggers и unlocks прописаны</div>
+                            <div>• Эмоциональные payoffs описаны</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-box" style="margin-top: 30px;">
+                    <h4>💡 Пример из Deep Analysis: Street Poet Reunion</h4>
+                    <div class="dialogue">
+                        <div class="speaker">Maya (daughter, 17 years old):</div>
+                        <div class="text">"10 years. No calls. No birthday cards. Nothing. And now you want to talk?"</div>
+                    </div>
+                    <div class="dialogue">
+                        <div class="speaker">Street Poet:</div>
+                        <div class="text">"Maya, I was... lost. I'm sorry."</div>
+                    </div>
+                    <div class="dialogue">
+                        <div class="speaker">Maya:</div>
+                        <div class="text">"Sorry? That's it?" [She stands to leave]</div>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <div class="choice">
+                            <div class="choice-text">🎵 "He wrote something for you. Can he play it?"</div>
+                            <div class="choice-result">→ Maya pauses: "...Fine. One song."</div>
+                        </div>
+                        <p style="color: #4ade80; margin-top: 15px; font-weight: 600;">
+                            [Street Poet plays "Maya's Song" — the comeback track about redemption]<br>
+                            Maya listens, tears forming... "It's... good."<br>
+                            "I'm not ready to forgive you. But... maybe we can talk. Slowly."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FINAL CTA -->
+        <section class="section" style="text-align: center;">
+            <h2 class="section-title">🎯 Итого</h2>
+
+            <div class="quote-box">
+                "Producer Tycoon — это технически сильная игра (9/10) с <span class="badge-red">слабым эмоциональным ядром (4/10)</span>.
+                Мы дизайним систему, а не опыт музыканта."
+                <div class="quote-author">— Анализ через призму Jesse Schell</div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3)); padding: 50px; border-radius: 30px; margin: 50px 0;">
+                <h3 style="font-size: 2rem; margin-bottom: 20px; color: #fff;">Твоя магия нужна нам, чтобы:</h3>
+                <div style="font-size: 1.3rem; line-height: 2; color: #e0e0e0; margin-bottom: 30px;">
+                    <div style="margin: 15px 0;">✨ Создать <strong class="emphasis">эмоциональные арки</strong>, за которые игроки будут плакать</div>
+                    <div style="margin: 15px 0;">💔 Заставить их <strong class="emphasis">выбирать</strong> между мечтой и дружбой</div>
+                    <div style="margin: 15px 0;">🤝 Показать <strong class="emphasis">настоящую дружбу</strong>, предательство, жертву, redemption</div>
+                    <div style="margin: 15px 0;">🎭 Дать им <strong class="emphasis">опыт музыканта</strong>, а не просто систему</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 50px;">
+                <p style="font-size: 1.5rem; color: #ccc; margin-bottom: 30px;">
+                    У тебя есть всё: полный бриф, референсы, техники, персонажи, структура.
+                </p>
+                <p style="font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 40px;">
+                    Готова сделать игроков плакать? 🚀
+                </p>
+                <a href="mailto:angelina@example.com" class="cta-button">Давай создадим шедевр! 💜</a>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Chart.js defaults
+        Chart.defaults.color = '#e0e0e0';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+        // Emotions Chart
+        new Chart(document.getElementById('emotionsChart'), {
+            type: 'radar',
+            data: {
+                labels: ['Страх', 'Эйфория', 'Связь', 'Искушение', 'Потеря', 'Гордость'],
+                datasets: [
+                    {
+                        label: 'Сейчас',
+                        data: [0, 5, 1, 0, 0, 3],
+                        fill: true,
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: 'rgb(239, 68, 68)',
+                        pointBackgroundColor: 'rgb(239, 68, 68)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(239, 68, 68)'
+                    },
+                    {
+                        label: 'Цель',
+                        data: [7, 9, 8, 7, 6, 9],
+                        fill: true,
+                        backgroundColor: 'rgba(74, 222, 128, 0.2)',
+                        borderColor: 'rgb(74, 222, 128)',
+                        pointBackgroundColor: 'rgb(74, 222, 128)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(74, 222, 128)'
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 10,
+                        ticks: {
+                            stepSize: 2,
+                            color: '#888'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        pointLabels: {
+                            color: '#e0e0e0',
+                            font: {
+                                size: 14,
+                                weight: '600'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#e0e0e0',
+                            font: {
+                                size: 14,
+                                weight: '600'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
