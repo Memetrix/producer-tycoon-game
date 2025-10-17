@@ -51,6 +51,8 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
   const [availableTracks, setAvailableTracks] = useState<OszTrack[]>(OSZ_TRACKS)
   const [isLoadingTracks, setIsLoadingTracks] = useState(false)
+  const [availableDifficulties, setAvailableDifficulties] = useState(0)
+  const [isLoadingDifficulties, setIsLoadingDifficulties] = useState(false)
 
   useEffect(() => {
     const loadTracks = async () => {
@@ -163,17 +165,9 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     }
   }
 
-  const handleRhythmComplete = async (accuracy: number) => {
-    console.log("[v0] Rhythm game completed with accuracy:", accuracy)
-    setIsPlayingRhythm(false)
-    onRhythmGameStateChange?.(false)
-
-    setRhythmAccuracy(accuracy)
-    setShowResults(true)
-  }
-
   const handleResultsContinue = async () => {
     setShowResults(false)
+    setSelectedTrack(null)
     setIsCreating(true)
 
     // Calculate quality and price first
@@ -292,7 +286,6 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     } finally {
       setIsGeneratingCover(false)
       setIsCreating(false)
-      setSelectedTrack(null)
     }
   }
 
@@ -310,14 +303,42 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
   const handleTrackSelect = (track: OszTrack) => {
     setSelectedTrack(track)
     setShowTrackSelector(false)
-    // Auto-select difficulty based on equipment
-    const equipmentLevel =
-      gameState.equipment.phone +
-      gameState.equipment.headphones +
-      gameState.equipment.microphone +
-      gameState.equipment.computer
-    const suggestedDifficulty = Math.min(5, Math.max(1, Math.floor(equipmentLevel / 3) + 1))
-    setSelectedDifficulty(suggestedDifficulty)
+    setIsLoadingDifficulties(true)
+    setAvailableDifficulties(0)
+
+    fetch(track.oszUrl)
+      .then((res) => res.arrayBuffer())
+      .then(async (buffer) => {
+        const JSZip = (await import("jszip")).default
+        const zip = await JSZip.loadAsync(buffer)
+        const osuFiles = Object.keys(zip.files).filter((name) => name.endsWith(".osu"))
+        const numDifficulties = osuFiles.length
+        console.log("[v0] OSZ file has", numDifficulties, "difficulties")
+        setAvailableDifficulties(numDifficulties)
+
+        // Auto-select difficulty based on equipment, but cap at available difficulties
+        const equipmentLevel =
+          gameState.equipment.phone +
+          gameState.equipment.headphones +
+          gameState.equipment.microphone +
+          gameState.equipment.computer
+        const suggestedDifficulty = Math.min(numDifficulties, Math.max(1, Math.floor(equipmentLevel / 3) + 1))
+        setSelectedDifficulty(suggestedDifficulty)
+      })
+      .catch((error) => {
+        console.error("[v0] Failed to load OSZ file:", error)
+        setAvailableDifficulties(5)
+        const equipmentLevel =
+          gameState.equipment.phone +
+          gameState.equipment.headphones +
+          gameState.equipment.microphone +
+          gameState.equipment.computer
+        const suggestedDifficulty = Math.min(5, Math.max(1, Math.floor(equipmentLevel / 3) + 1))
+        setSelectedDifficulty(suggestedDifficulty)
+      })
+      .finally(() => {
+        setIsLoadingDifficulties(false)
+      })
   }
 
   const handleStartGame = () => {
@@ -331,6 +352,13 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
     setIsPlayingRhythm(true)
     onRhythmGameStateChange?.(true)
+  }
+
+  const handleRhythmComplete = (accuracy: number) => {
+    setRhythmAccuracy(accuracy)
+    setShowResults(true)
+    setIsPlayingRhythm(false)
+    onRhythmGameStateChange?.(false)
   }
 
   // Render rhythm game when isPlayingRhythm is true
@@ -351,6 +379,112 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
   if (showResults) {
     return <RhythmGameResults accuracy={rhythmAccuracy} onContinue={handleResultsContinue} />
+  }
+
+  // Show difficulty selection when track is selected but game hasn't started yet
+  if (selectedTrack && !isPlayingRhythm && !showResults) {
+    return (
+      <DesktopLayout maxWidth="xl">
+        <div className="fixed inset-0 lg:relative lg:inset-auto flex flex-col bg-gradient-to-b from-background to-background/95">
+          <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80 flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSelectedTrack(null)}
+              className="active:scale-95 transition-transform"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-lg font-semibold">Выбери сложность</h1>
+              <p className="text-xs text-muted-foreground">
+                {selectedTrack.artist} - {selectedTrack.name}
+              </p>
+            </div>
+          </div>
+
+          <div className="hidden lg:block mb-6 flex-shrink-0">
+            <h1 className="text-3xl font-bold mb-2">Выбери сложность</h1>
+            <p className="text-muted-foreground">
+              {selectedTrack.artist} - {selectedTrack.name}
+            </p>
+          </div>
+
+          <div className="flex-1 overflow-hidden p-4 lg:p-0">
+            <Card className="h-full flex flex-col p-6 bg-gradient-to-br from-primary/10 to-secondary/10">
+              <div className="flex flex-col h-full">
+                <div className="text-center mb-4 flex-shrink-0">
+                  <Music className="w-16 h-16 mx-auto text-primary mb-4" />
+                  <h2 className="text-xl font-bold mb-2">Выбери сложность</h2>
+                  <p className="text-sm text-muted-foreground">Чем выше сложность, тем больше качество и цена бита</p>
+                </div>
+
+                {isLoadingDifficulties ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center space-y-2">
+                      <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+                      <p className="text-sm text-muted-foreground">Загружаю сложности...</p>
+                    </div>
+                  </div>
+                ) : availableDifficulties === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Не удалось загрузить сложности</p>
+                    <Button variant="outline" className="mt-4 bg-transparent" onClick={() => setSelectedTrack(null)}>
+                      Выбрать другой трек
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex-1 overflow-y-auto space-y-3 mb-4 -mx-2 px-2">
+                      {Array.from({ length: availableDifficulties }, (_, i) => i + 1).map((diff) => (
+                        <Card
+                          key={diff}
+                          className={`p-4 cursor-pointer transition-all hover:bg-card/80 ${
+                            selectedDifficulty === diff ? "ring-2 ring-primary bg-primary/10" : ""
+                          }`}
+                          onClick={() => setSelectedDifficulty(diff)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold">
+                                Сложность {diff}
+                                {diff === 1 && " - Легко"}
+                                {diff === 2 && " - Нормально"}
+                                {diff === 3 && " - Сложно"}
+                                {diff === 4 && " - Очень сложно"}
+                                {diff === 5 && " - Эксперт"}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">Бонус к качеству: +{diff * 3}%</p>
+                            </div>
+                            <div className="flex gap-1">
+                              {Array.from({ length: diff }).map((_, i) => (
+                                <div key={i} className="w-2 h-8 bg-primary rounded-full" />
+                              ))}
+                              {Array.from({ length: availableDifficulties - diff }).map((_, i) => (
+                                <div key={i} className="w-2 h-8 bg-muted rounded-full" />
+                              ))}
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+
+                    <Button
+                      size="lg"
+                      className="w-full flex-shrink-0 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90"
+                      onClick={handleStartGame}
+                    >
+                      <Play className="w-5 h-5 mr-2" />
+                      Начать игру
+                    </Button>
+                  </>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </DesktopLayout>
+    )
   }
 
   // Track selection screen
@@ -413,95 +547,6 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
                   </div>
                 </Card>
               ))}
-          </div>
-        </div>
-      </DesktopLayout>
-    )
-  }
-
-  // Difficulty selection screen
-  if (selectedTrack && !isPlayingRhythm) {
-    return (
-      <DesktopLayout maxWidth="lg">
-        <div className="flex flex-col h-screen lg:h-auto bg-gradient-to-b from-background to-background/95">
-          <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setSelectedTrack(null)
-                setShowTrackSelector(true)
-              }}
-              className="active:scale-95 transition-transform"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-lg font-semibold">Выбери сложность</h1>
-              <p className="text-xs text-muted-foreground">
-                {selectedTrack.artist} - {selectedTrack.name}
-              </p>
-            </div>
-          </div>
-
-          <div className="hidden lg:block mb-6">
-            <h1 className="text-3xl font-bold mb-2">Выбери сложность</h1>
-            <p className="text-muted-foreground">
-              {selectedTrack.artist} - {selectedTrack.name}
-            </p>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 lg:p-0 space-y-4">
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((diff) => {
-                const qualityBonus = diff * 3
-                const priceMultiplier = 1 + (diff - 1) * 0.3
-                const estimatedPrice = Math.floor(50 * priceMultiplier)
-
-                return (
-                  <Card
-                    key={diff}
-                    className={`p-4 cursor-pointer transition-all hover:border-primary ${
-                      selectedDifficulty === diff ? "border-2 border-primary bg-primary/10" : ""
-                    }`}
-                    onClick={() => setSelectedDifficulty(diff)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold">
-                            {diff === 1
-                              ? "Лёгкая"
-                              : diff === 2
-                                ? "Нормальная"
-                                : diff === 3
-                                  ? "Сложная"
-                                  : diff === 4
-                                    ? "Экспертная"
-                                    : "Мастер"}
-                          </p>
-                          <span className="text-xs text-primary">+{qualityBonus}% качество</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Цена: ~${estimatedPrice} (+{Math.floor((priceMultiplier - 1) * 100)}%)
-                        </p>
-                      </div>
-                      {selectedDifficulty === diff && <Sparkles className="w-5 h-5 text-primary" />}
-                    </div>
-                  </Card>
-                )
-              })}
-            </div>
-
-            <Button
-              size="lg"
-              className="w-full bg-gradient-to-r from-primary to-secondary"
-              onClick={handleStartGame}
-              disabled={gameState.energy < ENERGY_COST}
-            >
-              <Play className="w-5 h-5 mr-2" />
-              Начать игру (-{ENERGY_COST} энергии)
-            </Button>
           </div>
         </div>
       </DesktopLayout>

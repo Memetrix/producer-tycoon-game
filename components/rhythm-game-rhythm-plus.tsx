@@ -96,7 +96,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
         setOszBeatmaps(oszPackage.beatmaps)
         setOszAudioBlob(oszPackage.audioBlob)
 
-        const selectedIndex = Math.min(difficulty, oszPackage.beatmaps.length - 1)
+        const selectedIndex = Math.min(difficulty - 1, oszPackage.beatmaps.length - 1)
         setSelectedBeatmapIndex(selectedIndex)
 
         const beatmap = oszPackage.beatmaps[selectedIndex]
@@ -370,7 +370,10 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
   }, [isPlaying, handleSkip])
 
   return (
-    <div ref={containerRef} className="relative w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden">
+    <div
+      ref={containerRef}
+      className="fixed inset-0 w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden z-50"
+    >
       {/* Close button in top-center to avoid overlapping with score or HP */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
         <Button
