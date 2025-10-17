@@ -8,9 +8,12 @@ import { ArtistsScreen } from "@/components/artists-screen"
 import { UpgradesScreen } from "@/components/upgrades-screen"
 import { SkillsScreen } from "@/components/skills-screen"
 import { ContractsScreen } from "@/components/contracts-screen"
+import { LeaderboardsScreen } from "@/components/leaderboards-screen"
+import { ShopScreen } from "@/components/shop-screen"
 import { Onboarding } from "@/components/onboarding"
 import { CharacterCreation, type CharacterData } from "@/components/character-creation"
 import { AvatarConfirmation } from "@/components/avatar-confirmation"
+import { TutorialOverlay } from "@/components/tutorial-overlay"
 import { BottomNav } from "@/components/bottom-nav"
 import {
   getTotalEnergyBonus,
@@ -25,7 +28,16 @@ import { useRouter } from "next/navigation"
 import { type GameState, INITIAL_GAME_STATE, ENERGY_CONFIG } from "@/lib/game-state"
 import { loadGameState, saveGameState, createPlayer } from "@/lib/game-storage"
 
-export type Screen = "home" | "stage" | "studio" | "artists" | "upgrades" | "skills" | "contracts"
+export type Screen =
+  | "home"
+  | "stage"
+  | "studio"
+  | "artists"
+  | "upgrades"
+  | "skills"
+  | "contracts"
+  | "leaderboards"
+  | "shop"
 
 export default function Page() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
@@ -39,6 +51,7 @@ export default function Page() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showCharacterSelection, setShowCharacterSelection] = useState(false)
   const [showAvatarConfirmation, setShowAvatarConfirmation] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
   const [pendingCharacter, setPendingCharacter] = useState<CharacterData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [offlineEarnings, setOfflineEarnings] = useState<{ earnings: number; minutesAway: number } | null>(null)
@@ -94,6 +107,7 @@ export default function Page() {
         setShowOnboarding(false)
         setShowCharacterSelection(false)
         setShowAvatarConfirmation(false)
+        setShowTutorial(false)
       } else {
         setShowOnboarding(true)
       }
@@ -103,17 +117,17 @@ export default function Page() {
   }, [isAuthenticated])
 
   useEffect(() => {
-    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
+    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation || showTutorial) return
 
     const saveInterval = setInterval(() => {
       saveGameState(gameState)
     }, 5000)
 
     return () => clearInterval(saveInterval)
-  }, [gameState, isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation])
+  }, [gameState, isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation, showTutorial])
 
   useEffect(() => {
-    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
+    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation || showTutorial) return
 
     const interval = setInterval(() => {
       setGameState((prev) => {
@@ -141,10 +155,10 @@ export default function Page() {
     return () => {
       clearInterval(interval)
     }
-  }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation])
+  }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation, showTutorial])
 
   useEffect(() => {
-    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
+    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation || showTutorial) return
 
     const incomeInterval = setInterval(() => {
       setGameState((prev) => {
@@ -163,10 +177,10 @@ export default function Page() {
     }, 60000)
 
     return () => clearInterval(incomeInterval)
-  }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation])
+  }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation, showTutorial])
 
   useEffect(() => {
-    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation) return
+    if (isLoading || showOnboarding || showCharacterSelection || showAvatarConfirmation || showTutorial) return
 
     const updateLastActive = setInterval(() => {
       setGameState((prev) => ({
@@ -176,7 +190,7 @@ export default function Page() {
     }, 60000)
 
     return () => clearInterval(updateLastActive)
-  }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation])
+  }, [isLoading, showOnboarding, showCharacterSelection, showAvatarConfirmation, showTutorial])
 
   const handleOnboardingComplete = () => {
     setShowOnboarding(false)
@@ -280,7 +294,30 @@ export default function Page() {
       setGameState(updatedState)
       setShowAvatarConfirmation(false)
       setPendingCharacter(null)
+
+      // Show tutorial for new players
+      setShowTutorial(true)
     }
+  }
+
+  const handleTutorialComplete = async () => {
+    setShowTutorial(false)
+    const updatedState = {
+      ...gameState,
+      tutorialCompleted: true,
+    }
+    setGameState(updatedState)
+    await saveGameState(updatedState)
+  }
+
+  const handleTutorialSkip = async () => {
+    setShowTutorial(false)
+    const updatedState = {
+      ...gameState,
+      tutorialCompleted: true,
+    }
+    setGameState(updatedState)
+    await saveGameState(updatedState)
   }
 
   const navigateTo = (screen: Screen) => {
@@ -328,6 +365,21 @@ export default function Page() {
     )
   }
 
+  if (showTutorial) {
+    return (
+      <div className="min-h-screen bg-background dark">
+        <HomeScreen
+          gameState={gameState}
+          setGameState={setGameState}
+          onNavigate={navigateTo}
+          offlineEarnings={null}
+          onOfflineEarningsShown={handleOfflineEarningsShown}
+        />
+        <TutorialOverlay onComplete={handleTutorialComplete} onSkip={handleTutorialSkip} />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background dark">
       <div className={`h-screen transition-opacity duration-150 ${isTransitioning ? "opacity-0" : "opacity-100"}`}>
@@ -362,6 +414,12 @@ export default function Page() {
         )}
         {currentScreen === "contracts" && (
           <ContractsScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
+        )}
+        {currentScreen === "leaderboards" && (
+          <LeaderboardsScreen gameState={gameState} onNavigate={navigateTo} />
+        )}
+        {currentScreen === "shop" && (
+          <ShopScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
         )}
       </div>
       {!isRhythmGameActive && <BottomNav currentScreen={currentScreen} onNavigate={navigateTo} />}

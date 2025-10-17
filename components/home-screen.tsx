@@ -3,7 +3,7 @@
 import React from "react"
 import { useEffect } from "react"
 
-import { Music2, Zap, Users, DollarSign, Star, Bolt } from "lucide-react"
+import { Music2, Zap, Users, DollarSign, Star, Bolt, Trophy, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { Screen } from "@/app/page"
@@ -149,14 +149,32 @@ export function HomeScreen({
             </div>
           </div>
 
-          <Button
-            className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md active:scale-95 transition-transform"
-            size="lg"
-            onClick={() => onNavigate("stage")}
-          >
-            <Music2 className="w-4 h-4 mr-2" />
-            Создать бит
-          </Button>
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            <Button
+              className="col-span-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md active:scale-95 transition-transform"
+              size="lg"
+              onClick={() => onNavigate("stage")}
+            >
+              <Music2 className="w-4 h-4 mr-2" />
+              Создать бит
+            </Button>
+            <Button
+              variant="outline"
+              className="bg-gradient-to-r from-primary/10 to-secondary/10 hover:from-primary/20 hover:to-secondary/20 border-primary/30 active:scale-95 transition-transform"
+              onClick={() => onNavigate("shop")}
+            >
+              <ShoppingBag className="w-4 h-4 mr-2" />
+              Магазин
+            </Button>
+            <Button
+              variant="outline"
+              className="bg-accent/10 hover:bg-accent/20 border-accent/30 active:scale-95 transition-transform"
+              onClick={() => onNavigate("leaderboards")}
+            >
+              <Trophy className="w-4 h-4 mr-2" />
+              Рейтинг
+            </Button>
+          </div>
         </Card>
 
         <div className="grid grid-cols-2 gap-3">
@@ -165,12 +183,12 @@ export function HomeScreen({
             onClick={() => onNavigate("studio")}
           >
             <div className="flex flex-col items-center text-center space-y-2">
-              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                <Zap className="w-6 h-6 text-primary" />
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="font-semibold">Студия</p>
-                <p className="text-xs text-muted-foreground">Улучшить оборудование</p>
+                <p className="text-sm font-semibold">Студия</p>
+                <p className="text-xs text-muted-foreground">Оборудование</p>
               </div>
             </div>
           </Card>
@@ -180,12 +198,12 @@ export function HomeScreen({
             onClick={() => onNavigate("artists")}
           >
             <div className="flex flex-col items-center text-center space-y-2">
-              <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
-                <Users className="w-6 h-6 text-secondary" />
+              <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
+                <Users className="w-5 h-5 text-secondary" />
               </div>
               <div>
-                <p className="font-semibold">Артисты</p>
-                <p className="text-xs text-muted-foreground">Найти таланты</p>
+                <p className="text-sm font-semibold">Артисты</p>
+                <p className="text-xs text-muted-foreground">Таланты</p>
               </div>
             </div>
           </Card>

@@ -94,6 +94,9 @@ export interface GameState {
     major: boolean // $100,000 investment → +$1,000/час
   }
 
+  // Tutorial state
+  tutorialCompleted: boolean
+
   lastActive?: string // ISO date string
 }
 
@@ -264,6 +267,7 @@ export const INITIAL_GAME_STATE: GameState = {
     small: false,
     major: false,
   },
+  tutorialCompleted: false,
 }
 
 export const BEAT_NAMES = [
