@@ -224,6 +224,11 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
       drumSynthRef.current = new DrumSynthesizer()
       drumSynthRef.current.init()
     }
+
+    if (audioContextRef.current && audioContextRef.current.state === "suspended") {
+      audioContextRef.current.resume()
+    }
+
     drumSynthRef.current.play(sound)
   }, [])
 

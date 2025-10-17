@@ -1,5 +1,6 @@
 export interface GameState {
   // Player
+  playerId?: string // Added player ID for leaderboards and multiplayer features
   playerName: string
   playerAvatar: string
   musicStyle: MusicStyle
@@ -196,6 +197,7 @@ export const ENERGY_CONFIG = {
 }
 
 export const INITIAL_GAME_STATE: GameState = {
+  playerId: "",
   playerName: "",
   playerAvatar: "",
   musicStyle: "hip-hop",

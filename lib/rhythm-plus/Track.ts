@@ -7,11 +7,11 @@ import { Note, type NoteData } from "./Note"
 import type { GameInstance } from "./GameInstance"
 
 export class Track {
-  public x: number = 0
-  public width: number = 0
+  public x = 0
+  public width = 0
   public keyBind: string
   public noteArr: Note[] = []
-  public keyDown: boolean = false
+  public keyDown = false
 
   private hitGradient?: CanvasGradient
 
@@ -19,7 +19,7 @@ export class Track {
     private game: GameInstance,
     x: number,
     width: number,
-    keyBind: string
+    keyBind: string,
   ) {
     this.x = x
     this.width = width
@@ -52,6 +52,8 @@ export class Track {
     if (key !== this.keyBind) return
     this.keyDown = true
 
+    this.game.playEffect(this.keyBind)
+
     // Find and hit the closest note
     const laneNotes = this.noteArr.filter((note) => !note.noteFailed)
 
@@ -67,10 +69,14 @@ export class Track {
     const hitWindowPx = 100 // pixels tolerance for hitting notes (increased for casual play)
     const dist = Math.abs(closestNote.y - this.game.checkHitLineY)
 
-    console.log(`[Hit Detection] Key: ${key}, Lane: ${this.keyBind}, Distance: ${dist.toFixed(1)}px, Window: ${hitWindowPx}px`)
+    console.log(
+      `[Hit Detection] Key: ${key}, Lane: ${this.keyBind}, Distance: ${dist.toFixed(1)}px, Window: ${hitWindowPx}px`,
+    )
 
     if (dist <= hitWindowPx) {
-      console.log(`[Hit Success] Note hit! Y: ${closestNote.y.toFixed(1)}, HitLine: ${this.game.checkHitLineY.toFixed(1)}`)
+      console.log(
+        `[Hit Success] Note hit! Y: ${closestNote.y.toFixed(1)}, HitLine: ${this.game.checkHitLineY.toFixed(1)}`,
+      )
 
       if (closestNote.isHoldNote) {
         if (!closestNote.didUserHold) {

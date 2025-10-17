@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ai-sdk/openai": "2.0.52",
     "@fal-ai/client": "latest",
     "@fal-ai/serverless-client": "latest",
     "@hookform/resolvers": "^3.10.0",

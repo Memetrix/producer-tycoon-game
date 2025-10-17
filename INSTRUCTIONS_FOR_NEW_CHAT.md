@@ -3,10 +3,10 @@
 ## 🎯 Project Overview
 
 **Project Name**: Producer Tycoon (Mobile Idle Game)  
-**Type**: Mobile-first idle/incremental game with rhythm game mechanics  
-**Tech Stack**: Next.js 15 (App Router), TypeScript, Tailwind CSS v4, Supabase (PostgreSQL + Auth), Vercel Blob, fal.ai  
+**Type**: Mobile-first idle/incremental game with rhythm game mechanics + AI generation  
+**Tech Stack**: Next.js 15 (App Router), TypeScript, Tailwind CSS v4, Supabase (PostgreSQL + Auth), Vercel Blob, fal.ai, Groq API  
 **Repository**: `producer-tycoon-game` (GitHub)  
-**Current Version**: v98 (rolled back from v97 due to too many changes at once)
+**Current Version**: v100+ (Latest: AI generation + real leaderboards integrated)
 
 ## 👤 About the User
 
@@ -38,12 +38,14 @@ A mobile idle game where you play as a music producer building your career:
 6. **Complete Daily Tasks** - Bonus rewards and streak system
 
 ### Key Mechanics
-- **Energy System**: 100 max energy, regenerates 1/minute, costs 20 per beat
-- **Rhythm Game**: 4 lanes (kick, snare, hi-hat, tom), 16 notes per session, accuracy-based rewards
+- **Energy System**: 150 max energy (with bonuses), regenerates 2/minute, costs 15 per beat
+- **Rhythm Game**: 4 lanes (kick, snare, hi-hat, tom), OSU beatmap parsing, accuracy-based rewards
+- **AI Generation**: Beat names via Groq API, cover art via fal.ai
 - **Quality System**: Equipment level affects beat quality (0-100%), quality affects price
-- **Passive Income**: Artists generate money while offline (capped at 240 minutes)
-- **Daily Tasks**: 2 tasks per day, streak rewards at 7/14/30 days
-- **Progression**: 5 stages (S1-S5) with increasing difficulty and rewards
+- **Passive Income**: Artists generate money while offline (capped at 4 hours)
+- **Leaderboards**: Real-time rankings with vinyl disc badges for top 3
+- **Daily Tasks**: 3 tasks per day, streak rewards at 7/14/21/30/40/50/60 days
+- **Progression**: 6 reputation tiers with increasing difficulty and rewards
 
 ## 🏗️ Technical Architecture
 
@@ -56,7 +58,9 @@ app/
 │   └── signup/page.tsx        # Signup screen
 ├── api/
 │   ├── generate-avatar/       # fal.ai avatar generation
-│   └── generate-cover/        # fal.ai album cover generation
+│   ├── generate-cover/        # fal.ai album cover generation
+│   ├── generate-beat-name/    # Groq API beat name generation
+│   └── leaderboards/          # Leaderboards data fetching
 └── globals.css                # Tailwind v4 config, design tokens
 
 components/
@@ -67,6 +71,7 @@ components/
 ├── upgrades-screen.tsx        # Daily tasks and free training
 ├── character-creation.tsx     # Onboarding character creator
 ├── bottom-nav.tsx             # Navigation bar
+├── leaderboards-screen.tsx      # Leaderboards display
 └── ui/                        # shadcn/ui components
 
 lib/
@@ -80,7 +85,10 @@ scripts/
 ├── create-game-state-table.sql           # Initial DB schema
 ├── add-daily-tasks-columns.sql           # Daily tasks migration
 ├── restore-energy.sql                    # Utility: restore player energy
-└── add-four-hour-quests-columns.sql      # Quest system (not yet run)
+├── add-four-hour-quests-columns.sql      # Quest system (not yet run)
+├── set-energy-custom.sql                 # Set custom energy value
+├── max-out-resources.sql                 # Max out all resources
+└── leaderboards-reset.sql                # Reset leaderboards weekly
 
 public/
 └── [generated images]         # AI-generated avatars and album covers
@@ -98,7 +106,7 @@ CREATE TABLE game_state (
   -- Resources
   money DECIMAL DEFAULT 500,
   reputation INTEGER DEFAULT 0,
-  energy INTEGER DEFAULT 100,
+  energy INTEGER DEFAULT 150,
   
   -- Equipment (levels 0-10)
   equipment_phone INTEGER DEFAULT 0,
@@ -131,6 +139,9 @@ CREATE TABLE game_state (
   daily_tasks_current_streak INTEGER DEFAULT 0,
   daily_tasks_claimed_streak_rewards INTEGER[], -- Array of claimed milestones
   
+  -- Leaderboards
+  leaderboard_rank INTEGER DEFAULT NULL,
+  
   -- Timestamps
   last_active TIMESTAMP DEFAULT NOW(),
   created_at TIMESTAMP DEFAULT NOW(),
@@ -158,139 +169,158 @@ CREATE POLICY "Users can update own game state"
 **Active Integrations**:
 1. **Supabase** - PostgreSQL database + Authentication
    - Env vars: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - Using `@supabase/supabase-js` (NOT `@supabase/ssr` - we switched to localStorage-based auth)
+   - Using `@supabase/ssr` with server/client separation
    
 2. **fal.ai** - AI image generation
    - Env var: `FAL_KEY`
-   - Used for avatar and album cover generation
-   - Model: `fal-ai/flux/schnell`
+   - Used for avatar and beat cover art generation
+   - Model: `fal-ai/flux-dev` (512x512 resolution)
 
-3. **Vercel Blob** - Image storage
+3. **Groq API** - AI text generation
+   - Env var: `GROQ_API_KEY`
+   - Used for beat name generation
+   - Model: `llama-3.3-70b-versatile`
+
+4. **Vercel Blob** - Image storage
    - Env var: `BLOB_READ_WRITE_TOKEN`
    - Stores generated avatars and covers
 
-## 🎨 Design System
+## 🤖 AI Generation System
 
-### Colors
-- Using Tailwind v4 design tokens in `globals.css`
-- Dark theme with purple/blue accents
-- Key colors: `--color-primary`, `--color-background`, `--color-foreground`
+### Beat Name Generation
+**API Route**: `/app/api/generate-beat-name/route.ts`
 
-### Typography
-- Font: Geist Sans (headings and body)
-- Font Mono: Geist Mono (code/numbers)
-- Configured in `app/layout.tsx` and `globals.css`
+**How it works**:
+1. Receives original track name and artist
+2. Sends prompt to Groq API (llama-3.3-70b-versatile)
+3. Temperature 0.9 for variety (prevents repetitive results)
+4. Returns creative parody/homage name (2-4 words)
+5. Fallback to random names if API fails
 
-### Layout
-- Mobile-first design (max-width: 480px)
-- Flexbox for most layouts
-- Bottom navigation bar (5 tabs)
-- Consistent padding and spacing
+**Example Prompt**:
+\`\`\`
+You are a creative music producer. Create a parody/homage beat name based on the original track.
 
-## 💰 Economy Balance (Current State)
+Original: Feel Good Inc. by Gorillaz
 
-### Starting Resources
-- **Base Money**: $800 (was $500)
-- **Base Energy**: 100
-- **Base Reputation**: 0
+Create a short, catchy beat name (2-4 words) that's a playful reference to the original.
+Be creative and varied - here are some example styles:
+- "Vibe Syndicate" (corporate twist)
+- "Good Energy Co." (business parody)
+- "Mood Factory" (industrial theme)
+- "Chill Corporation" (office humor)
 
-### Character Bonuses (Applied at creation)
-**Music Styles**:
-- Hip-Hop: +$200, +50 reputation
-- Trap: +$100, +100 reputation
-- R&B: +$100, Free Headphones Lv1
-- Pop: +$150, +50 reputation
-- Electronic: +$100, +20 max energy
-
-**Starting Bonuses**:
-- Producer: +$100, Free Headphones Lv1
-- Hustler: +$300, +$200
-- Connector: +$100, +100 reputation
-- Energizer: +$100, +50 max energy
-
-### Equipment Costs (Current - Rebalanced)
-**Base Prices** (multiply by 1.4^level):
-- Phone: $80 (was $100)
-- Headphones: $120 (was $150)
-- Microphone: $200 (was $250)
-- Computer: $400 (was $500)
-
-**Multiplier**: 1.4x per level (was 1.5x)
-
-### Artist Costs & Income (Current - Rebalanced)
-**Street Poet**:
-- Base cost: $70 (was $90)
-- Multiplier: 1.6x
-- Income: $1/min at Lv1 → $25/min at Lv10
-
-**MC Flow**:
-- Base cost: $80 (was $100)
-- Multiplier: 1.6x
-- Income: $2/min at Lv1 → $35/min at Lv10
-
-**Lil Dreamer**:
-- Base cost: $100 (was $120)
-- Multiplier: 1.6x
-- Reputation required: 100
-- Income: $3/min at Lv1 → $45/min at Lv10
-
-**Young Legend**:
-- Base cost: $200 (was $250)
-- Multiplier: 1.6x
-- Reputation required: 400 (was 500)
-- Income: $5/min at Lv1 → $125/min at Lv10
-
-### Beat Pricing Formula
-\`\`\`typescript
-const basePrice = 60
-const qualityBonus = quality * 0.8 // quality is 0-100
-const beatPrice = basePrice + qualityBonus
-// Range: $60 (0% quality) to $140 (100% quality)
+Only respond with the beat name, nothing else.
 \`\`\`
 
-### Reputation Gains
-- **Per Beat Sold**: quality / 5 (was quality / 10)
-  - Example: 80% quality beat = 16 reputation (was 8)
-- **Daily Task 1**: +20 reputation (was +10)
-- **Daily Task 2**: +30 reputation (was +15)
+### Cover Art Generation
+**API Route**: `/app/api/generate-beat-cover/route.ts`
 
-### Daily Tasks & Rewards
-**Task 1** (Day 1): Get 10 subscribers
-- Reward: $100, +20 reputation (was $50, +10 rep)
+**How it works**:
+1. Receives beat name from previous step
+2. Generates creative prompt using Groq API
+3. Sends prompt to fal.ai (FLUX.1 dev model)
+4. Image size: 512x512 (square_hd)
+5. Uploads to Vercel Blob
+6. Returns blob URL
 
-**Task 2** (Day 2): Get 50 likes
-- Reward: $150, +30 reputation, +20 energy (was $75, +15 rep, +10 energy)
+**Example Prompt Generation**:
+\`\`\`
+You are a creative art director. Create a detailed image generation prompt for album cover art.
 
-**Streak Rewards**:
-- 7 days: $500, +100 reputation, +50 energy
-- 14 days: $1000, +200 reputation, +100 energy
-- 30 days: $2500, +500 reputation, +200 energy
+Beat name: "Vibe Syndicate"
 
-### Free Training Rewards
-- **Seminar**: $300, +100 reputation (was $100, +30 rep)
-- **Book Chapter**: $400, +150 reputation (was $150, +50 rep)
+Create a vivid, detailed prompt for an AI image generator. The style should be:
+- Modern hip-hop/trap aesthetic
+- Bold colors and striking composition
+- Professional album cover quality
+- Unique and memorable
 
-## 🎵 Rhythm Game Mechanics
+Only respond with the image prompt, nothing else.
+\`\`\`
 
-### Current Implementation
-- **Web Audio API** for drum sounds (kick, snare, hi-hat, tom)
-- **5 Musical Patterns** randomly selected each session
-- **16 Notes** per session
-- **4 Lanes** (one per drum type)
-- **Timing Windows**:
-  - Perfect: ±50ms (100% quality)
-  - Good: ±100ms (70% quality)
-  - Miss: >100ms (0% quality)
+### Testing AI Generation
+**Test Page**: `/test-ai`
 
-### Upcoming Change: Real Music Integration
-**Composer**: Григорий (Gregory) - professional composer
-**Format**: MIDI + WAV/MP3
-- MIDI file contains note timings (4 tracks for 4 drum types)
-- Audio file contains the actual music
-- We'll parse MIDI to extract note positions
-- See `COMPOSER_BRIEF.md` for full specifications
+Features:
+- Test beat name generation with custom track names
+- Test cover art generation with custom prompts
+- See results immediately
+- View detailed error logs
+- No need to play rhythm game
 
-**Target Duration**: 60-90 seconds (32-48 notes)
+## 🏆 Leaderboards System
+
+### Implementation
+**API Route**: `/app/api/leaderboards/route.ts`  
+**Component**: `components/leaderboards-screen.tsx`
+
+**How it works**:
+1. Fetches real player data from Supabase `game_state` table
+2. Calculates score: `total_money_earned + (reputation * 10)`
+3. Sorts players by score (descending)
+4. Filters weekly leaderboard by `updated_at` (last 7 days)
+5. Identifies current player by `playerId` query parameter
+6. Returns top 10 players + current player's rank
+
+**Top 3 Badges**:
+- 1st place: Platinum vinyl disc (silver metallic)
+- 2nd place: Gold vinyl disc (gold metallic)
+- 3rd place: Silver vinyl disc (gray metallic)
+- Design: Realistic vinyl with concentric grooves, radial gradients, center label
+
+**Score Calculation**:
+\`\`\`typescript
+const score = player.total_money_earned + (player.reputation * 10)
+\`\`\`
+
+## 🔧 Developer Tools
+
+### SQL Scripts
+Located in `/scripts/` folder:
+
+1. **`restore-energy.sql`** - Restore energy to max
+2. **`set-energy-custom.sql`** - Set custom energy value
+3. **`max-out-resources.sql`** - Max out all resources (energy, money, reputation)
+4. **`leaderboards-reset.sql`** - Reset leaderboards weekly
+
+**Usage**: Run from v0 UI by clicking "Run Script" button
+
+**Important**: All scripts use `auth.uid()::text` to match `players.user_id` (text type)
+
+### Test Pages
+1. **`/test-ai`** - Test AI generation without playing rhythm game
+   - Test beat name generation
+   - Test cover art generation
+   - View results and errors
+
+## 🐛 Recent Bug Fixes
+
+### Rhythm Game Issues (Fixed)
+1. **Notes Disappearing**: Fixed timing calculation in `GameInstance.ts`
+   - Added debug logging for note spawning
+   - Fixed `isWithinTime()` calculation
+   
+2. **No Sound on Key Press**: Added `playEffect()` call in `Track.onKeyDown`
+   - Drum sounds now play when keys are pressed
+   - Audio context resumes on mobile browsers
+
+3. **Leaderboard Not Showing Current Player**: Added `playerId` to GameState
+   - Player ID now tracked and passed to API
+   - Current player rank displayed correctly
+
+### AI Generation Issues (Fixed)
+1. **AI Gateway Failures**: Switched to direct Groq API calls
+   - Bypassed Vercel AI Gateway (was returning "fetch failed")
+   - Using direct fetch to `https://api.groq.com/openai/v1/chat/completions`
+
+2. **Repetitive Beat Names**: Increased temperature to 0.9
+   - Added example variations in prompt
+   - Now generates diverse names for same track
+
+3. **Large Image Files**: Reduced resolution to 512x512
+   - Changed from 1024x1024 to 512x512
+   - 4x smaller file size, faster generation
 
 ## 🔧 Key Technical Decisions
 
@@ -326,57 +356,49 @@ const beatPrice = basePrice + qualityBonus
 ✅ Fixed auth redirect loop  
 ✅ Fixed character bonus mismatch (networker → connector, energetic → energizer)  
 ✅ Fixed energy regeneration during offline time  
-✅ Rebalanced economy for 30-day season  
+✅ Rebalanced economy for 60-day season  
 ✅ Created composer brief for real music integration  
+✅ Integrated real leaderboards with database  
+✅ Added AI beat name generation  
+✅ Added AI cover art generation  
+✅ Fixed rhythm game notes disappearing  
+✅ Fixed no sound on key press  
+✅ Created developer tools (SQL scripts, test pages)  
 
 ### Pending
-- [ ] Run `scripts/add-four-hour-quests-columns.sql` (quest system ready but not in DB)
 - [ ] Implement MIDI parser for real music integration
 - [ ] Add visual feedback for streak rewards
 - [ ] Add album cover display in beat creation flow
 - [ ] Add sound effects for UI interactions
 - [ ] Add animations for upgrades and level-ups
-- [ ] Implement stage progression system (currently just tracks progress)
+- [ ] Implement stage progression system
+- [ ] Add leaderboard pagination (beyond top 10)
+- [ ] Add weekly leaderboard reset automation
 
-### Future Enhancements
-- Multiplayer features (leaderboards, challenges)
-- More artist types
-- Equipment presets/combos
-- Beat marketplace (sell to other players)
-- Social features (share beats, follow producers)
+## 💡 Important Notes for Next Chat
 
-## 🔄 Development Workflow
-
-### Making Changes
-1. **Always read files first** before editing (use `ReadFile` or `SearchRepo`)
-2. **Use parallel tool calls** when reading multiple independent files
-3. **Search systematically**: broad → specific → verify relationships
-5. **Add change comments**: `// description of what changed`
-6. **Keep postambles short**: 2-4 sentences max
-
-### Testing Approach
-1. User tests frequently in the v0 preview
-2. Check debug logs when issues arise
-3. Use `console.log("[v0] ...")` for debugging
-4. Remove debug logs after fixing issues
-
-### Git Workflow
-- **Repository**: `producer-tycoon-game`
-- **Branch**: `main` (previously had `app` branch, now merged)
-- User pushes from v0 UI directly to GitHub
-- User can deploy to Vercel from v0 UI
+1. **User prefers incremental changes** - Don't rewrite everything at once
+2. **Always check current implementation** before suggesting changes
+3. **Economy is balanced for 60-day season** - Don't change numbers without discussing
+4. **Game state is in app/page.tsx** - This is intentional, don't suggest moving to context
+5. **User speaks Russian** - Respond in Russian for non-technical discussion
+6. **AI generation uses Groq + fal.ai** - Don't suggest switching to other providers
+7. **Leaderboards use real database data** - Not mock data anymore
+8. **Test page at /test-ai** - Use this to debug AI generation
+9. **SQL scripts for energy** - Use these instead of manual database edits
+10. **Version v100+** - Latest with AI generation and real leaderboards
 
 ## 📊 Economy Design Documents
 
 ### Available Documents
 1. **`GAME_DESIGN_DOCUMENT.md`** - Original game design (outdated)
-2. **`ECONOMY_REBALANCE_SPEC.md`** - 30-day season rebalance spec (current)
+2. **`ECONOMY_REBALANCE_SPEC.md`** - 60-day season rebalance spec (current)
 3. **`COMPOSER_BRIEF.md`** - Music integration specifications
 4. **`user_read_only_context/text_attachments/pasted-text-GFW3y.txt`** - Detailed 4-hour loop economy spec (not implemented, too complex)
 5. **`user_read_only_context/text_attachments/pasted-text-DNZeC.txt`** - Same as ECONOMY_REBALANCE_SPEC.md
 
 ### Current Balance Philosophy
-- **Season Length**: 30 days
+- **Season Length**: 60 days
 - **Target Players**: Casual (3 sessions/day), Core (4 sessions/day), Hardcore (5 sessions/day)
 - **Session Length**: 7 minutes average
 - **Progression**: Smooth curve, no hard walls
@@ -387,7 +409,7 @@ const beatPrice = basePrice + qualityBonus
 **What Works**:
 - ✅ Full authentication system (login/signup)
 - ✅ Character creation with avatar generation
-- ✅ Rhythm game with 5 musical patterns
+- ✅ Rhythm game with OSU beatmap parsing
 - ✅ Equipment upgrade system
 - ✅ Artist hiring and passive income
 - ✅ Daily tasks with streak rewards
@@ -396,6 +418,9 @@ const beatPrice = basePrice + qualityBonus
 - ✅ Energy regeneration
 - ✅ Reputation system
 - ✅ Stage progression tracking
+- ✅ AI-generated beat names
+- ✅ AI-generated album covers
+- ✅ Real-time leaderboards
 
 **What's Next**:
 1. Integrate real music (MIDI + audio) from Gregory
@@ -403,17 +428,6 @@ const beatPrice = basePrice + qualityBonus
 3. Add more visual polish and animations
 4. Run quest system SQL migration
 5. Add sound effects and haptic feedback
-
-## 💡 Important Notes for Next Chat
-
-1. **User prefers incremental changes** - Don't rewrite everything at once
-2. **Always check current implementation** before suggesting changes
-3. **Economy is balanced for 30-day season** - Don't change numbers without discussing
-4. **Auth uses localStorage** - Don't suggest switching back to SSR/middleware
-5. **Game state is in app/page.tsx** - This is intentional, don't suggest moving to context
-6. **User speaks Russian** - Respond in Russian for non-technical discussion
-7. **Composer is named Gregory** - He's providing real music, see COMPOSER_BRIEF.md
-8. **Version v98 is current** - Rolled back from v97 due to too many changes
 
 ## 🚀 Quick Start Commands
 
@@ -440,7 +454,7 @@ npm run build
 - Comments for complex logic
 - Console logs prefixed with `[v0]` for debugging
 
-## 🎮 Game Balance Targets (30-Day Season)
+## 🎮 Game Balance Targets (60-Day Season)
 
 **Day 7 Target** (Casual Player):
 - Money: ~$15,000
@@ -462,6 +476,6 @@ npm run build
 
 ---
 
-**Last Updated**: Version 98  
-**Chat Context**: This document was created at the end of a long chat session to preserve context for the next AI instance.  
-**Next Steps**: Integrate real music from Gregory (see COMPOSER_BRIEF.md)
+**Last Updated**: Version 100+ (October 17, 2025)  
+**Chat Context**: This document was updated with AI generation and leaderboards features  
+**Next Steps**: Integrate real music from Gregory (see COMPOSER_BRIEF.md), add more polish and animations

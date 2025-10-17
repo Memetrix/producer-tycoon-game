@@ -198,7 +198,7 @@ Reputation determines your tier, which affects stage, unlocks, and price multipl
   - Мастер (5): 2.2x price, +25 quality bonus
 
 **Beat Quality Calculation (UPDATED):**
-```javascript
+\`\`\`javascript
 // Base quality from rhythm
 baseQuality = 20
 rhythmBonus = Math.floor(accuracy * 0.6) // Up to 60 points
@@ -217,10 +217,10 @@ skillBonus = getSkillQualityBonus(skills) // +5/+10/+20%
 
 finalQuality = Math.min(100, baseQuality + rhythmBonus + difficultyBonus +
                               equipmentBonus + skillBonus)
-```
+\`\`\`
 
 **Beat Price Calculation (UPDATED):**
-```javascript
+\`\`\`javascript
 basePrice = 30
 qualityBonus = Math.floor((quality - 60) * 1.5)
 difficultyMultiplier = 1 + (difficulty - 1) * 0.3
@@ -236,7 +236,7 @@ finalPrice = Math.floor(
   (basePrice + qualityBonus + reputationBonus) *
   difficultyMultiplier * tierMultiplier * skillMultiplier
 )
-```
+\`\`\`
 
 **Energy System (UPDATED in Phase 1):**
 - Base cost: **15 energy per beat** (was 20)
@@ -763,9 +763,9 @@ All equipment now functional and affects quality:
 ### 5. Reputation & Stage System
 
 **Stage Auto-Calculation (Phase 1 Fix):**
-```javascript
+\`\`\`javascript
 currentStage = Math.min(6, getReputationTier(reputation))
-```
+\`\`\`
 - Stage is now **calculated** from reputation tier, not stored separately
 - Removes "stageProgress" system (deprecated)
 - Stage always matches tier (1-6)
@@ -829,13 +829,13 @@ currentStage = Math.min(6, getReputationTier(reputation))
 ### 7. Offline Earnings System
 
 **Calculation:**
-```javascript
+\`\`\`javascript
 minutesAway = Math.min(actualMinutesAway, 240) // Cap at 4 hours
 artistIncome = getTotalPassiveIncome(artists) // Sum of all artist income
 labelIncome = getLabelDealsPassiveIncome(labelDeals) // Sum of label income
 totalPassiveIncome = artistIncome + labelIncome
 offlineEarnings = minutesAway * totalPassiveIncome
-```
+\`\`\`
 
 **Modal Display:**
 - Shows time away (formatted as Xh Ym)

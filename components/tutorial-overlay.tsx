@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { X, ArrowRight, CheckCircle2 } from "lucide-react"
@@ -12,16 +12,17 @@ interface TutorialStep {
   highlightElement?: string // CSS selector for element to highlight
   position: "top" | "center" | "bottom"
   action?: "tap" | "swipe" | "none"
+  image?: string
 }
 
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: "welcome",
     title: "Добро пожаловать!",
-    description:
-      "Ты начинаешь свой путь от уличного битмейкера до мирового продюсера. Давай покажу как играть!",
+    description: "Ты начинаешь свой путь от уличного битмейкера до мирового продюсера. Давай покажу как играть!",
     position: "center",
     action: "none",
+    image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/loading-screen.png",
   },
   {
     id: "energy",
@@ -30,14 +31,15 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       "Энергия нужна для создания битов. Она восстанавливается автоматически (2/мин). Следи за ней в правом верхнем углу!",
     position: "top",
     action: "none",
+    image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/skill-energy-efficiency.png",
   },
   {
     id: "create-beat",
     title: "Создать бит",
-    description:
-      'Нажми кнопку "Создать бит" чтобы начать! Выбери трек и сложность. Чем сложнее - тем выше цена бита!',
+    description: 'Нажми кнопку "Создать бит" чтобы начать! Выбери трек и сложность. Чем сложнее - тем выше цена бита!',
     position: "center",
     action: "tap",
+    image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/phone-0.png",
   },
   {
     id: "rhythm-game",
@@ -46,6 +48,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       "В ритм-игре нажимай кнопки D, F, J, K (или тапай на экране) в такт музыке. Попадай точно чтобы заработать больше!",
     position: "bottom",
     action: "tap",
+    image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/stage-bg.png",
   },
   {
     id: "quality-price",
@@ -54,30 +57,31 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       "Твоя точность в ритм-игре влияет на качество бита (20-100%). Чем выше качество - тем выше цена при продаже!",
     position: "center",
     action: "none",
+    image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/skill-quality-1.png",
   },
   {
     id: "reputation",
     title: "Репутация",
-    description:
-      "За каждый проданный бит ты получаешь репутацию (качество/5). Репутация открывает новые возможности!",
+    description: "За каждый проданный бит ты получаешь репутацию (качество/5). Репутация открывает новые возможности!",
     position: "top",
     action: "none",
+    image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/achievement-first-sale.png",
   },
   {
     id: "upgrades",
     title: "Улучшения",
-    description:
-      "Покупай оборудование (Студия), нанимай артистов для пассивного дохода, изучай навыки для бонусов!",
+    description: "Покупай оборудование (Студия), нанимай артистов для пассивного дохода, изучай навыки для бонусов!",
     position: "center",
     action: "none",
+    image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/studio-bg.png",
   },
   {
     id: "contracts",
     title: "Контракты",
-    description:
-      "После 500 репутации (Tier 2) получай контракты от клиентов! Выполняй их для больших наград.",
+    description: "После 500 репутации (Tier 2) получай контракты от клиентов! Выполняй их для больших наград.",
     position: "center",
     action: "none",
+    image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/contract-easy-1.png",
   },
   {
     id: "ready",
@@ -86,6 +90,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
       "Теперь ты знаешь основы! Создавай биты, зарабатывай деньги, повышай репутацию. Удачи на пути к славе! 🎵",
     position: "center",
     action: "none",
+    image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/achievement-first-beat.png",
   },
 ]
 
@@ -151,6 +156,12 @@ export function TutorialOverlay({ onComplete, onSkip }: TutorialOverlayProps) {
             </Button>
           </div>
 
+          {step.image && (
+            <div className="mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-primary/10 to-secondary/10">
+              <img src={step.image || "/placeholder.svg"} alt={step.title} className="w-full h-48 object-contain" />
+            </div>
+          )}
+
           <p className="text-sm text-muted-foreground leading-relaxed mb-6">{step.description}</p>
 
           {/* Action hint */}
@@ -179,11 +190,7 @@ export function TutorialOverlay({ onComplete, onSkip }: TutorialOverlayProps) {
               <div
                 key={index}
                 className={`h-2 rounded-full transition-all ${
-                  index === currentStep
-                    ? "w-8 bg-primary"
-                    : index < currentStep
-                      ? "w-2 bg-primary/50"
-                      : "w-2 bg-muted"
+                  index === currentStep ? "w-8 bg-primary" : index < currentStep ? "w-2 bg-primary/50" : "w-2 bg-muted"
                 }`}
               />
             ))}
@@ -192,7 +199,7 @@ export function TutorialOverlay({ onComplete, onSkip }: TutorialOverlayProps) {
           {/* Navigation buttons */}
           <div className="flex gap-2">
             {!isLastStep && (
-              <Button variant="outline" onClick={handleSkip} className="flex-1">
+              <Button variant="outline" onClick={handleSkip} className="flex-1 bg-transparent">
                 Пропустить
               </Button>
             )}

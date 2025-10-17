@@ -15,26 +15,22 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     {
       title: "Добро пожаловать в Producer Tycoon",
       description: "Пройди путь от уличного битмейкера до мирового продюсера и владельца лейбла",
-      image:
-        "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/backgrounds/loading-game-Uw8zzqVvQqVvQqVvQqVvQqVvQqVvQq.jpg",
+      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/loading-screen.png",
     },
     {
       title: "Создавай биты на улице",
       description: "Начни с телефона, продавай треки местным рэперам и зарабатывай первую репутацию",
-      image:
-        "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/backgrounds/loading-stage-Uw8zzqVvQqVvQqVvQqVvQqVvQqVvQq.jpg",
+      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/stage-bg.png",
     },
     {
       title: "Работай с артистами",
       description: "Находи таланты, создавай коллаборации и выпускай хиты, которые прославят тебя",
-      image:
-        "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/backgrounds/loading-menu-Uw8zzqVvQqVvQqVvQqVvQqVvQqVvQq.jpg",
+      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-0.png",
     },
     {
       title: "Построй музыкальную империю",
       description: "Открой свой лейбл, улучшай студию и становись легендой музыкальной индустрии",
-      image:
-        "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/backgrounds/loading-studio-Uw8zzqVvQqVvQqVvQqVvQqVvQqVvQq.jpg",
+      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/studio-bg.png",
     },
   ]
 

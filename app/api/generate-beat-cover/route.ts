@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import * as fal from "@fal-ai/serverless-client"
 import { put } from "@vercel/blob"
-import { generateText } from "ai"
 
 fal.config({
   credentials: process.env.FAL_KEY,
@@ -17,24 +16,47 @@ export async function POST(request: NextRequest) {
 
     console.log("[v0] Generating cover art for beat:", beatName)
 
-    const { text: creativePrompt } = await generateText({
-      model: "openai/gpt-oss-120b",
-      system: `You are a creative art director for hip-hop album covers. Generate unique, creative image prompts for beat cover art. Each prompt should be completely different and imaginative, describing a vivid scene or composition. Be creative with themes, colors, objects, and mood. Never repeat the same ideas.
+    const systemPrompt = `You are a creative art director for hip-hop album covers. Generate unique, creative image prompts for beat cover art. Each prompt should be completely different and imaginative, describing a vivid scene or composition. Be creative with themes, colors, objects, and mood. Never repeat the same ideas.
 
 REQUIRED STYLE (always include): "Cel-shaded art style with bold black outlines, flat vibrant colors, 2000s video game aesthetic like Jet Set Radio, isolated on solid dark gray background (#2a2a2a), centered, no text, no shadows, clean simple shapes, square format"
 
-Your creative part should describe: the main subject, scene composition, color palette, mood, urban/street elements, and any symbolic objects. Make each prompt unique and visually striking.`,
-      prompt: `Create a unique album cover art prompt for a beat titled: "${beatName}"`,
-      temperature: 1.2,
-      maxTokens: 200,
+Your creative part should describe: the main subject, scene composition, color palette, mood, urban/street elements, and any symbolic objects. Make each prompt unique and visually striking.`
+
+    const userPrompt = `Create a unique album cover art prompt for a beat titled: "${beatName}"`
+
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 1.2,
+        max_tokens: 200,
+      }),
     })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error("[v0] Groq API error:", response.status, errorText)
+      throw new Error(`Groq API error: ${response.status} - ${errorText}`)
+    }
+
+    const data = await response.json()
+    const text = data.choices?.[0]?.message?.content || ""
+    const creativePrompt = text.trim() || beatName
 
     console.log("[v0] Generated creative prompt:", creativePrompt)
 
     const result = await fal.subscribe("fal-ai/flux/dev", {
       input: {
         prompt: creativePrompt,
-        image_size: "square",
+        image_size: "square_hd", // 512x512 instead of 1024x1024
         num_inference_steps: 28,
         guidance_scale: 3.5,
         num_images: 1,

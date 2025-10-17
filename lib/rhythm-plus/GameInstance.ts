@@ -363,6 +363,8 @@ export class GameInstance {
       this.currentTime = elapsedSeconds
       this.playTime = this.currentTime + this.noteDelay
 
+      const notesBeforeSpawn = this.timeArrIdx
+
       // Spawn new notes
       while (this.timeArrIdx < this.timeArr.length && this.isWithinTime(this.timeArr[this.timeArrIdx])) {
         const noteObj = this.timeArr[this.timeArrIdx]
@@ -370,6 +372,17 @@ export class GameInstance {
           track.dropNote(noteObj.k, noteObj)
         }
         this.timeArrIdx++
+      }
+
+      if (notesBeforeSpawn < this.timeArrIdx && this.timeArrIdx % 50 === 0) {
+        console.log(
+          "[v0] Spawned notes up to index:",
+          this.timeArrIdx,
+          "/ ",
+          this.timeArr.length,
+          "at time:",
+          this.playTime.toFixed(2),
+        )
       }
 
       if (this.timeArrIdx >= this.timeArr.length && !this.allNotesSpawned) {

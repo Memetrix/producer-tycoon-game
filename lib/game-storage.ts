@@ -98,6 +98,7 @@ export async function loadGameState(): Promise<GameState | null> {
   const currentStage = Math.min(6, getReputationTier(gameState.reputation))
 
   return {
+    playerId: player.id, // Added player ID to game state
     playerName: player.character_name,
     playerAvatar: player.character_avatar,
     musicStyle: player.music_style || "",
