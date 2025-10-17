@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { HomeScreen } from "@/components/home-screen"
 import { StageScreen } from "@/components/stage-screen"
 import { StudioScreen } from "@/components/studio-screen"
@@ -56,6 +56,7 @@ export default function Page() {
   const [pendingCharacter, setPendingCharacter] = useState<CharacterData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [offlineEarnings, setOfflineEarnings] = useState<{ earnings: number; minutesAway: number } | null>(null)
+  const hasInitialized = useRef(false)
 
   useEffect(() => {
     const supabase = createBrowserClient()
@@ -86,7 +87,9 @@ export default function Page() {
   }, [router])
 
   useEffect(() => {
-    if (isAuthenticated !== true) return
+    if (isAuthenticated !== true || hasInitialized.current) return
+
+    hasInitialized.current = true
 
     async function initGame() {
       const timeoutId = setTimeout(() => {
