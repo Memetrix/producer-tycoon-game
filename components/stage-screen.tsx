@@ -22,6 +22,7 @@ import { RhythmGameResults } from "@/components/rhythm-game-results"
 import { OSZ_TRACKS, type OszTrack } from "@/lib/music-config"
 import { NftMintModal } from "@/components/nft-mint-modal"
 import { DesktopLayout } from "@/components/desktop-layout"
+import { RhythmGameRhythmPlus } from "@/components/rhythm-game-rhythm-plus"
 
 interface StageScreenProps {
   gameState: GameState
@@ -330,6 +331,22 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
     setIsPlayingRhythm(true)
     onRhythmGameStateChange?.(true)
+  }
+
+  // Render rhythm game when isPlayingRhythm is true
+  if (isPlayingRhythm && selectedTrack) {
+    return (
+      <RhythmGameRhythmPlus
+        difficulty={selectedDifficulty}
+        beatmapUrl={selectedTrack.oszUrl}
+        onComplete={handleRhythmComplete}
+        onClose={() => {
+          setIsPlayingRhythm(false)
+          onRhythmGameStateChange?.(false)
+          setSelectedTrack(null)
+        }}
+      />
+    )
   }
 
   if (showResults) {
