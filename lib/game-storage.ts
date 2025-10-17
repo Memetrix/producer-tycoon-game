@@ -19,7 +19,7 @@ export async function loadGameState(): Promise<GameState | null> {
   }
 
   const timeoutPromise = new Promise<null>((_, reject) => {
-    setTimeout(() => reject(new Error("Database query timeout")), 8000)
+    setTimeout(() => reject(new Error("Database query timeout")), 5000)
   })
 
   try {
