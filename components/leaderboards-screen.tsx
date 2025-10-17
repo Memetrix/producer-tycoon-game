@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
 import { useState, useEffect } from "react"
+import { DesktopLayout } from "@/components/desktop-layout"
 
 interface LeaderboardsScreenProps {
   gameState: GameState
@@ -153,170 +154,183 @@ export function LeaderboardsScreen({ gameState, onNavigate }: LeaderboardsScreen
   }
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Header */}
-      <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onNavigate("home")}
-          className="active:scale-95 transition-transform text-foreground hover:text-foreground/80"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold">Рейтинг</h1>
-          <p className="text-xs text-muted-foreground">Лучшие продюсеры</p>
-        </div>
-        <div className="flex items-center gap-1 text-primary">
-          <Trophy className="w-4 h-4" />
-          <span className="text-sm font-bold">#{playerRank || "—"}</span>
-        </div>
-      </div>
-
-      {/* Player Card */}
-      <div className="p-4 pb-2">
-        <Card className="p-4 bg-gradient-to-br from-primary/10 via-card to-secondary/10 border-primary/30">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div
-                className="w-14 h-14 rounded-full bg-cover bg-center border-2 border-primary/50"
-                style={{ backgroundImage: `url(${gameState.playerAvatar || "/placeholder-avatar.jpg"})` }}
-              />
-              <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
-                #{playerRank || "—"}
-              </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate">{gameState.playerName}</p>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Trophy className="w-3 h-3" />
-                  {gameState.reputation} rep
-                </span>
-                <span className="flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />${gameState.totalMoneyEarned.toLocaleString()}
-                </span>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-bold text-primary">{playerScore.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground">очков</p>
-            </div>
+    <DesktopLayout maxWidth="xl">
+      <div className="flex flex-col h-screen lg:h-auto">
+        {/* Header */}
+        <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onNavigate("home")}
+            className="active:scale-95 transition-transform text-foreground hover:text-foreground/80"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold">Рейтинг</h1>
+            <p className="text-xs text-muted-foreground">Лучшие продюсеры</p>
           </div>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex items-center gap-2 p-4 pb-2 border-b border-border/50">
-        <Button
-          variant={selectedTab === "global" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setSelectedTab("global")}
-          className="flex-1"
-        >
-          <Trophy className="w-4 h-4 mr-2" />
-          Глобальный
-        </Button>
-        <Button
-          variant={selectedTab === "weekly" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => setSelectedTab("weekly")}
-          className="flex-1"
-        >
-          <Calendar className="w-4 h-4 mr-2" />
-          Недельный
-        </Button>
-      </div>
-
-      {/* Leaderboard List */}
-      <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-2">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Загрузка рейтинга...</p>
-            </div>
+          <div className="flex items-center gap-1 text-primary">
+            <Trophy className="w-4 h-4" />
+            <span className="text-sm font-bold">#{playerRank || "—"}</span>
           </div>
-        ) : leaderboard.length === 0 ? (
-          <Card className="p-8 text-center">
-            <Trophy className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-            <p className="font-semibold mb-1">Рейтинг пуст</p>
-            <p className="text-sm text-muted-foreground">Будь первым в списке лучших продюсеров!</p>
-          </Card>
-        ) : (
-          leaderboard.map((entry) => (
-            <Card
-              key={entry.playerId}
-              className={`p-3 transition-all ${
-                entry.rank <= 3 ? "bg-gradient-to-r from-card via-card to-primary/5 border-primary/30" : "bg-card/50"
-              } ${entry.isCurrentPlayer ? "ring-2 ring-primary" : ""}`}
-            >
-              <div className="flex items-center gap-3">
-                {getRankIcon(entry.rank)}
+        </div>
 
-                {/* Avatar */}
+        <div className="hidden lg:flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Рейтинг</h1>
+            <p className="text-muted-foreground">Лучшие продюсеры</p>
+          </div>
+          <div className="flex items-center gap-2 text-primary">
+            <Trophy className="w-6 h-6" />
+            <span className="text-2xl font-bold">#{playerRank || "—"}</span>
+          </div>
+        </div>
+
+        {/* Player Card */}
+        <div className="p-4 lg:p-0 pb-2 lg:mb-4">
+          <Card className="p-4 bg-gradient-to-br from-primary/10 via-card to-secondary/10 border-primary/30">
+            <div className="flex items-center gap-3">
+              <div className="relative">
                 <div
-                  className="w-10 h-10 rounded-full bg-cover bg-center border border-border flex-shrink-0"
-                  style={{ backgroundImage: `url(${entry.playerAvatar})` }}
+                  className="w-14 h-14 rounded-full bg-cover bg-center border-2 border-primary/50"
+                  style={{ backgroundImage: `url(${gameState.playerAvatar || "/placeholder-avatar.jpg"})` }}
                 />
+                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
+                  #{playerRank || "—"}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold truncate">{gameState.playerName}</p>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Trophy className="w-3 h-3" />
+                    {gameState.reputation} rep
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" />${gameState.totalMoneyEarned.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-bold text-primary">{playerScore.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">очков</p>
+              </div>
+            </div>
+          </Card>
+        </div>
 
-                {/* Player Info */}
-                <div className="flex-1 min-w-0">
-                  <p className={`font-semibold truncate ${entry.rank <= 3 ? "text-primary" : ""}`}>
-                    {entry.playerName}
-                    {entry.isCurrentPlayer && <span className="ml-1 text-xs text-accent">(Ты)</span>}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{entry.reputation.toLocaleString()} rep</span>
-                    <span>•</span>
-                    <span>{entry.beatsCreated} битов</span>
+        {/* Tabs */}
+        <div className="flex items-center gap-2 p-4 lg:p-0 pb-2 lg:mb-4 border-b border-border/50 lg:border-0">
+          <Button
+            variant={selectedTab === "global" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setSelectedTab("global")}
+            className="flex-1"
+          >
+            <Trophy className="w-4 h-4 mr-2" />
+            Глобальный
+          </Button>
+          <Button
+            variant={selectedTab === "weekly" ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setSelectedTab("weekly")}
+            className="flex-1"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            Недельный
+          </Button>
+        </div>
+
+        {/* Leaderboard List */}
+        <div className="flex-1 overflow-y-auto p-4 lg:p-0 pb-20 lg:pb-0 space-y-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Загрузка рейтинга...</p>
+              </div>
+            </div>
+          ) : leaderboard.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Trophy className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+              <p className="font-semibold mb-1">Рейтинг пуст</p>
+              <p className="text-sm text-muted-foreground">Будь первым в списке лучших продюсеров!</p>
+            </Card>
+          ) : (
+            leaderboard.map((entry) => (
+              <Card
+                key={entry.playerId}
+                className={`p-3 transition-all ${
+                  entry.rank <= 3 ? "bg-gradient-to-r from-card via-card to-primary/5 border-primary/30" : "bg-card/50"
+                } ${entry.isCurrentPlayer ? "ring-2 ring-primary" : ""}`}
+              >
+                <div className="flex items-center gap-3">
+                  {getRankIcon(entry.rank)}
+
+                  {/* Avatar */}
+                  <div
+                    className="w-10 h-10 rounded-full bg-cover bg-center border border-border flex-shrink-0"
+                    style={{ backgroundImage: `url(${entry.playerAvatar})` }}
+                  />
+
+                  {/* Player Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-semibold truncate ${entry.rank <= 3 ? "text-primary" : ""}`}>
+                      {entry.playerName}
+                      {entry.isCurrentPlayer && <span className="ml-1 text-xs text-accent">(Ты)</span>}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{entry.reputation.toLocaleString()} rep</span>
+                      <span>•</span>
+                      <span>{entry.beatsCreated} битов</span>
+                    </div>
+                  </div>
+
+                  {/* Score */}
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-bold">{entry.score.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">очков</p>
                   </div>
                 </div>
+              </Card>
+            ))
+          )}
 
-                {/* Score */}
-                <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-bold">{entry.score.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">очков</p>
+          {/* Info Card */}
+          {!loading && leaderboard.length > 0 && (
+            <>
+              <Card className="p-4 bg-gradient-to-br from-secondary/10 to-primary/10 border-secondary/30 mt-4">
+                <div className="flex gap-3">
+                  <div className="text-2xl">ℹ️</div>
+                  <div>
+                    <p className="font-semibold text-sm mb-1">О рейтинге</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {selectedTab === "global"
+                        ? "Глобальный рейтинг показывает лучших продюсеров всех времен. Очки рассчитываются на основе заработка и репутации."
+                        : "Недельный рейтинг обновляется каждую неделю. Соревнуйся за топ-позиции и получай специальные награды!"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))
-        )}
+              </Card>
 
-        {/* Info Card */}
-        {!loading && leaderboard.length > 0 && (
-          <>
-            <Card className="p-4 bg-gradient-to-br from-secondary/10 to-primary/10 border-secondary/30 mt-4">
-              <div className="flex gap-3">
-                <div className="text-2xl">ℹ️</div>
-                <div>
-                  <p className="font-semibold text-sm mb-1">О рейтинге</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {selectedTab === "global"
-                      ? "Глобальный рейтинг показывает лучших продюсеров всех времен. Очки рассчитываются на основе заработка и репутации."
-                      : "Недельный рейтинг обновляется каждую неделю. Соревнуйся за топ-позиции и получай специальные награды!"}
-                  </p>
+              {/* Coming Soon: Rewards */}
+              <Card className="p-4 bg-gradient-to-br from-accent/10 to-secondary/10 border-accent/30">
+                <div className="flex gap-3">
+                  <div className="text-2xl">🎁</div>
+                  <div>
+                    <p className="font-semibold text-sm mb-1">Скоро: Награды за топ-позиции!</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Топ-10 игроков недельного рейтинга будут получать эксклюзивные награды: деньги, репутацию, энергию
+                      и специальные бонусы!
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-
-            {/* Coming Soon: Rewards */}
-            <Card className="p-4 bg-gradient-to-br from-accent/10 to-secondary/10 border-accent/30">
-              <div className="flex gap-3">
-                <div className="text-2xl">🎁</div>
-                <div>
-                  <p className="font-semibold text-sm mb-1">Скоро: Награды за топ-позиции!</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Топ-10 игроков недельного рейтинга будут получать эксклюзивные награды: деньги, репутацию, энергию и
-                    специальные бонусы!
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </>
-        )}
+              </Card>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </DesktopLayout>
   )
 }

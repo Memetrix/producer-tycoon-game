@@ -7,6 +7,7 @@ import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
 import { SKILLS_CONFIG, getReputationTier } from "@/lib/game-state"
 import type React from "react"
+import { DesktopLayout } from "@/components/desktop-layout"
 
 interface SkillsScreenProps {
   gameState: GameState
@@ -56,7 +57,7 @@ export function SkillsScreen({ gameState, setGameState, onNavigate }: SkillsScre
           {icon}
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{branchName}</h3>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
           {skills.map((skill) => {
             const isUnlocked = gameState.skills[skill.id]
             const isLocked = gameState.reputation < skill.requiredReputation
@@ -93,7 +94,8 @@ export function SkillsScreen({ gameState, setGameState, onNavigate }: SkillsScre
 
                     <div className="flex items-center justify-between text-xs mb-2">
                       <span className="text-muted-foreground">
-                        Требуется: {skill.requiredReputation} репутации (Tier {Math.ceil(skill.requiredReputation / 500)})
+                        Требуется: {skill.requiredReputation} репутации (Tier{" "}
+                        {Math.ceil(skill.requiredReputation / 500)})
                       </span>
                       <span className="font-semibold text-primary">${skill.cost}</span>
                     </div>
@@ -127,68 +129,83 @@ export function SkillsScreen({ gameState, setGameState, onNavigate }: SkillsScre
   const totalSkills = Object.keys(SKILLS_CONFIG).length
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onNavigate("home")}
-          className="active:scale-95 transition-transform text-foreground hover:text-foreground/80"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold">Навыки</h1>
-          <p className="text-xs text-muted-foreground">Улучши свои способности</p>
+    <DesktopLayout maxWidth="2xl">
+      <div className="flex flex-col h-screen lg:h-auto">
+        <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onNavigate("home")}
+            className="active:scale-95 transition-transform text-foreground hover:text-foreground/80"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold">Навыки</h1>
+            <p className="text-xs text-muted-foreground">Улучши свои способности</p>
+          </div>
+          <div className="flex items-center gap-1 text-secondary">
+            <Sparkles className="w-4 h-4" />
+            <span className="text-sm font-bold">
+              {unlockedCount}/{totalSkills}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-1 text-secondary">
-          <Sparkles className="w-4 h-4" />
-          <span className="text-sm font-bold">
-            {unlockedCount}/{totalSkills}
-          </span>
-        </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-6">
-        <Card className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30 shadow-lg">
-          <div className="text-center space-y-2">
-            <p className="text-sm font-semibold">Текущий уровень: Tier {currentTier}</p>
-            <p className="text-xs text-muted-foreground">Репутация: {gameState.reputation}</p>
-            <div className="grid grid-cols-3 gap-2 mt-3">
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">Tier 1</p>
-                <p className="text-sm font-bold text-primary">500</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">Tier 2</p>
-                <p className="text-sm font-bold text-secondary">2000</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">Tier 3</p>
-                <p className="text-sm font-bold text-accent">5000</p>
+        <div className="hidden lg:flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Навыки</h1>
+            <p className="text-muted-foreground">Улучши свои способности</p>
+          </div>
+          <div className="flex items-center gap-2 text-secondary">
+            <Sparkles className="w-6 h-6" />
+            <span className="text-2xl font-bold">
+              {unlockedCount}/{totalSkills}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 lg:p-0 pb-20 lg:pb-0 space-y-6">
+          <Card className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30 shadow-lg">
+            <div className="text-center space-y-2">
+              <p className="text-sm font-semibold">Текущий уровень: Tier {currentTier}</p>
+              <p className="text-xs text-muted-foreground">Репутация: {gameState.reputation}</p>
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Tier 1</p>
+                  <p className="text-sm font-bold text-primary">500</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Tier 2</p>
+                  <p className="text-sm font-bold text-secondary">2000</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Tier 3</p>
+                  <p className="text-sm font-bold text-accent">5000</p>
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        {renderSkillBranch(energySkills, "Энергия", <Zap className="w-4 h-4 text-secondary" />)}
-        {renderSkillBranch(qualitySkills, "Качество", <TrendingUp className="w-4 h-4 text-primary" />)}
-        {renderSkillBranch(moneySkills, "Деньги", <DollarSign className="w-4 h-4 text-accent" />)}
+          {renderSkillBranch(energySkills, "Энергия", <Zap className="w-4 h-4 text-secondary" />)}
+          {renderSkillBranch(qualitySkills, "Качество", <TrendingUp className="w-4 h-4 text-primary" />)}
+          {renderSkillBranch(moneySkills, "Деньги", <DollarSign className="w-4 h-4 text-accent" />)}
 
-        <Card className="p-4 bg-gradient-to-br from-accent/10 to-primary/10 border-accent/30 shadow-md">
-          <div className="flex gap-3">
-            <div className="text-2xl">💡</div>
-            <div>
-              <p className="font-semibold text-sm mb-1">Древо навыков</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Навыки открываются по мере роста репутации. Tier 1 (500 rep), Tier 2 (2000 rep), Tier 3 (5000 rep).
-                Каждая ветка дает уникальные бонусы: Энергия (больше битов), Качество (лучшие биты), Деньги (выше
-                цены).
-              </p>
+          <Card className="p-4 bg-gradient-to-br from-accent/10 to-primary/10 border-accent/30 shadow-md">
+            <div className="flex gap-3">
+              <div className="text-2xl">💡</div>
+              <div>
+                <p className="font-semibold text-sm mb-1">Древо навыков</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Навыки открываются по мере роста репутации. Tier 1 (500 rep), Tier 2 (2000 rep), Tier 3 (5000 rep).
+                  Каждая ветка дает уникальные бонусы: Энергия (больше битов), Качество (лучшие биты), Деньги (выше
+                  цены).
+                </p>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
-    </div>
+    </DesktopLayout>
   )
 }

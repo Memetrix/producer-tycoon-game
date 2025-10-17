@@ -8,6 +8,7 @@ import type { GameState } from "@/lib/game-state"
 import type React from "react"
 import { saveEquipmentUpgrade } from "@/lib/game-storage"
 import { EQUIPMENT_TIERS, getEquipmentTier, getReputationTier } from "@/lib/game-state"
+import { DesktopLayout } from "@/components/desktop-layout"
 
 interface StudioScreenProps {
   gameState: GameState
@@ -200,149 +201,164 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
   const currentStage = getReputationTier(gameState.reputation)
 
   return (
-    <div className="flex flex-col h-screen">
-      <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onNavigate("home")}
-          className="active:scale-95 transition-transform text-foreground hover:text-foreground/80"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-lg font-semibold">Студия</h1>
-          <p className="text-xs text-muted-foreground">Улучши оборудование для роста</p>
-        </div>
-        <div className="text-right">
-          <p className="text-sm font-bold text-primary">${gameState.money}</p>
-          <p className="text-xs text-muted-foreground">Баланс</p>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-4">
-        <Card className="p-6 bg-gradient-to-br from-card to-primary/10 border-primary/30 shadow-lg overflow-hidden relative">
-          <div className="absolute inset-0 opacity-20">
-            <img
-              src="/home-music-studio-setup-with-equipment-and-led-lig.jpg"
-              alt="Studio"
-              className="w-full h-full object-cover"
-            />
+    <DesktopLayout maxWidth="2xl">
+      <div className="flex flex-col h-screen lg:h-auto">
+        <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onNavigate("home")}
+            className="active:scale-95 transition-transform text-foreground hover:text-foreground/80"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold">Студия</h1>
+            <p className="text-xs text-muted-foreground">Улучши оборудование для роста</p>
           </div>
-          <div className="relative text-center space-y-3">
-            <div className="text-6xl">🎧</div>
-            <div>
-              <h2 className="text-xl font-semibold">{currentStage === 1 ? "Уличная установка" : "Домашняя студия"}</h2>
-              <p className="text-sm text-muted-foreground">Этап {currentStage}</p>
+          <div className="text-right">
+            <p className="text-sm font-bold text-primary">${gameState.money}</p>
+            <p className="text-xs text-muted-foreground">Баланс</p>
+          </div>
+        </div>
+
+        <div className="hidden lg:flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Студия</h1>
+            <p className="text-muted-foreground">Улучшай оборудование для создания качественных битов</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-primary">${gameState.money.toLocaleString()}</p>
+            <p className="text-sm text-muted-foreground">Баланс</p>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 lg:p-0 pb-20 lg:pb-0 space-y-4">
+          <Card className="p-6 bg-gradient-to-br from-card to-primary/10 border-primary/30 shadow-lg overflow-hidden relative">
+            <div className="absolute inset-0 opacity-20">
+              <img
+                src="/home-music-studio-setup-with-equipment-and-led-lig.jpg"
+                alt="Studio"
+                className="w-full h-full object-cover"
+              />
             </div>
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <Zap className="w-4 h-4 text-primary" />
-              <span className="text-muted-foreground">Бонус качества:</span>
-              <span className="font-semibold text-primary">+{totalQualityBonus}%</span>
-            </div>
-          </div>
-        </Card>
-
-        <div>
-          <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Оборудование</h3>
-          <div className="space-y-3">
-            {equipment.map((item, i) => {
-              const Icon = item.icon
-              const cost = getUpgradeCost(item.basePrice, item.level)
-              const colorClass =
-                item.color === "primary"
-                  ? "text-primary"
-                  : item.color === "secondary"
-                    ? "text-secondary"
-                    : "text-accent"
-
-              const currentTier = getEquipmentTier(item.key, item.level)
-              const nextTier = getEquipmentTier(item.key, item.level + 1)
-
-              const currentImage =
-                EQUIPMENT_IMAGES[item.key]?.[item.level as keyof (typeof EQUIPMENT_IMAGES)[typeof item.key]] ||
-                "/placeholder.svg"
-
-              return (
-                <Card key={i} className="p-4 shadow-md">
-                  <div className="flex items-start gap-3">
-                    <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
-                      <img
-                        src={currentImage || "/placeholder.svg"}
-                        alt={currentTier?.name || item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <p className="font-semibold text-sm">{currentTier?.name || item.name}</p>
-                          <p className="text-xs text-muted-foreground">{currentTier?.description || item.bonus}</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1 mb-3">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">
-                            Уровень {item.level}/{item.maxLevel}
-                          </span>
-                          <span className={colorClass}>
-                            {item.level === item.maxLevel
-                              ? "МАКС"
-                              : nextTier
-                                ? `${nextTier.name}: $${cost}`
-                                : `$${cost}`}
-                          </span>
-                        </div>
-                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full bg-gradient-to-r ${
-                              item.color === "primary"
-                                ? "from-primary to-primary/60"
-                                : item.color === "secondary"
-                                  ? "from-secondary to-secondary/60"
-                                  : "from-accent to-accent/60"
-                            }`}
-                            style={{ width: `${(item.level / item.maxLevel) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <Button
-                        size="sm"
-                        className="w-full h-auto py-2 whitespace-normal text-xs leading-tight active:scale-95 transition-transform"
-                        disabled={item.level === item.maxLevel || gameState.money < cost}
-                        onClick={() => handleUpgrade(item.key, item.basePrice)}
-                      >
-                        {item.level === item.maxLevel ? "Максимум" : `Купить ($${cost})`}
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
-        </div>
-
-        <Card className="p-4 bg-gradient-to-br from-secondary/10 to-accent/10 border-secondary/30 shadow-md">
-          <div className="flex items-start gap-3">
-            <div className="text-3xl">🏆</div>
-            <div className="flex-1">
-              <h3 className="font-semibold mb-1">Путь к успеху</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Улучшай оборудование, создавай качественные биты и зарабатывай репутацию. Каждый апгрейд приближает тебя
-                к статусу мирового продюсера!
-              </p>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">Следующий этап:</span>
-                <span className="font-semibold text-secondary">
-                  {currentStage === 1 ? "Домашняя студия" : "Первый контракт"}
-                </span>
+            <div className="relative text-center space-y-3">
+              <div className="text-6xl">🎧</div>
+              <div>
+                <h2 className="text-xl font-semibold">
+                  {currentStage === 1 ? "Уличная установка" : "Домашняя студия"}
+                </h2>
+                <p className="text-sm text-muted-foreground">Этап {currentStage}</p>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-sm">
+                <Zap className="w-4 h-4 text-primary" />
+                <span className="text-muted-foreground">Бонус качества:</span>
+                <span className="font-semibold text-primary">+{totalQualityBonus}%</span>
               </div>
             </div>
+          </Card>
+
+          <div>
+            <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Оборудование</h3>
+            <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+              {equipment.map((item, i) => {
+                const Icon = item.icon
+                const cost = getUpgradeCost(item.basePrice, item.level)
+                const colorClass =
+                  item.color === "primary"
+                    ? "text-primary"
+                    : item.color === "secondary"
+                      ? "text-secondary"
+                      : "text-accent"
+
+                const currentTier = getEquipmentTier(item.key, item.level)
+                const nextTier = getEquipmentTier(item.key, item.level + 1)
+
+                const currentImage =
+                  EQUIPMENT_IMAGES[item.key]?.[item.level as keyof (typeof EQUIPMENT_IMAGES)[typeof item.key]] ||
+                  "/placeholder.svg"
+
+                return (
+                  <Card key={i} className="p-4 shadow-md">
+                    <div className="flex items-start gap-3">
+                      <div className="relative w-20 h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
+                        <img
+                          src={currentImage || "/placeholder.svg"}
+                          alt={currentTier?.name || item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <p className="font-semibold text-sm">{currentTier?.name || item.name}</p>
+                            <p className="text-xs text-muted-foreground">{currentTier?.description || item.bonus}</p>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 mb-3">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">
+                              Уровень {item.level}/{item.maxLevel}
+                            </span>
+                            <span className={colorClass}>
+                              {item.level === item.maxLevel
+                                ? "МАКС"
+                                : nextTier
+                                  ? `${nextTier.name}: $${cost}`
+                                  : `$${cost}`}
+                            </span>
+                          </div>
+                          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full bg-gradient-to-r ${
+                                item.color === "primary"
+                                  ? "from-primary to-primary/60"
+                                  : item.color === "secondary"
+                                    ? "from-secondary to-secondary/60"
+                                    : "from-accent to-accent/60"
+                              }`}
+                              style={{ width: `${(item.level / item.maxLevel) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <Button
+                          size="sm"
+                          className="w-full h-auto py-2 whitespace-normal text-xs leading-tight active:scale-95 transition-transform"
+                          disabled={item.level === item.maxLevel || gameState.money < cost}
+                          onClick={() => handleUpgrade(item.key, item.basePrice)}
+                        >
+                          {item.level === item.maxLevel ? "Максимум" : `Купить ($${cost})`}
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
           </div>
-        </Card>
+
+          <Card className="p-4 bg-gradient-to-br from-secondary/10 to-accent/10 border-secondary/30 shadow-md">
+            <div className="flex items-start gap-3">
+              <div className="text-3xl">🏆</div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">Путь к успеху</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Улучшай оборудование, создавай качественные биты и зарабатывай репутацию. Каждый апгрейд приближает
+                  тебя к статусу мирового продюсера!
+                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Следующий этап:</span>
+                  <span className="font-semibold text-secondary">
+                    {currentStage === 1 ? "Домашняя студия" : "Первый контракт"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
-    </div>
+    </DesktopLayout>
   )
 }

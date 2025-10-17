@@ -15,6 +15,7 @@ import { CharacterCreation, type CharacterData } from "@/components/character-cr
 import { AvatarConfirmation } from "@/components/avatar-confirmation"
 import { TutorialOverlay } from "@/components/tutorial-overlay"
 import { BottomNav } from "@/components/bottom-nav"
+import { DesktopSidebar } from "@/components/desktop-sidebar"
 import {
   getTotalEnergyBonus,
   getTotalPassiveIncome,
@@ -382,6 +383,10 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-background dark">
+      {!showOnboarding && !showCharacterSelection && !showAvatarConfirmation && !showTutorial && (
+        <DesktopSidebar currentScreen={currentScreen} onNavigate={navigateTo} gameState={gameState} />
+      )}
+
       <div className={`h-screen transition-opacity duration-150 ${isTransitioning ? "opacity-0" : "opacity-100"}`}>
         {currentScreen === "home" && (
           <HomeScreen
@@ -415,9 +420,7 @@ export default function Page() {
         {currentScreen === "contracts" && (
           <ContractsScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
         )}
-        {currentScreen === "leaderboards" && (
-          <LeaderboardsScreen gameState={gameState} onNavigate={navigateTo} />
-        )}
+        {currentScreen === "leaderboards" && <LeaderboardsScreen gameState={gameState} onNavigate={navigateTo} />}
         {currentScreen === "shop" && (
           <ShopScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
         )}

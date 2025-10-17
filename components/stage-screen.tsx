@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { ArrowLeft, Play, Music, Sparkles, Image as ImageIcon } from "lucide-react"
+import { ArrowLeft, Play, Music, Sparkles, ImageIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
@@ -18,10 +18,10 @@ import {
   getTierPriceMultiplier,
 } from "@/lib/game-state"
 import { saveBeat, sellBeats } from "@/lib/game-storage"
-import { RhythmGameRhythmPlus } from "@/components/rhythm-game-rhythm-plus"
 import { RhythmGameResults } from "@/components/rhythm-game-results"
 import { OSZ_TRACKS, type OszTrack } from "@/lib/music-config"
 import { NftMintModal } from "@/components/nft-mint-modal"
+import { DesktopLayout } from "@/components/desktop-layout"
 
 interface StageScreenProps {
   gameState: GameState
@@ -336,334 +336,344 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     return <RhythmGameResults accuracy={rhythmAccuracy} onContinue={handleResultsContinue} />
   }
 
-  // Fullscreen rhythm game mode
-  if (isPlayingRhythm && selectedTrack) {
-    console.log("[Stage] Rendering rhythm game. Track:", selectedTrack.name, "URL:", selectedTrack.oszUrl)
-    return (
-      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-        <div className="w-full h-full max-w-screen-xl mx-auto flex items-center justify-center">
-          <RhythmGameRhythmPlus
-            onComplete={handleRhythmComplete}
-            onClose={() => {
-              setIsPlayingRhythm(false)
-              onRhythmGameStateChange?.(false)
-              setSelectedTrack(null)
-            }}
-            difficulty={selectedDifficulty}
-            beatmapUrl={selectedTrack.oszUrl}
-          />
-        </div>
-      </div>
-    )
-  }
-
   // Track selection screen
   if (showTrackSelector) {
     return (
-      <div className="flex flex-col h-screen bg-gradient-to-b from-background to-background/95">
-        <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowTrackSelector(false)}
-            className="active:scale-95 transition-transform"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-lg font-semibold">Выбери трек</h1>
-            <p className="text-xs text-muted-foreground">Выбери музыку для создания бита</p>
+      <DesktopLayout maxWidth="xl">
+        <div className="flex flex-col h-screen lg:h-auto bg-gradient-to-b from-background to-background/95">
+          <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowTrackSelector(false)}
+              className="active:scale-95 transition-transform"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-lg font-semibold">Выбери трек</h1>
+              <p className="text-xs text-muted-foreground">Выбери музыку для создания бита</p>
+            </div>
+          </div>
+
+          <div className="hidden lg:block mb-6">
+            <h1 className="text-3xl font-bold mb-2">Выбери трек</h1>
+            <p className="text-muted-foreground">Выбери музыку для создания бита</p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 lg:p-0 space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+            {isLoadingTracks && (
+              <div className="lg:col-span-2 flex items-center justify-center py-8">
+                <div className="text-center space-y-2">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+                  <p className="text-sm text-muted-foreground">Загружаю треки...</p>
+                </div>
+              </div>
+            )}
+
+            {!isLoadingTracks && availableTracks.length === 0 && (
+              <div className="lg:col-span-2 text-center py-8">
+                <p className="text-muted-foreground">Нет доступных треков</p>
+                <p className="text-xs text-muted-foreground mt-2">Загрузи треки в разделе "Загрузка музыки"</p>
+              </div>
+            )}
+
+            {!isLoadingTracks &&
+              availableTracks.map((track) => (
+                <Card
+                  key={track.id}
+                  className="p-4 hover:bg-card/80 cursor-pointer transition-all active:scale-95"
+                  onClick={() => handleTrackSelect(track)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold">
+                        {track.artist} - {track.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">{track.genre}</p>
+                    </div>
+                    <Music className="w-6 h-6 text-primary" />
+                  </div>
+                </Card>
+              ))}
           </div>
         </div>
-
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {isLoadingTracks && (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center space-y-2">
-                <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-                <p className="text-sm text-muted-foreground">Загружаю треки...</p>
-              </div>
-            </div>
-          )}
-
-          {!isLoadingTracks && availableTracks.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Нет доступных треков</p>
-              <p className="text-xs text-muted-foreground mt-2">Загрузи треки в разделе "Загрузка музыки"</p>
-            </div>
-          )}
-
-          {!isLoadingTracks &&
-            availableTracks.map((track) => (
-              <Card
-                key={track.id}
-                className="p-4 hover:bg-card/80 cursor-pointer transition-all active:scale-95"
-                onClick={() => handleTrackSelect(track)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold">
-                      {track.artist} - {track.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">{track.genre}</p>
-                  </div>
-                  <Music className="w-6 h-6 text-primary" />
-                </div>
-              </Card>
-            ))}
-        </div>
-      </div>
+      </DesktopLayout>
     )
   }
 
   // Difficulty selection screen
   if (selectedTrack && !isPlayingRhythm) {
     return (
-      <div className="flex flex-col h-screen bg-gradient-to-b from-background to-background/95">
-        <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              setSelectedTrack(null)
-              setShowTrackSelector(true)
-            }}
-            className="active:scale-95 transition-transform"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-lg font-semibold">Выбери сложность</h1>
-            <p className="text-xs text-muted-foreground">
+      <DesktopLayout maxWidth="lg">
+        <div className="flex flex-col h-screen lg:h-auto bg-gradient-to-b from-background to-background/95">
+          <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setSelectedTrack(null)
+                setShowTrackSelector(true)
+              }}
+              className="active:scale-95 transition-transform"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-lg font-semibold">Выбери сложность</h1>
+              <p className="text-xs text-muted-foreground">
+                {selectedTrack.artist} - {selectedTrack.name}
+              </p>
+            </div>
+          </div>
+
+          <div className="hidden lg:block mb-6">
+            <h1 className="text-3xl font-bold mb-2">Выбери сложность</h1>
+            <p className="text-muted-foreground">
               {selectedTrack.artist} - {selectedTrack.name}
             </p>
           </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((diff) => {
-              const qualityBonus = diff * 3
-              const priceMultiplier = 1 + (diff - 1) * 0.3
-              const estimatedPrice = Math.floor(50 * priceMultiplier)
+          <div className="flex-1 overflow-y-auto p-4 lg:p-0 space-y-4">
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((diff) => {
+                const qualityBonus = diff * 3
+                const priceMultiplier = 1 + (diff - 1) * 0.3
+                const estimatedPrice = Math.floor(50 * priceMultiplier)
 
-              return (
-                <Card
-                  key={diff}
-                  className={`p-4 cursor-pointer transition-all hover:border-primary ${
-                    selectedDifficulty === diff ? "border-2 border-primary bg-primary/10" : ""
-                  }`}
-                  onClick={() => setSelectedDifficulty(diff)}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">
-                          {diff === 1
-                            ? "Лёгкая"
-                            : diff === 2
-                              ? "Нормальная"
-                              : diff === 3
-                                ? "Сложная"
-                                : diff === 4
-                                  ? "Экспертная"
-                                  : "Мастер"}
+                return (
+                  <Card
+                    key={diff}
+                    className={`p-4 cursor-pointer transition-all hover:border-primary ${
+                      selectedDifficulty === diff ? "border-2 border-primary bg-primary/10" : ""
+                    }`}
+                    onClick={() => setSelectedDifficulty(diff)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold">
+                            {diff === 1
+                              ? "Лёгкая"
+                              : diff === 2
+                                ? "Нормальная"
+                                : diff === 3
+                                  ? "Сложная"
+                                  : diff === 4
+                                    ? "Экспертная"
+                                    : "Мастер"}
+                          </p>
+                          <span className="text-xs text-primary">+{qualityBonus}% качество</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Цена: ~${estimatedPrice} (+{Math.floor((priceMultiplier - 1) * 100)}%)
                         </p>
-                        <span className="text-xs text-primary">+{qualityBonus}% качество</span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Цена: ~${estimatedPrice} (+{Math.floor((priceMultiplier - 1) * 100)}%)
-                      </p>
+                      {selectedDifficulty === diff && <Sparkles className="w-5 h-5 text-primary" />}
                     </div>
-                    {selectedDifficulty === diff && <Sparkles className="w-5 h-5 text-primary" />}
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
+                  </Card>
+                )
+              })}
+            </div>
 
-          <Button
-            size="lg"
-            className="w-full bg-gradient-to-r from-primary to-secondary"
-            onClick={handleStartGame}
-            disabled={gameState.energy < ENERGY_COST}
-          >
-            <Play className="w-5 h-5 mr-2" />
-            Начать игру (-{ENERGY_COST} энергии)
-          </Button>
+            <Button
+              size="lg"
+              className="w-full bg-gradient-to-r from-primary to-secondary"
+              onClick={handleStartGame}
+              disabled={gameState.energy < ENERGY_COST}
+            >
+              <Play className="w-5 h-5 mr-2" />
+              Начать игру (-{ENERGY_COST} энергии)
+            </Button>
+          </div>
         </div>
-      </div>
+      </DesktopLayout>
     )
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-b from-background to-background/95">
-      <div className="p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onNavigate("home")}
-          className="active:scale-95 transition-transform text-foreground hover:text-foreground/80"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div>
-          <h1 className="text-lg font-semibold">Создать бит</h1>
-          <p className="text-xs text-muted-foreground">Этап 1: Улица - Начало пути</p>
+    <DesktopLayout maxWidth="xl">
+      <div className="flex flex-col h-screen lg:h-auto bg-gradient-to-b from-background to-background/95">
+        <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onNavigate("home")}
+            className="active:scale-95 transition-transform text-foreground hover:text-foreground/80"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-lg font-semibold">Создать бит</h1>
+            <p className="text-xs text-muted-foreground">Этап 1: Улица - Начало пути</p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto p-4 pb-20 space-y-4">
-        <Card className="p-8 bg-gradient-to-br from-primary/10 via-card to-secondary/10 border-primary/30 shadow-lg">
-          <div className="flex flex-col items-center text-center space-y-6">
-            <div className="relative">
-              {currentBeat ? (
-                <div className="w-48 h-48 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-primary/30">
-                  {isGeneratingCover ? (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                      <div className="text-center space-y-2">
-                        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-                        <p className="text-xs text-muted-foreground">Генерирую обложку...</p>
+        <div className="hidden lg:block mb-6">
+          <h1 className="text-3xl font-bold mb-2">Создать бит</h1>
+          <p className="text-muted-foreground">Этап 1: Улица - Начало пути</p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 lg:p-0 pb-20 lg:pb-0 space-y-4">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-6 space-y-4 lg:space-y-0">
+            {/* Left Column - Beat Creation */}
+            <div className="space-y-4">
+              <Card className="p-8 bg-gradient-to-br from-primary/10 via-card to-secondary/10 border-primary/30 shadow-lg">
+                <div className="flex flex-col items-center text-center space-y-6">
+                  <div className="relative">
+                    {currentBeat ? (
+                      <div className="w-48 h-48 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-primary/30">
+                        {isGeneratingCover ? (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                            <div className="text-center space-y-2">
+                              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+                              <p className="text-xs text-muted-foreground">Генерирую обложку...</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <img
+                            src={currentBeat.cover || "/placeholder.svg"}
+                            alt={currentBeat.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
                       </div>
+                    ) : (
+                      <>
+                        <div
+                          className={`w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-xl ${isCreating ? "animate-pulse" : ""}`}
+                        >
+                          <Music className="w-16 h-16 text-primary-foreground" />
+                        </div>
+                        {isCreating && (
+                          <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  <div className="w-full space-y-2">
+                    <p className="text-lg font-semibold">
+                      {isGeneratingName
+                        ? "Придумываю название..."
+                        : isGeneratingCover
+                          ? "Создаю обложку..."
+                          : isCreating
+                            ? "Создаю бит..."
+                            : currentBeat
+                              ? `${currentBeat.name} готов!`
+                              : "Готов создать новый хит"}
+                    </p>
+                    {currentBeat && (
+                      <div className="flex items-center justify-center gap-4 text-sm">
+                        <span className="text-muted-foreground">Качество: {currentBeat.quality}%</span>
+                        <span className="text-primary font-bold">${currentBeat.price}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {currentBeat ? (
+                    <div className="w-full space-y-2">
+                      <Button
+                        size="lg"
+                        className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition-transform"
+                        onClick={handleSellBeat}
+                        disabled={isGeneratingName || isGeneratingCover || isSelling}
+                      >
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        {isGeneratingName
+                          ? "Придумываю название..."
+                          : isGeneratingCover
+                            ? "Создаю обложку..."
+                            : isSelling
+                              ? "Продаю..."
+                              : `Продать бит ($${currentBeat?.price})`}
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="w-full border-primary/30 hover:bg-primary/10 bg-transparent"
+                        onClick={() => setShowNftModal(true)}
+                        disabled={isGeneratingName || isGeneratingCover}
+                      >
+                        <ImageIcon className="w-5 h-5 mr-2" />
+                        Создать NFT
+                      </Button>
                     </div>
                   ) : (
-                    <img
-                      src={currentBeat.cover || "/placeholder.svg"}
-                      alt={currentBeat.name}
-                      className="w-full h-full object-cover"
-                    />
+                    <div className="w-full space-y-2">
+                      <Button
+                        size="lg"
+                        className="w-full h-auto py-3 px-4 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition-transform whitespace-normal"
+                        onClick={startCreating}
+                        disabled={isCreating || gameState.energy < ENERGY_COST}
+                      >
+                        <Play className="w-5 h-5 mr-2 flex-shrink-0" />
+                        <span>Начать создание (-{ENERGY_COST} энергии)</span>
+                      </Button>
+                      {gameState.energy < ENERGY_COST && (
+                        <p className="text-xs text-muted-foreground">Недостаточно энергии. Подожди немного!</p>
+                      )}
+                    </div>
                   )}
                 </div>
-              ) : (
-                <>
-                  <div
-                    className={`w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-xl ${isCreating ? "animate-pulse" : ""}`}
-                  >
-                    <Music className="w-16 h-16 text-primary-foreground" />
+              </Card>
+
+              <div className="grid grid-cols-3 gap-3">
+                <Card className="p-4 text-center shadow-md">
+                  <p className="text-2xl font-bold text-primary">{gameState.beats.length}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Битов создано</p>
+                </Card>
+                <Card className="p-4 text-center shadow-md">
+                  <p className="text-2xl font-bold text-secondary">${gameState.totalBeatsEarnings || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Заработано</p>
+                </Card>
+                <Card className="p-4 text-center shadow-md">
+                  <p className="text-2xl font-bold text-accent">{gameState.reputation}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Репутация</p>
+                </Card>
+              </div>
+            </div>
+
+            {/* Right Column - Beat History */}
+            <div className="space-y-4">
+              {gameState.beats.length > 0 && (
+                <div>
+                  <div className="mb-3">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Твои биты</h3>
                   </div>
-                  {isCreating && (
-                    <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
-                  )}
-                </>
-              )}
-            </div>
-
-            <div className="w-full space-y-2">
-              <p className="text-lg font-semibold">
-                {isGeneratingName
-                  ? "Придумываю название..."
-                  : isGeneratingCover
-                    ? "Создаю обложку..."
-                    : isCreating
-                      ? "Создаю бит..."
-                      : currentBeat
-                        ? `${currentBeat.name} готов!`
-                        : "Готов создать новый хит"}
-              </p>
-              {currentBeat && (
-                <div className="flex items-center justify-center gap-4 text-sm">
-                  <span className="text-muted-foreground">Качество: {currentBeat.quality}%</span>
-                  <span className="text-primary font-bold">${currentBeat.price}</span>
+                  <div className="space-y-2">
+                    {gameState.beats.map((beat) => (
+                      <Card key={beat.id} className="p-4 shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
+                            <img
+                              src={beat.cover || "/placeholder.svg"}
+                              alt={beat.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm">{beat.name}</p>
+                            <p className="text-xs text-muted-foreground">Качество: {beat.quality}%</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-primary">${beat.price}</p>
+                            <p className="text-xs text-muted-foreground">Продано</p>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
-
-            {currentBeat ? (
-              <div className="w-full space-y-2">
-                <Button
-                  size="lg"
-                  className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition-transform"
-                  onClick={handleSellBeat}
-                  disabled={isGeneratingName || isGeneratingCover || isSelling}
-                >
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  {isGeneratingName
-                    ? "Придумываю название..."
-                    : isGeneratingCover
-                      ? "Создаю обложку..."
-                      : isSelling
-                        ? "Продаю..."
-                        : `Продать бит ($${currentBeat?.price})`}
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full border-primary/30 hover:bg-primary/10"
-                  onClick={() => setShowNftModal(true)}
-                  disabled={isGeneratingName || isGeneratingCover}
-                >
-                  <ImageIcon className="w-5 h-5 mr-2" />
-                  Создать NFT
-                </Button>
-              </div>
-            ) : (
-              <div className="w-full space-y-2">
-                <Button
-                  size="lg"
-                  className="w-full h-auto py-3 px-4 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition-transform whitespace-normal"
-                  onClick={startCreating}
-                  disabled={isCreating || gameState.energy < ENERGY_COST}
-                >
-                  <Play className="w-5 h-5 mr-2 flex-shrink-0" />
-                  <span>Начать создание (-{ENERGY_COST} энергии)</span>
-                </Button>
-                {gameState.energy < ENERGY_COST && (
-                  <p className="text-xs text-muted-foreground">Недостаточно энергии. Подожди немного!</p>
-                )}
-              </div>
-            )}
           </div>
-        </Card>
-
-        <div className="grid grid-cols-3 gap-3">
-          <Card className="p-4 text-center shadow-md">
-            <p className="text-2xl font-bold text-primary">{gameState.beats.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Битов создано</p>
-          </Card>
-          <Card className="p-4 text-center shadow-md">
-            <p className="text-2xl font-bold text-secondary">${gameState.totalBeatsEarnings || 0}</p>
-            <p className="text-xs text-muted-foreground mt-1">Заработано</p>
-          </Card>
-          <Card className="p-4 text-center shadow-md">
-            <p className="text-2xl font-bold text-accent">{gameState.reputation}</p>
-            <p className="text-xs text-muted-foreground mt-1">Репутация</p>
-          </Card>
         </div>
 
-        {gameState.beats.length > 0 && (
-          <div>
-            <div className="mb-3">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Твои биты</h3>
-            </div>
-            <div className="space-y-2">
-              {gameState.beats.map((beat) => (
-                <Card key={beat.id} className="p-4 shadow-sm">
-                  <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
-                      <img
-                        src={beat.cover || "/placeholder.svg"}
-                        alt={beat.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm">{beat.name}</p>
-                      <p className="text-xs text-muted-foreground">Качество: {beat.quality}%</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-primary">${beat.price}</p>
-                      <p className="text-xs text-muted-foreground">Продано</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* NFT Mint Modal */}
+        {showNftModal && currentBeat && <NftMintModal beat={currentBeat} onClose={() => setShowNftModal(false)} />}
       </div>
-
-      {/* NFT Mint Modal */}
-      {showNftModal && currentBeat && <NftMintModal beat={currentBeat} onClose={() => setShowNftModal(false)} />}
-    </div>
+    </DesktopLayout>
   )
 }
