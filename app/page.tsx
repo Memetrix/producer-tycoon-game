@@ -48,7 +48,7 @@ export default function Page() {
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE)
   const [currentScreen, setCurrentScreen] = useState<Screen>("home")
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [isRhythmGameActive, setIsRhythmGameActive] = useState(false) // Add state to track if rhythm game is active
+  const [isRhythmGameActive, setIsRhythmGameActive] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showCharacterSelection, setShowCharacterSelection] = useState(false)
   const [showAvatarConfirmation, setShowAvatarConfirmation] = useState(false)
@@ -89,30 +89,49 @@ export default function Page() {
     if (isAuthenticated !== true) return
 
     async function initGame() {
-      const savedState = await loadGameState()
-      if (savedState) {
-        const artistIncome = getTotalPassiveIncome(savedState.artists)
-        const labelIncome = getLabelDealsPassiveIncome(savedState.labelDeals)
-        const totalPassiveIncome = artistIncome + labelIncome
-        const offlineData = calculateOfflineEarnings(savedState.lastActive, totalPassiveIncome)
-
-        if (offlineData.earnings > 0) {
-          savedState.money += offlineData.earnings
-          savedState.totalMoneyEarned += offlineData.earnings
-          setOfflineEarnings(offlineData)
-        }
-
-        savedState.lastActive = new Date().toISOString()
-
-        setGameState(savedState)
-        setShowOnboarding(false)
-        setShowCharacterSelection(false)
-        setShowAvatarConfirmation(false)
-        setShowTutorial(false)
-      } else {
+      const timeoutId = setTimeout(() => {
+        console.error("[v0] Game state loading timeout - showing onboarding")
         setShowOnboarding(true)
+        setIsLoading(false)
+      }, 10000) // 10 second timeout
+
+      try {
+        console.log("[v0] Loading game state...")
+        const savedState = await loadGameState()
+
+        clearTimeout(timeoutId)
+
+        if (savedState) {
+          console.log("[v0] Game state loaded successfully")
+          const artistIncome = getTotalPassiveIncome(savedState.artists)
+          const labelIncome = getLabelDealsPassiveIncome(savedState.labelDeals)
+          const totalPassiveIncome = artistIncome + labelIncome
+          const offlineData = calculateOfflineEarnings(savedState.lastActive, totalPassiveIncome)
+
+          if (offlineData.earnings > 0) {
+            savedState.money += offlineData.earnings
+            savedState.totalMoneyEarned += offlineData.earnings
+            setOfflineEarnings(offlineData)
+          }
+
+          savedState.lastActive = new Date().toISOString()
+
+          setGameState(savedState)
+          setShowOnboarding(false)
+          setShowCharacterSelection(false)
+          setShowAvatarConfirmation(false)
+          setShowTutorial(false)
+        } else {
+          console.log("[v0] No saved state found - showing onboarding")
+          setShowOnboarding(true)
+        }
+      } catch (error) {
+        console.error("[v0] Failed to load game state:", error)
+        clearTimeout(timeoutId)
+        setShowOnboarding(true)
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
     initGame()
   }, [isAuthenticated])
@@ -134,7 +153,7 @@ export default function Page() {
       setGameState((prev) => {
         const energyBonus = getTotalEnergyBonus(prev.artists)
         const skillRegenBonus = getSkillEnergyRegenBonus(prev.skills)
-        const baseRecovery = (ENERGY_CONFIG.ENERGY_REGEN_PER_MINUTE + skillRegenBonus) / 6 // Divided by 6 because interval runs every 10 seconds
+        const baseRecovery = (ENERGY_CONFIG.ENERGY_REGEN_PER_MINUTE + skillRegenBonus) / 6
         const bonusMultiplier = 1 + energyBonus / 100
         const recoveryAmount = baseRecovery * bonusMultiplier
 
@@ -142,8 +161,8 @@ export default function Page() {
         const skillMaxEnergyBonus = getSkillMaxEnergyBonus(prev.skills)
         maxEnergy = Math.floor(maxEnergy * (1 + skillMaxEnergyBonus))
 
-        if (prev.musicStyle === "electronic") maxEnergy += 30 // Electronic style bonus
-        if (prev.startingBonus === "energizer") maxEnergy += 50 // Energizer bonus
+        if (prev.musicStyle === "electronic") maxEnergy += 30
+        if (prev.startingBonus === "energizer") maxEnergy += 50
 
         const newEnergy = Math.min(maxEnergy, Math.round(prev.energy + recoveryAmount))
 
@@ -296,7 +315,6 @@ export default function Page() {
       setShowAvatarConfirmation(false)
       setPendingCharacter(null)
 
-      // Show tutorial for new players
       setShowTutorial(true)
     }
   }

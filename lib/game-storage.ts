@@ -13,153 +13,161 @@ async function getAuthenticatedUserId(): Promise<string | null> {
 export async function loadGameState(): Promise<GameState | null> {
   const supabase = createClient()
   const userId = await getAuthenticatedUserId()
-  if (!userId) return null
-
-  const { data: player, error: playerError } = await supabase.from("players").select("*").eq("user_id", userId).single()
-
-  if (playerError || !player) {
+  if (!userId) {
+    console.log("[v0] No authenticated user found")
     return null
   }
 
-  const { data: gameState, error: stateError } = await supabase
-    .from("game_state")
-    .select("*")
-    .eq("player_id", player.id)
-    .single()
+  const timeoutPromise = new Promise<null>((_, reject) => {
+    setTimeout(() => reject(new Error("Database query timeout")), 8000)
+  })
 
-  if (stateError || !gameState) {
+  try {
+    const playerPromise = supabase.from("players").select("*").eq("user_id", userId).single()
+
+    const { data: player, error: playerError } = (await Promise.race([playerPromise, timeoutPromise])) as any
+
+    if (playerError || !player) {
+      console.log("[v0] No player found or error:", playerError?.message)
+      return null
+    }
+
+    const statePromise = supabase.from("game_state").select("*").eq("player_id", player.id).single()
+
+    const { data: gameState, error: stateError } = (await Promise.race([statePromise, timeoutPromise])) as any
+
+    if (stateError || !gameState) {
+      console.log("[v0] No game state found or error:", stateError?.message)
+      return null
+    }
+
+    const { data: equipment } = await supabase.from("equipment").select("*").eq("player_id", player.id)
+
+    const { data: artistsData } = await supabase
+      .from("player_artists")
+      .select("artist_id, level")
+      .eq("player_id", player.id)
+
+    const { data: courses } = await supabase.from("player_courses").select("course_id").eq("player_id", player.id)
+
+    const { data: beats } = await supabase.from("beats").select("*").eq("player_id", player.id).eq("sold", false)
+
+    const equipmentMap: any = {
+      phone: 1,
+      headphones: 0,
+      microphone: 0,
+      computer: 0,
+      midi: 0,
+      audioInterface: 0,
+    }
+
+    equipment?.forEach((eq) => {
+      if (eq.equipment_type in equipmentMap) {
+        equipmentMap[eq.equipment_type] = eq.level
+      }
+    })
+
+    const artistsMap: any = {
+      "mc-flow": 0,
+      "lil-dreamer": 0,
+      "street-poet": 0,
+      "young-legend": 0,
+      "local-hero": 0,
+      "scene-leader": 0,
+      "city-star": 0,
+      "state-champion": 0,
+    }
+
+    artistsData?.forEach((artist) => {
+      if (artist.artist_id in artistsMap) {
+        artistsMap[artist.artist_id] = artist.level || 0
+      }
+    })
+
+    const dailyTasksCompleted = (gameState.daily_tasks_completed as string[]) || []
+    const trainingProgressArray = (gameState.training_progress as string[]) || []
+
+    const skillsArray = (gameState.skills_unlocked as string[]) || []
+    const beatContractsData = gameState.beat_contracts as any
+    const labelDealsArray = (gameState.label_deals as string[]) || []
+
+    const lastActiveFromDB = gameState.last_active || gameState.updated_at || new Date().toISOString()
+    const now = new Date()
+    const lastActiveDate = new Date(lastActiveFromDB)
+    const timeDiffMs = now.getTime() - lastActiveDate.getTime()
+    const timeDiffMinutes = Math.floor(timeDiffMs / 60000)
+
+    const baseEnergy = gameState.energy || 0
+    const regeneratedEnergy = Math.min(100, baseEnergy + timeDiffMinutes)
+
+    const currentStage = Math.min(6, getReputationTier(gameState.reputation))
+
+    console.log("[v0] Successfully loaded game state for player:", player.character_name)
+
+    return {
+      playerId: player.id,
+      playerName: player.character_name,
+      playerAvatar: player.character_avatar,
+      musicStyle: player.music_style || "",
+      startingBonus: player.starting_bonus || "",
+      money: gameState.money,
+      reputation: gameState.reputation,
+      energy: regeneratedEnergy,
+      currentStage: currentStage,
+      stageProgress: 0,
+      totalBeatsCreated: gameState.total_beats_created,
+      totalMoneyEarned: gameState.total_money_earned,
+      totalBeatsEarnings: gameState.total_beats_earnings || 0,
+      totalArtistsHired: 0,
+      equipment: equipmentMap,
+      beats:
+        beats?.map((b) => ({
+          id: b.id,
+          name: b.title,
+          price: b.price,
+          quality: b.quality,
+          cover: b.cover_url,
+          createdAt: new Date(b.created_at).getTime(),
+        })) || [],
+      artists: artistsMap,
+      purchasedUpgrades: courses?.map((c) => c.course_id) || [],
+      dailyTasks: {
+        lastCompletedDate: gameState.daily_tasks_last_reset || "",
+        currentStreak: gameState.daily_streak || 0,
+        completedTaskIds: dailyTasksCompleted,
+        claimedStreakRewards: [],
+      },
+      trainingProgress: {
+        freeSeminar: trainingProgressArray.includes("seminar"),
+        freeBookChapter: trainingProgressArray.includes("bookChapter"),
+      },
+      skills: {
+        caffeineRush: skillsArray.includes("caffeineRush"),
+        stamina: skillsArray.includes("stamina"),
+        flowState: skillsArray.includes("flowState"),
+        earTraining: skillsArray.includes("earTraining"),
+        musicTheory: skillsArray.includes("musicTheory"),
+        perfectionist: skillsArray.includes("perfectionist"),
+        negotiator: skillsArray.includes("negotiator"),
+        businessman: skillsArray.includes("businessman"),
+        mogul: skillsArray.includes("mogul"),
+      },
+      beatContracts: {
+        availableContracts: (beatContractsData?.available as string[]) || [],
+        activeContracts: (beatContractsData?.active as string[]) || [],
+        completedContracts: (beatContractsData?.completed as string[]) || [],
+        lastRefreshDate: beatContractsData?.lastRefresh || "",
+      },
+      labelDeals: {
+        indie: labelDealsArray.includes("indie"),
+        small: labelDealsArray.includes("small"),
+        major: labelDealsArray.includes("major"),
+      },
+      lastActive: lastActiveFromDB,
+    }
+  } catch (error) {
+    console.error("[v0] Error loading game state:", error)
     return null
-  }
-
-  const { data: equipment } = await supabase.from("equipment").select("*").eq("player_id", player.id)
-
-  const { data: artistsData } = await supabase
-    .from("player_artists")
-    .select("artist_id, level")
-    .eq("player_id", player.id)
-
-  const { data: courses } = await supabase.from("player_courses").select("course_id").eq("player_id", player.id)
-
-  const { data: beats } = await supabase.from("beats").select("*").eq("player_id", player.id).eq("sold", false)
-
-  const equipmentMap: any = {
-    phone: 1,
-    headphones: 0,
-    microphone: 0,
-    computer: 0,
-    midi: 0,
-    audioInterface: 0,
-  }
-
-  equipment?.forEach((eq) => {
-    if (eq.equipment_type in equipmentMap) {
-      equipmentMap[eq.equipment_type] = eq.level
-    }
-  })
-
-  const artistsMap: any = {
-    // Tier 1: Street (0-500 rep)
-    "mc-flow": 0,
-    "lil-dreamer": 0,
-    "street-poet": 0,
-    "young-legend": 0,
-    // Tier 2: Local (500-2000 rep)
-    "local-hero": 0,
-    "scene-leader": 0,
-    // Tier 3: Regional (2000-5000 rep)
-    "city-star": 0,
-    "state-champion": 0,
-  }
-
-  artistsData?.forEach((artist) => {
-    if (artist.artist_id in artistsMap) {
-      artistsMap[artist.artist_id] = artist.level || 0
-    }
-  })
-
-  const dailyTasksCompleted = (gameState.daily_tasks_completed as string[]) || []
-  const trainingProgressArray = (gameState.training_progress as string[]) || []
-
-  // Phase 3: Skills, Contracts, Labels
-  const skillsArray = (gameState.skills_unlocked as string[]) || []
-  const beatContractsData = gameState.beat_contracts as any
-  const labelDealsArray = (gameState.label_deals as string[]) || []
-
-  const lastActiveFromDB = gameState.last_active || gameState.updated_at || new Date().toISOString()
-  const now = new Date()
-  const lastActiveDate = new Date(lastActiveFromDB)
-  const timeDiffMs = now.getTime() - lastActiveDate.getTime()
-  const timeDiffMinutes = Math.floor(timeDiffMs / 60000)
-
-  const baseEnergy = gameState.energy || 0
-  const regeneratedEnergy = Math.min(100, baseEnergy + timeDiffMinutes)
-
-  // FIXED: currentStage now calculated from reputation tier (Stage 1-6 based on reputation)
-  const currentStage = Math.min(6, getReputationTier(gameState.reputation))
-
-  return {
-    playerId: player.id, // Added player ID to game state
-    playerName: player.character_name,
-    playerAvatar: player.character_avatar,
-    musicStyle: player.music_style || "",
-    startingBonus: player.starting_bonus || "",
-    money: gameState.money,
-    reputation: gameState.reputation,
-    energy: regeneratedEnergy,
-    currentStage: currentStage, // Calculated from reputation, not from DB
-    stageProgress: 0, // Deprecated: stageProgress no longer used
-    totalBeatsCreated: gameState.total_beats_created,
-    totalMoneyEarned: gameState.total_money_earned,
-    totalBeatsEarnings: gameState.total_beats_earnings || 0,
-    totalArtistsHired: 0, // RENAMED: was totalCollabs
-    equipment: equipmentMap,
-    beats:
-      beats?.map((b) => ({
-        id: b.id,
-        name: b.title,
-        price: b.price,
-        quality: b.quality,
-        cover: b.cover_url,
-        createdAt: new Date(b.created_at).getTime(),
-      })) || [],
-    artists: artistsMap,
-    purchasedUpgrades: courses?.map((c) => c.course_id) || [],
-    dailyTasks: {
-      lastCompletedDate: gameState.daily_tasks_last_reset || "",
-      currentStreak: gameState.daily_streak || 0,
-      completedTaskIds: dailyTasksCompleted,
-      claimedStreakRewards: [],
-    },
-    trainingProgress: {
-      freeSeminar: trainingProgressArray.includes("seminar"),
-      freeBookChapter: trainingProgressArray.includes("bookChapter"),
-    },
-    skills: {
-      // Energy Branch
-      caffeineRush: skillsArray.includes("caffeineRush"),
-      stamina: skillsArray.includes("stamina"),
-      flowState: skillsArray.includes("flowState"),
-      // Quality Branch
-      earTraining: skillsArray.includes("earTraining"),
-      musicTheory: skillsArray.includes("musicTheory"),
-      perfectionist: skillsArray.includes("perfectionist"),
-      // Money Branch
-      negotiator: skillsArray.includes("negotiator"),
-      businessman: skillsArray.includes("businessman"),
-      mogul: skillsArray.includes("mogul"),
-    },
-    beatContracts: {
-      availableContracts: (beatContractsData?.available as string[]) || [],
-      activeContracts: (beatContractsData?.active as string[]) || [],
-      completedContracts: (beatContractsData?.completed as string[]) || [],
-      lastRefreshDate: beatContractsData?.lastRefresh || "",
-    },
-    labelDeals: {
-      indie: labelDealsArray.includes("indie"),
-      small: labelDealsArray.includes("small"),
-      major: labelDealsArray.includes("major"),
-    },
-    lastActive: lastActiveFromDB,
   }
 }
 
