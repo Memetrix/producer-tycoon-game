@@ -19,8 +19,8 @@ export function DesktopLayout({ children, maxWidth = "2xl", className = "" }: De
   }
 
   return (
-    <div className={`w-full lg:pl-64 ${className}`}>
-      <div className={`mx-auto ${maxWidthClasses[maxWidth]} lg:px-8 lg:py-6`}>{children}</div>
+    <div className={`w-full bg-background lg:pl-64 ${className}`}>
+      <div className={`mx-auto bg-background ${maxWidthClasses[maxWidth]} lg:px-8 lg:py-6`}>{children}</div>
     </div>
   )
 }

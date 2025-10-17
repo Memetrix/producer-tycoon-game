@@ -128,10 +128,15 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  /* Ensure html and body have black background in dark mode */
+  /* Ensure html and body have black background in dark mode with min-height */
   html,
   body {
-    @apply bg-background;
+    @apply bg-background min-h-screen;
+  }
+  /* Ensure root div also has black background */
+  #__next,
+  body > div {
+    @apply bg-background min-h-screen;
   }
 }
 

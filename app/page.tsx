@@ -405,7 +405,9 @@ export default function Page() {
         <DesktopSidebar currentScreen={currentScreen} onNavigate={navigateTo} gameState={gameState} />
       )}
 
-      <div className={`h-screen transition-opacity duration-150 ${isTransitioning ? "opacity-0" : "opacity-100"}`}>
+      <div
+        className={`min-h-screen bg-background transition-opacity duration-150 ${isTransitioning ? "opacity-0" : "opacity-100"}`}
+      >
         {currentScreen === "home" && (
           <HomeScreen
             gameState={gameState}

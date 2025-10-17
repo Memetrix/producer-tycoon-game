@@ -338,25 +338,6 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
               })}
             </div>
           </div>
-
-          <Card className="p-4 bg-gradient-to-br from-secondary/10 to-accent/10 border-secondary/30 shadow-md">
-            <div className="flex items-start gap-3">
-              <div className="text-3xl">🏆</div>
-              <div className="flex-1">
-                <h3 className="font-semibold mb-1">Путь к успеху</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Улучшай оборудование, создавай качественные биты и зарабатывай репутацию. Каждый апгрейд приближает
-                  тебя к статусу мирового продюсера!
-                </p>
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">Следующий этап:</span>
-                  <span className="font-semibold text-secondary">
-                    {currentStage === 1 ? "Домашняя студия" : "Первый контракт"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Card>
         </div>
       </div>
     </DesktopLayout>
