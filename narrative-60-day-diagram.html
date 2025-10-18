@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Producer Tycoon - 60-Day Narrative Timeline</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 50%, #0a0a0f 100%);
+            color: #e0e0e0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 1.2rem;
+            margin-bottom: 50px;
+        }
+
+        .warning {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 10px;
+        }
+
+        .warning h3 {
+            color: #ef4444;
+            margin-bottom: 10px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .chart-container h2 {
+            color: #8b5cf6;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        canvas {
+            max-height: 400px;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #8b5cf6, #ec4899);
+            transform: translateX(-50%);
+        }
+
+        .week-block {
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .week-header {
+            text-align: center;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .events {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            position: relative;
+        }
+
+        .event {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .event:hover {
+            border-color: #8b5cf6;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .event.left {
+            grid-column: 1;
+        }
+
+        .event.right {
+            grid-column: 2;
+        }
+
+        .event-day {
+            display: inline-block;
+            background: #8b5cf6;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .event-tier {
+            display: inline-block;
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        .event-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            margin: 10px 0;
+        }
+
+        .event-description {
+            color: #ccc;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .event-unlock {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #8b5cf6;
+        }
+
+        .event-emotion {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #ec4899;
+        }
+
+        .choice-badge {
+            display: inline-block;
+            background: rgba(236, 72, 153, 0.2);
+            color: #ec4899;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+
+        .player-paths {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .path-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid;
+        }
+
+        .path-card.casual {
+            border-color: #95e1d3;
+        }
+
+        .path-card.active {
+            border-color: #667eea;
+        }
+
+        .path-card.whale {
+            border-color: #f093fb;
+        }
+
+        .path-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .path-card .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .branching {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+
+        .branching h4 {
+            color: #f59e0b;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 1200px) {
+            .events {
+                grid-template-columns: 1fr;
+            }
+            .event.left, .event.right {
+                grid-column: 1;
+            }
+            .timeline::before {
+                left: 30px;
+            }
+            .player-paths {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 60-дневная нарративная timeline</h1>
+        <div class="subtitle">Producer Tycoon — Эпизодический геймплей</div>
+
+        <div class="warning">
+            <h3>⚠️ Важно!</h3>
+            <p><strong>Игра это НЕ 3-часовая сессия.</strong></p>
+            <p>Это <strong>60-дневный эпизодический journey</strong> с daily check-ins (2-12 раз в день в зависимости от типа игрока).</p>
+            <p>Нарративные сцены появляются <strong>раз в несколько дней</strong>, между ними — grind, progression, equipment upgrades.</p>
+        </div>
+
+        <div class="player-paths">
+            <div class="path-card casual">
+                <h3>😌 Casual Player</h3>
+                <div class="stat">
+                    <span>Логины:</span>
+                    <strong>2/день</strong>
+                </div>
+                <div class="stat">
+                    <span>Playtime:</span>
+                    <strong>10-20 мин/день</strong>
+                </div>
+                <div class="stat">
+                    <span>Day 60 Tier:</span>
+                    <strong>4/6</strong>
+                </div>
+                <div class="stat">
+                    <span>Total time:</span>
+                    <strong>~15 часов</strong>
+                </div>
+            </div>
+
+            <div class="path-card active">
+                <h3>🎯 Active Player</h3>
+                <div class="stat">
+                    <span>Логины:</span>
+                    <strong>6/день</strong>
+                </div>
+                <div class="stat">
+                    <span>Playtime:</span>
+                    <strong>30-60 мин/день</strong>
+                </div>
+                <div class="stat">
+                    <span>Day 60 Tier:</span>
+                    <strong>4/6</strong>
+                </div>
+                <div class="stat">
+                    <span>Total time:</span>
+                    <strong>~30-40 часов</strong>
+                </div>
+            </div>
+
+            <div class="path-card whale">
+                <h3>🐋 Whale Player</h3>
+                <div class="stat">
+                    <span>Логины:</span>
+                    <strong>12+/день</strong>
+                </div>
+                <div class="stat">
+                    <span>Playtime:</span>
+                    <strong>2-4 часа/день</strong>
+                </div>
+                <div class="stat">
+                    <span>Day 60 Tier:</span>
+                    <strong>5/6</strong>
+                </div>
+                <div class="stat">
+                    <span>Total time:</span>
+                    <strong>~80-120 часов</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>📊 Эмоциональная интенсивность (60 дней)</h2>
+            <canvas id="emotionalChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <h2>🏆 Tier Progression по типам игроков</h2>
+            <canvas id="tierChart"></canvas>
+        </div>
+
+        <div class="timeline">
+            <!-- WEEK 1 -->
+            <div class="week-block">
+                <div class="week-header">📍 WEEK 1 (День 1-7): "Первые шаги"</div>
+
+                <div class="events">
+                    <div class="event left">
+                        <span class="event-day">День 1</span>
+                        <span class="event-tier">Tier 1 (0 rep)</span>
+                        <div class="event-title">Первая встреча с MC Flow</div>
+                        <div class="event-description">
+                            Tutorial — первое создание бита. MC Flow скептичен: "Сделай мне что-нибудь. Если отстой — я сваливаю."
+                        </div>
+                        <div class="event-unlock">
+                            <strong>Unlock:</strong> MC Flow как первый клиент
+                        </div>
+                        <div class="event-emotion">
+                            😰 Anxiety → 😌 Relief/Disappointment
+                        </div>
+                    </div>
+
+                    <div class="event right">
+                        <span class="event-day">День 2-3</span>
+                        <span class="event-tier">Tier 1 (100-300 rep)</span>
+                        <div class="event-title">Building Confidence</div>
+                        <div class="event-description">
+                            Daily grind montage: создание битов, первые $500, upgrade оборудования. Small wins накапливаются.
+                        </div>
+                        <div class="event-unlock">
+                            <strong>Unlock:</strong> Daily tasks система
+                        </div>
+                    </div>
+
+                    <div class="event left">
+                        <span class="event-day">День 4-5</span>
+                        <span class="event-tier">Tier 1→2 (400-500 rep)</span>
+                        <div class="event-title">Young Legend появляется</div>
+                        <div class="event-description">
+                            Rival producer троллит тебя: "@ТвоеИмя милый битик. Но когда будешь готов к большой лиге..."
+                        </div>
+                        <div class="choice-badge">💬 Polite</div>
+                        <div class="choice-badge">🔥 Clap back</div>
+                        <div class="choice-badge">🤐 Ignore</div>
+                        <div class="event-emotion">
+                            😤 Pride → 🔥 Challenge
+                        </div>
+                    </div>
+
+                    <div class="event right">
+                        <span class="event-day">День 6-7</span>
+                        <span class="event-tier">Tier 2 (500-600 rep)</span>
+                        <div class="event-title">Tier 2 Unlock: "Местный продюсер"</div>
+                        <div class="event-description">
+                            500 reputation достигнута! Street Poet DM: "Heard you're making moves. Let's talk."
+                        </div>
+                        <div class="event-unlock">
+                            <strong>Unlock:</strong> Tier 2 artists (Street Poet, Local Hero, Scene Leader)
+                        </div>
+                        <div class="event-emotion">
+                            🎉 Recognition → 💼 Opportunity
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WEEK 2 -->
+            <div class="week-block">
+                <div class="week-header">📍 WEEK 2 (День 8-14): "Расширение круга"</div>
+
+                <div class="events">
+                    <div class="event left">
+                        <span class="event-day">День 8-10</span>
+                        <span class="event-tier">Tier 2 (600-1000 rep)</span>
+                        <div class="event-title">Street Poet — "Падший наставник"</div>
+                        <div class="event-description">
+                            11 PM meeting: "10 лет назад я был звездой. Теперь... ничто." Просит $200 на срочные нужды.
+                        </div>
+                        <div class="choice-badge">💵 Give money (enabler)</div>
+                        <div class="choice-badge">🏠 Offer shelter (redemption)</div>
+                        <div class="choice-badge">🚶 Walk away (miss arc)</div>
+                        <div class="event-emotion">
+                            😢 Compassion vs 🛡️ Self-preservation
+                        </div>
+                    </div>
+
+                    <div class="event right">
+                        <span class="event-day">День 11-13</span>
+                        <span class="event-tier">Tier 2 (1000-1500 rep)</span>
+                        <div class="event-title">Lil Dreamer Introduction</div>
+                        <div class="event-description">
+                            DM: "I know I'm nobody, but... can you listen to my demo?" Incredible raw talent, плохой mix.
+                        </div>
+                        <div class="choice-badge">💚 "This is amazing"</div>
+                        <div class="choice-badge">💬 "Good but needs work"</div>
+                        <div class="choice-badge">🚫 Ignore</div>
+                        <div class="event-emotion">
+                            ✨ Discovery → 🤩 Excitement
+                        </div>
+                    </div>
+
+                    <div class="event left">
+                        <span class="event-day">День 14</span>
+                        <span class="event-tier">Tier 2 (1500-2000 rep)</span>
+                        <div class="event-title">7-Day Streak Reward</div>
+                        <div class="event-description">
+                            MC Flow звонит: "Week down. You're still here. Most people quit by now. You got heart." +$500, +100 rep
+                        </div>
+                        <div class="event-emotion">
+                            💪 Pride → 🔥 Motivation
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WEEK 3 -->
+            <div class="week-block">
+                <div class="week-header">📍 WEEK 3 (День 15-21): "Viral Moment" 🔥</div>
+
+                <div class="events">
+                    <div class="event left">
+                        <span class="event-day">День 15-17</span>
+                        <span class="event-tier">Tier 3 (2000-2500 rep)</span>
+                        <div class="event-title">Tier 3 Unlock: "Региональный мастер"</div>
+                        <div class="event-description">
+                            2,000 reputation! Montage: твои биты в клубах, на радио, в Instagram stories. Sofia (A&R Empire Records): "We need to talk."
+                        </div>
+                        <div class="event-unlock">
+                            <strong>Unlock:</strong> Sofia arc, Industry attention
+                        </div>
+                        <div class="event-emotion">
+                            🎊 Success → 😰 Pressure
+                        </div>
+                    </div>
+
+                    <div class="event right">
+                        <span class="event-day">День 18-19</span>
+                        <span class="event-tier">Tier 3 (2500-3000 rep)</span>
+                        <div class="event-title">FIRST VIRAL HIT 🚀</div>
+                        <div class="event-description">
+                            2 AM: MC Flow звонит screaming: "ТРЕК ВЗОРВАЛСЯ! 50K PLAYS ЗА НОЧЬ!" TikTok танцуют под твой бит. +500 rep, +$2000.
+                        </div>
+                        <div class="event-unlock">
+                            <strong>Unlock:</strong> Viral track achievement
+                        </div>
+                        <div class="event-emotion">
+                            🎉🎉🎉 EUPHORIA → ✅ Validation
+                        </div>
+                    </div>
+
+                    <div class="event left">
+                        <span class="event-day">День 20-21</span>
+                        <span class="event-tier">Tier 3 (3000-3500 rep)</span>
+                        <div class="event-title">Sofia's Offer — BRANCHING POINT</div>
+                        <div class="event-description">
+                            Empire Records офис: "$50,000 advance. Но... no more MC Flow. He's not our brand."
+                        </div>
+                        <div class="branching">
+                            <h4>⚠️ MAJOR CHOICE — Affects entire rest of game!</h4>
+                            <div class="choice-badge">💰 Betrayal Route (fast money)</div>
+                            <div class="choice-badge">🤝 Loyalty Route (indie path)</div>
+                            <div class="choice-badge">💡 Negotiate (hard skill check)</div>
+                        </div>
+                        <div class="event-emotion">
+                            😈 Temptation → 😰 Moral dilemma
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WEEK 4 -->
+            <div class="week-block">
+                <div class="week-header">📍 WEEK 4 (День 22-28): "Последствия выбора"</div>
+
+                <div class="events">
+                    <div class="event left">
+                        <span class="event-day">День 22-24</span>
+                        <span class="event-tier">Tier 3-4 (3500-5000 rep)</span>
+                        <div class="event-title">ПУТЬ A: Isolation (если предал)</div>
+                        <div class="event-description">
+                            3 months later: $10K per beat, luxury apartment. Но MC Flow не отвечает. "They didn't need you. You needed them."
+                        </div>
+                        <div class="event-unlock">
+                            <strong>Unlock:</strong> Redemption arc trigger
+                        </div>
+                        <div class="event-emotion">
+                            💰 Success → 😢 Loneliness → 😔 Regret
+                        </div>
+                    </div>
+
+                    <div class="event right">
+                        <span class="event-day">День 22-24</span>
+                        <span class="event-tier">Tier 3 (3500-4000 rep)</span>
+                        <div class="event-title">ПУТЬ B: Brotherhood (если остался)</div>
+                        <div class="event-description">
+                            MC Flow плачет: "You refused $50K. For me?" Решение: создать свой indie label. "No CEO. Just us."
+                        </div>
+                        <div class="event-unlock">
+                            <strong>Unlock:</strong> Indie label creation path
+                        </div>
+                        <div class="event-emotion">
+                            💝 Sacrifice → 👨‍👩‍👧‍👦 Brotherhood
+                        </div>
+                    </div>
+
+                    <div class="event left">
+                        <span class="event-day">День 25-28</span>
+                        <span class="event-tier">Tier 3-4 (4000-5000 rep)</span>
+                        <div class="event-title">DJ Nova Introduction</div>
+                        <div class="event-description">
+                            Club midnight: Mysterious DJ с LED маской. "You. Producer. I need you. But you never ask my real name."
+                        </div>
+                        <div class="choice-badge">🤝 Accept mystery</div>
+                        <div class="choice-badge">🔍 Investigate</div>
+                        <div class="choice-badge">🚫 Refuse</div>
+                        <div class="event-emotion">
+                            🤔 Curiosity → 🕵️ Intrigue
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MONTH 2 -->
+            <div class="week-block">
+                <div class="week-header">📍 MONTH 2 (День 29-60): "Кульминация историй"</div>
+
+                <div class="events">
+                    <div class="event left">
+                        <span class="event-day">День 30</span>
+                        <span class="event-tier">Tier 3-4 (4500-6000 rep)</span>
+                        <div class="event-title">Street Poet Redemption (если помогал)</div>
+                        <div class="event-description">
+                            Первый концерт за 10 лет. "Один человек поверил в меня. Этот трек для тебя." Standing ovation, слёзы.
+                        </div>
+                        <div class="event-unlock">
+                            <strong>Result:</strong> +1000 rep, Mentor unlocked
+                        </div>
+                        <div class="event-emotion">
+                            😭 Catharsis → 🙏 Gratitude
+                        </div>
+                    </div>
+
+                    <div class="event right">
+                        <span class="event-day">День 32</span>
+                        <span class="event-tier">Tier 4 (5000+ rep)</span>
+                        <div class="event-title">Lil Dreamer's Crisis</div>
+                        <div class="event-description">
+                            "Врач сказал... я потеряю слух. Полностью. Музыка — это всё что у меня есть."
+                        </div>
+                        <div class="choice-badge">🎵 Help transition to producing</div>
+                        <div class="choice-badge">💔 Too much burden</div>
+                        <div class="event-emotion">
+                            💔 Heartbreak → 💪 Resilience
+                        </div>
+                    </div>
+
+                    <div class="event left">
+                        <span class="event-day">День 40</span>
+                        <span class="event-tier">Tier 4 (6000-10000 rep)</span>
+                        <div class="event-title">Industry Awards Night — CONVERGENCE 🏆</div>
+                        <div class="event-description">
+                            ВСЕ персонажи вместе. MC Flow wins (если loyalty). Street Poet presents award. Young Legend показывает respect. DJ Nova reveals identity (если high rel). Lil Dreamer танцует (deaf).
+                        </div>
+                        <div class="event-emotion">
+                            🎊🎊🎊 CATHARSIS → ✨ Resolution
+                        </div>
+                    </div>
+
+                    <div class="event right">
+                        <span class="event-day">День 46-60</span>
+                        <span class="event-tier">Tier 4-5 Post-game</span>
+                        <div class="event-title">Finishing Character Arcs + TGE Prep</div>
+                        <div class="event-description">
+                            Casual/Active: Complete Tier 4 story arcs. Whale: Tier 5 international content, Black Star collab, NFTs, leaderboards.
+                        </div>
+                    </div>
+
+                    <div class="event left" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2)); border: 3px solid #8b5cf6;">
+                        <span class="event-day">День 60</span>
+                        <span class="event-tier">TGE EVENT 🚀</span>
+                        <div class="event-title" style="font-size: 1.5rem;">MASSIVE FINALE — Token Generation Event</div>
+                        <div class="event-description" style="font-size: 1.1rem;">
+                            <strong>$BEAT token launches!</strong><br><br>
+                            <strong>TRUE ENDING (loyalty):</strong> Indie label success, all 6 characters = family, changed industry<br>
+                            <strong>REDEMPTION ENDING:</strong> Forgiveness earned, rejoined friends, wisdom gained<br>
+                            <strong>CORPORATE ENDING:</strong> Rich, lonely, hollow success<br><br>
+                            <em>Post-credits: MC Flow: "Yo, продюсер! У нас новый артист. Приходи послушать!"</em>
+                        </div>
+                        <div class="event-emotion" style="font-size: 1.2rem;">
+                            🎉🏆✨ THE MUSIC NEVER STOPS 🎵🎶🎼
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>🎯 Narrative Pacing: Сцены по неделям</h2>
+            <canvas id="scenesChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Emotional Intensity Chart
+        const emotionalCtx = document.getElementById('emotionalChart');
+        new Chart(emotionalCtx, {
+            type: 'line',
+            data: {
+                labels: ['Day 1', 'Day 7', 'Day 14', 'Day 21', 'Day 28', 'Day 35', 'Day 40', 'Day 45', 'Day 50', 'Day 55', 'Day 60'],
+                datasets: [{
+                    label: 'Emotional Intensity',
+                    data: [2, 4, 4, 9, 5, 6, 9, 5, 7, 8, 10],
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#8b5cf6'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const labels = [
+                                    'Tutorial anxiety',
+                                    'First streak',
+                                    'Tier 2 unlock',
+                                    'Sofia offer (PEAK DRAMA)',
+                                    'Consequences vary',
+                                    'Arc resolutions',
+                                    'Awards night CLIMAX',
+                                    'Breathing',
+                                    'Building',
+                                    'Rising',
+                                    'TGE MASSIVE EVENT'
+                                ];
+                                return labels[context.dataIndex] + ': ' + context.parsed.y + '/10';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: { color: '#888' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    x: {
+                        ticks: { color: '#888' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    }
+                }
+            }
+        });
+
+        // Tier Progression Chart
+        const tierCtx = document.getElementById('tierChart');
+        const casualData = [1,1,2,2,2,2,3,3,3,3,3,4];
+        const activeData = [1,2,2,3,3,4,4,4,4,4,4,4];
+        const whaleData = [1,2,3,3,4,4,5,5,5,5,5,5];
+
+        new Chart(tierCtx, {
+            type: 'line',
+            data: {
+                labels: ['Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30', 'Day 35', 'Day 40', 'Day 45', 'Day 50', 'Day 55', 'Day 60'],
+                datasets: [
+                    {
+                        label: 'Casual (F2P)',
+                        data: casualData,
+                        borderColor: '#95e1d3',
+                        backgroundColor: 'rgba(149, 225, 211, 0.1)',
+                        stepped: true,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Active ($10-30)',
+                        data: activeData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        stepped: true,
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Whale ($100+)',
+                        data: whaleData,
+                        borderColor: '#f093fb',
+                        backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                        stepped: true,
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        labels: { color: '#e0e0e0' }
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 1,
+                        max: 6,
+                        ticks: {
+                            stepSize: 1,
+                            color: '#888',
+                            callback: function(value) {
+                                const tiers = ['', 'Tier 1', 'Tier 2', 'Tier 3', 'Tier 4', 'Tier 5', 'Tier 6'];
+                                return tiers[value];
+                            }
+                        },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    x: {
+                        ticks: { color: '#888' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    }
+                }
+            }
+        });
+
+        // Scenes per Week Chart
+        const scenesCtx = document.getElementById('scenesChart');
+        new Chart(scenesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5-6', 'Week 7-8', 'Week 9+'],
+                datasets: [{
+                    label: 'Major Narrative Scenes',
+                    data: [4, 3, 3, 3, 4, 3, 2],
+                    backgroundColor: [
+                        'rgba(139, 92, 246, 0.7)',
+                        'rgba(236, 72, 153, 0.7)',
+                        'rgba(245, 158, 11, 0.7)',
+                        'rgba(74, 222, 128, 0.7)',
+                        'rgba(139, 92, 246, 0.7)',
+                        'rgba(236, 72, 153, 0.7)',
+                        'rgba(245, 158, 11, 0.7)'
+                    ],
+                    borderColor: [
+                        '#8b5cf6',
+                        '#ec4899',
+                        '#f59e0b',
+                        '#4ade80',
+                        '#8b5cf6',
+                        '#ec4899',
+                        '#f59e0b'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#888',
+                            stepSize: 1
+                        },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    x: {
+                        ticks: { color: '#888' },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
