@@ -30,7 +30,7 @@ export const OSZ_TRACKS: OszTrack[] = [
     artist: "Suno AI",
     genre: "Electronic",
     type: "osz",
-    oszUrl: "/infernal-pulse.osz",
+    oszUrl: "/infernal-pulse-v2.osz",
   },
 ]
 
