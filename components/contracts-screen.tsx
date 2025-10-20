@@ -256,12 +256,10 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
                 size="sm"
                 onClick={refreshContracts}
                 className="w-full bg-transparent"
-                disabled={activeContractsList.length > 0}
+                disabled={false}
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
-                {activeContractsList.length > 0
-                  ? "Завершите активные контракты для обновления"
-                  : "Обновить доступные контракты"}
+                Обновить доступные контракты
               </Button>
             </div>
 

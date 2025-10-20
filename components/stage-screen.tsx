@@ -127,7 +127,7 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
   const calculatePrice = (quality: number, difficulty: number) => {
     const basePrice = 30
-    const qualityBonus = Math.floor((quality - 60) * 1.5)
+    const qualityBonus = Math.max(0, Math.floor((quality - 60) * 1.5)) // FIXED: prevent negative bonus
     const difficultyMultiplier = 1 + (difficulty - 1) * 0.3
     const reputationBonus = Math.floor(gameState.reputation * 0.05)
 

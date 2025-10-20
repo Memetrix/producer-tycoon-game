@@ -20,10 +20,10 @@ export interface CharacterData {
 
 const MUSIC_STYLES = [
   {
-    id: "hiphop",
+    id: "hip-hop",
     name: "Hip-Hop",
     description: "Классический хип-хоп с сильным битом",
-    bonus: "+$100 стартовых денег",
+    bonus: "+$200 стартовых денег", // FIXED: было +$100
     color: "from-orange-500 to-red-500",
     prompt: "hip hop music producer, urban style, confident pose, studio headphones",
   },
@@ -31,7 +31,7 @@ const MUSIC_STYLES = [
     id: "trap",
     name: "Trap",
     description: "Современный трэп с 808 басами",
-    bonus: "+50 репутации",
+    bonus: "+100 репутации", // FIXED: было +50
     color: "from-purple-500 to-pink-500",
     prompt: "trap music producer, modern streetwear, stylish, purple aesthetic",
   },
@@ -39,7 +39,7 @@ const MUSIC_STYLES = [
     id: "rnb",
     name: "R&B",
     description: "Мелодичный R&B с душой",
-    bonus: "Бесплатные наушники",
+    bonus: "Наушники lvl 1 + $100", // FIXED: было только "Бесплатные наушники"
     color: "from-blue-500 to-cyan-500",
     prompt: "rnb music producer, smooth style, elegant, soulful vibe",
   },
@@ -47,7 +47,7 @@ const MUSIC_STYLES = [
     id: "pop",
     name: "Pop",
     description: "Коммерческий поп для масс",
-    bonus: "+$50 и +25 репутации",
+    bonus: "+$150 и +50 репутации", // FIXED: было +$50 и +25 rep
     color: "from-pink-500 to-rose-500",
     prompt: "pop music producer, bright colorful style, energetic, mainstream appeal",
   },
@@ -55,7 +55,7 @@ const MUSIC_STYLES = [
     id: "electronic",
     name: "Electronic",
     description: "Электронная музыка и EDM",
-    bonus: "+20 макс. энергии",
+    bonus: "+30 энергии + $100", // FIXED: было +20 энергии без денег
     color: "from-cyan-500 to-blue-500",
     prompt: "electronic music producer, futuristic style, neon aesthetic, tech-savvy",
   },
@@ -66,28 +66,28 @@ const STARTING_BONUSES = [
     id: "producer",
     name: "Продюсер",
     description: "Мастер создания битов",
-    bonus: "Старт с улучшенными наушниками",
+    bonus: "Наушники lvl 1 + $200", // FIXED: было "Старт с улучшенными наушниками"
     icon: Music,
   },
   {
     id: "hustler",
     name: "Хастлер",
     description: "Умеешь делать деньги",
-    bonus: "+$200 к стартовому капиталу",
+    bonus: "+$400 к стартовому капиталу", // FIXED: было +$200
     icon: TrendingUp,
   },
   {
     id: "connector",
     name: "Коннектор",
     description: "Знаешь нужных людей",
-    bonus: "+100 репутации",
+    bonus: "+200 репутации + $100", // FIXED: было +100 rep без денег
     icon: Users,
   },
   {
     id: "energizer",
     name: "Энерджайзер",
     description: "Неиссякаемая энергия",
-    bonus: "+50 к максимальной энергии",
+    bonus: "+50 энергии + $200", // FIXED: было +50 энергии без денег
     icon: Zap,
   },
 ]
@@ -251,7 +251,7 @@ export function CharacterCreation({ onComplete }: CharacterCreationProps) {
                   style={
                     selectedStyle === style.id
                       ? {
-                          borderColor: `oklch(0.65 0.25 ${style.id === "hiphop" ? "30" : style.id === "trap" ? "320" : style.id === "rnb" ? "250" : style.id === "pop" ? "350" : "200"})`,
+                          borderColor: `oklch(0.65 0.25 ${style.id === "hip-hop" ? "30" : style.id === "trap" ? "320" : style.id === "rnb" ? "250" : style.id === "pop" ? "350" : "200"})`,
                         }
                       : undefined
                   }

@@ -235,7 +235,7 @@ export default function Page() {
       const genderText = pendingCharacter.gender === "male" ? "male" : "female"
 
       const MUSIC_STYLES = [
-        { id: "hiphop", prompt: "hip hop music producer, urban style, confident pose, studio headphones" },
+        { id: "hip-hop", prompt: "hip hop music producer, urban style, confident pose, studio headphones" },
         { id: "trap", prompt: "trap music producer, modern streetwear, stylish, purple aesthetic" },
         { id: "rnb", prompt: "rnb music producer, smooth style, elegant, soulful vibe" },
         { id: "pop", prompt: "pop music producer, bright colorful style, energetic, mainstream appeal" },
@@ -287,7 +287,7 @@ export default function Page() {
         startingBonus: pendingCharacter.startingBonus,
       }
 
-      if (pendingCharacter.musicStyle === "hiphop") {
+      if (pendingCharacter.musicStyle === "hip-hop") {
         updatedState.money += 200
       } else if (pendingCharacter.musicStyle === "trap") {
         updatedState.reputation += 100
