@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beatmap Visualizer - Infernal Pulse</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+        }
+        
+        #header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #ff006e;
+            text-shadow: 0 0 20px #ff006e;
+            margin-bottom: 10px;
+        }
+        
+        #controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: #8338ec;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: #a855f7;
+            transform: scale(1.05);
+        }
+        
+        button.active {
+            background: #ff006e;
+        }
+        
+        #game-area {
+            flex: 1;
+            position: relative;
+            border: 2px solid #8338ec;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .track {
+            position: absolute;
+            width: 23%;
+            height: 100%;
+            border-right: 1px solid rgba(131, 56, 236, 0.3);
+        }
+        
+        .track:last-child {
+            border-right: none;
+        }
+        
+        .track-0 { left: 0%; background: rgba(255, 0, 110, 0.05); }
+        .track-1 { left: 25%; background: rgba(131, 56, 236, 0.05); }
+        .track-2 { left: 50%; background: rgba(57, 255, 20, 0.05); }
+        .track-3 { left: 75%; background: rgba(255, 195, 0, 0.05); }
+        
+        .track-label {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            opacity: 0.5;
+        }
+        
+        .hit-zone {
+            position: absolute;
+            bottom: 100px;
+            left: 0;
+            right: 0;
+            height: 80px;
+            border: 3px solid #39ff14;
+            border-radius: 10px;
+            background: rgba(57, 255, 20, 0.1);
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
+        }
+        
+        .note {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            animation: fall linear;
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        .note.kick {
+            background: radial-gradient(circle, #ff006e, #8b0048);
+            border: 3px solid #ff006e;
+        }
+        
+        .note.snare {
+            background: radial-gradient(circle, #8338ec, #5a1fb3);
+            border: 3px solid #8338ec;
+        }
+        
+        .note.hihat {
+            background: radial-gradient(circle, #39ff14, #2db00f);
+            border: 3px solid #39ff14;
+        }
+        
+        .note.note {
+            background: radial-gradient(circle, #ffc300, #d19a00);
+            border: 3px solid #ffc300;
+        }
+        
+        @keyframes fall {
+            from {
+                top: -100px;
+            }
+            to {
+                top: 100%;
+            }
+        }
+        
+        #stats {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #8338ec;
+        }
+        
+        .stat {
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            color: #888;
+            font-size: 12px;
+        }
+        
+        .stat-value {
+            color: #39ff14;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        #timeline {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #8338ec;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff006e, #8338ec, #39ff14);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <h1>🎵 INFERNAL PULSE 🎵</h1>
+            <div>BPM: 132.5 | Duration: 2:17 | Notes: 354</div>
+        </div>
+        
+        <div id="controls">
+            <button id="btn-easy">EASY (112 notes)</button>
+            <button id="btn-normal" class="active">NORMAL (268 notes)</button>
+            <button id="btn-hard">HARD (354 notes)</button>
+            <button id="btn-play">▶ PLAY</button>
+        </div>
+        
+        <div id="game-area">
+            <div class="track track-0">
+                <div class="track-label">💥 KICK</div>
+            </div>
+            <div class="track track-1">
+                <div class="track-label">🔔 SNARE</div>
+            </div>
+            <div class="track track-2">
+                <div class="track-label">✨ HI-HAT</div>
+            </div>
+            <div class="track track-3">
+                <div class="track-label">🎹 NOTE</div>
+            </div>
+            <div class="hit-zone"></div>
+        </div>
+        
+        <div id="stats">
+            <div class="stat">
+                <div class="stat-label">TIME</div>
+                <div class="stat-value" id="time">0:00</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">NOTES</div>
+                <div class="stat-value" id="notes-count">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">DENSITY</div>
+                <div class="stat-value" id="density">0.0/s</div>
+            </div>
+        </div>
+        
+        <div id="timeline">
+            <div id="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        let beatmaps = {};
+        let currentBeatmap = null;
+        let currentDifficulty = 'normal';
+        let isPlaying = false;
+        let startTime = 0;
+        let animationFrame = null;
+        
+        // Загружаем beatmap'ы
+        async function loadBeatmaps() {
+            try {
+                const difficulties = ['easy', 'normal', 'hard'];
+                for (const diff of difficulties) {
+                    const response = await fetch(`beatmap_${diff}.json`);
+                    beatmaps[diff] = await response.json();
+                }
+                currentBeatmap = beatmaps['normal'];
+                console.log('Beatmaps loaded:', Object.keys(beatmaps));
+            } catch (e) {
+                console.error('Failed to load beatmaps:', e);
+                // Fallback: создаём демо beatmap
+                currentBeatmap = createDemoBeatmap();
+            }
+        }
+        
+        function createDemoBeatmap() {
+            const notes = [];
+            const types = ['kick', 'snare', 'hihat', 'note'];
+            for (let i = 0; i < 50; i++) {
+                notes.push({
+                    time: i * 0.5,
+                    type: types[i % types.length],
+                    strength: i % 3 === 0 ? 'strong' : 'weak'
+                });
+            }
+            return {
+                metadata: { duration: 25, bpm: 120 },
+                notes: notes
+            };
+        }
+        
+        // UI Controls
+        document.getElementById('btn-easy').onclick = () => switchDifficulty('easy');
+        document.getElementById('btn-normal').onclick = () => switchDifficulty('normal');
+        document.getElementById('btn-hard').onclick = () => switchDifficulty('hard');
+        document.getElementById('btn-play').onclick = togglePlay;
+        
+        function switchDifficulty(diff) {
+            if (isPlaying) stop();
+            currentDifficulty = diff;
+            currentBeatmap = beatmaps[diff] || currentBeatmap;
+            
+            // Update button states
+            document.querySelectorAll('#controls button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`btn-${diff}`).classList.add('active');
+            
+            updateStats();
+        }
+        
+        function togglePlay() {
+            if (isPlaying) {
+                stop();
+            } else {
+                play();
+            }
+        }
+        
+        function play() {
+            isPlaying = true;
+            startTime = Date.now();
+            document.getElementById('btn-play').textContent = '⏸ PAUSE';
+            spawnNotes();
+            animate();
+        }
+        
+        function stop() {
+            isPlaying = false;
+            document.getElementById('btn-play').textContent = '▶ PLAY';
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
+            // Clear all notes
+            document.querySelectorAll('.note').forEach(note => note.remove());
+        }
+        
+        function spawnNotes() {
+            const gameArea = document.getElementById('game-area');
+            const fallDuration = 3; // seconds for note to fall
+            
+            currentBeatmap.notes.forEach(noteData => {
+                setTimeout(() => {
+                    if (!isPlaying) return;
+                    
+                    const note = document.createElement('div');
+                    note.className = `note ${noteData.type}`;
+                    
+                    // Emoji по типу
+                    const emoji = {
+                        'kick': '💥',
+                        'snare': '🔔',
+                        'hihat': '✨',
+                        'note': '🎹'
+                    };
+                    note.textContent = emoji[noteData.type] || '🎵';
+                    
+                    // Позиция по треку
+                    const trackMap = { 'kick': 0, 'snare': 1, 'hihat': 2, 'note': 3 };
+                    const trackIndex = trackMap[noteData.type] || 0;
+                    const trackX = trackIndex * 25 + 12.5; // Center of track
+                    
+                    note.style.left = `${trackX}%`;
+                    note.style.transform = 'translateX(-50%)';
+                    note.style.animationDuration = `${fallDuration}s`;
+                    
+                    gameArea.appendChild(note);
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        note.remove();
+                    }, fallDuration * 1000);
+                    
+                }, noteData.time * 1000);
+            });
+        }
+        
+        function animate() {
+            if (!isPlaying) return;
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            const duration = currentBeatmap.metadata.duration;
+            const progress = Math.min((elapsed / duration) * 100, 100);
+            
+            // Update UI
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = Math.floor(elapsed % 60);
+            document.getElementById('time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Check if finished
+            if (elapsed >= duration) {
+                stop();
+                return;
+            }
+            
+            animationFrame = requestAnimationFrame(animate);
+        }
+        
+        function updateStats() {
+            const noteCount = currentBeatmap.notes.length;
+            const duration = currentBeatmap.metadata.duration;
+            const density = noteCount / duration;
+            
+            document.getElementById('notes-count').textContent = noteCount;
+            document.getElementById('density').textContent = density.toFixed(1) + '/s';
+        }
+        
+        // Initialize
+        loadBeatmaps().then(() => {
+            updateStats();
+        });
+    </script>
+</body>
+</html>

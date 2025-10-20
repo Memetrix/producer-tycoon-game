@@ -24,6 +24,14 @@ export const OSZ_TRACKS: OszTrack[] = [
     oszUrl:
       "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/music/35629%20Bomfunk%20MC%27s%20-%20Freestyler-7I5i2JFGpfgDIxwAsrjdz6nATwlLSg.osz",
   },
+  {
+    id: "infernal-pulse",
+    name: "Infernal Pulse",
+    artist: "Suno AI",
+    genre: "Electronic",
+    type: "osz",
+    oszUrl: "/infernal-pulse.osz",
+  },
 ]
 
 export async function loadSongsFromDatabase(): Promise<OszTrack[]> {
