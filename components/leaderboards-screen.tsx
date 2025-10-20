@@ -35,13 +35,11 @@ export function LeaderboardsScreen({ gameState, onNavigate }: LeaderboardsScreen
     const fetchLeaderboard = async () => {
       setLoading(true)
       try {
-        console.log("[v0] Fetching leaderboard, type:", selectedTab)
         const url = gameState.playerId
           ? `/api/leaderboards?type=${selectedTab}&playerId=${gameState.playerId}`
           : `/api/leaderboards?type=${selectedTab}`
 
         const response = await fetch(url)
-        console.log("[v0] Response status:", response.status)
 
         if (!response.ok) {
           const errorData = await response.json()
@@ -50,7 +48,6 @@ export function LeaderboardsScreen({ gameState, onNavigate }: LeaderboardsScreen
         }
 
         const data = await response.json()
-        console.log("[v0] Leaderboard data received:", data)
         setLeaderboard(data.leaderboard)
         setPlayerRank(data.playerRank)
         setPlayerScore(data.playerScore)

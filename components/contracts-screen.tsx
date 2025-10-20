@@ -6,10 +6,18 @@ import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
-import { getAvailableContracts, BEAT_CONTRACTS_POOL, getReputationTier } from "@/lib/game-state"
+import {
+  getAvailableContracts,
+  BEAT_CONTRACTS_POOL,
+  getReputationTier,
+  isContractCompleted,
+  isContractExpired,
+  getContractRemainingTime,
+} from "@/lib/game-state"
 import type React from "react"
 import { useState, useEffect } from "react"
 import { DesktopLayout } from "@/components/desktop-layout"
+import { saveGameState } from "@/lib/game-storage"
 
 interface ContractsScreenProps {
   gameState: GameState
@@ -49,6 +57,15 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
         lastRefreshDate: new Date().toISOString(),
       },
     }))
+
+    saveGameState({
+      ...gameState,
+      beatContracts: {
+        ...gameState.beatContracts,
+        availableContracts: newContracts,
+        lastRefreshDate: new Date().toISOString(),
+      },
+    })
   }
 
   const handleAcceptContract = (contractId: string) => {
@@ -57,36 +74,91 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
       return
     }
 
-    setGameState((prev) => ({
-      ...prev,
-      beatContracts: {
-        ...prev.beatContracts,
-        availableContracts: prev.beatContracts.availableContracts.filter((id) => id !== contractId),
-        activeContracts: [...prev.beatContracts.activeContracts, contractId],
+    const newProgress = {
+      ...gameState.beatContracts.contractProgress,
+      [contractId]: {
+        beatsCreated: 0,
+        startedAt: new Date().toISOString(),
+        qualifyingBeats: [],
       },
-    }))
+    }
+
+    const updatedState = {
+      ...gameState,
+      beatContracts: {
+        ...gameState.beatContracts,
+        availableContracts: gameState.beatContracts.availableContracts.filter((id) => id !== contractId),
+        activeContracts: [...gameState.beatContracts.activeContracts, contractId],
+        contractProgress: newProgress,
+      },
+    }
+
+    setGameState(updatedState)
+    saveGameState(updatedState)
   }
 
   const handleCancelContract = (contractId: string) => {
-    setGameState((prev) => ({
-      ...prev,
+    const newProgress = { ...gameState.beatContracts.contractProgress }
+    delete newProgress[contractId]
+
+    const updatedState = {
+      ...gameState,
       beatContracts: {
-        ...prev.beatContracts,
-        activeContracts: prev.beatContracts.activeContracts.filter((id) => id !== contractId),
-        availableContracts: [...prev.beatContracts.availableContracts, contractId],
+        ...gameState.beatContracts,
+        activeContracts: gameState.beatContracts.activeContracts.filter((id) => id !== contractId),
+        availableContracts: [...gameState.beatContracts.availableContracts, contractId],
+        contractProgress: newProgress,
       },
-    }))
+    }
+
+    setGameState(updatedState)
+    saveGameState(updatedState)
+  }
+
+  const handleCompleteContract = (contractId: string) => {
+    const contract = BEAT_CONTRACTS_POOL.find((c) => c.id === contractId)
+    if (!contract) return
+
+    const progress = gameState.beatContracts.contractProgress[contractId]
+    if (!progress || !isContractCompleted(contract, progress)) {
+      alert("Контракт еще не выполнен!")
+      return
+    }
+
+    // Remove progress tracking
+    const newProgress = { ...gameState.beatContracts.contractProgress }
+    delete newProgress[contractId]
+
+    // Award rewards
+    const updatedState = {
+      ...gameState,
+      money: gameState.money + contract.reward.money,
+      reputation: gameState.reputation + contract.reward.reputation,
+      totalMoneyEarned: gameState.totalMoneyEarned + contract.reward.money,
+      beatContracts: {
+        ...gameState.beatContracts,
+        activeContracts: gameState.beatContracts.activeContracts.filter((id) => id !== contractId),
+        completedContracts: [...gameState.beatContracts.completedContracts, contractId],
+        contractProgress: newProgress,
+      },
+    }
+
+    setGameState(updatedState)
+    saveGameState(updatedState)
+
+    alert(`Контракт выполнен! Получено: $${contract.reward.money} и ${contract.reward.reputation} репутации!`)
   }
 
   const getContractProgress = (contractId: string) => {
     const contract = BEAT_CONTRACTS_POOL.find((c) => c.id === contractId)
     if (!contract) return { current: 0, required: 0, percentage: 0 }
 
-    // TODO: Track actual progress in gameState
-    // For now, return mock data
-    const current = 0
+    const progress = gameState.beatContracts.contractProgress[contractId]
+    if (!progress) return { current: 0, required: 0, percentage: 0 }
+
+    const current = progress.qualifyingBeats.length
     const required = contract.requirements.beats || 1
-    const percentage = (current / required) * 100
+    const percentage = Math.min(100, (current / required) * 100)
 
     return { current, required, percentage }
   }
@@ -127,7 +199,7 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
 
   return (
     <DesktopLayout maxWidth="xl">
-      <div className="flex flex-col h-screen lg:h-auto">
+      <div className="flex flex-col h-screen lg:h-auto bg-background">
         <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
           <Button
             variant="ghost"
@@ -309,8 +381,18 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
                   )}
                   {activeContractsList.map((contract) => {
                     const progress = getContractProgress(contract.id)
+                    const contractProgress = gameState.beatContracts.contractProgress[contract.id]
+                    const isCompleted = contractProgress && isContractCompleted(contract, contractProgress)
+                    const isExpired = contractProgress && isContractExpired(contract, contractProgress.startedAt)
+                    const remainingHours = contractProgress
+                      ? getContractRemainingTime(contract, contractProgress.startedAt)
+                      : 0
+
                     return (
-                      <Card key={contract.id} className="p-4 bg-primary/5 border-primary/20">
+                      <Card
+                        key={contract.id}
+                        className={`p-4 ${isCompleted ? "bg-accent/10 border-accent/30" : "bg-primary/5 border-primary/20"}`}
+                      >
                         <div className="flex items-start gap-3">
                           <div className="text-3xl">{contract.icon}</div>
                           <div className="flex-1 min-w-0">
@@ -319,8 +401,16 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
                                 <p className="font-semibold">{contract.name}</p>
                                 <p className="text-xs text-muted-foreground">{contract.description}</p>
                               </div>
-                              <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-lg flex-shrink-0 ml-2">
-                                В процессе
+                              <span
+                                className={`text-xs px-2 py-1 rounded-lg flex-shrink-0 ml-2 ${
+                                  isCompleted
+                                    ? "bg-accent/20 text-accent"
+                                    : isExpired
+                                      ? "bg-red-500/20 text-red-500"
+                                      : "bg-primary/20 text-primary"
+                                }`}
+                              >
+                                {isCompleted ? "Готов!" : isExpired ? "Просрочен" : "В процессе"}
                               </span>
                             </div>
 
@@ -335,7 +425,11 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
                               {contract.requirements.timeLimit && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                   <Clock className="w-3 h-3" />
-                                  <span>Осталось: 6 дней (TODO: real timer)</span>
+                                  <span>
+                                    {isExpired
+                                      ? "Время истекло"
+                                      : `Осталось: ${remainingHours} ${remainingHours === 1 ? "час" : "часов"}`}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -350,7 +444,12 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
                                 <XCircle className="w-4 h-4 mr-1" />
                                 Отменить
                               </Button>
-                              <Button size="sm" className="flex-1" disabled>
+                              <Button
+                                size="sm"
+                                className="flex-1"
+                                disabled={!isCompleted || isExpired}
+                                onClick={() => handleCompleteContract(contract.id)}
+                              >
                                 <CheckCircle2 className="w-4 h-4 mr-1" />
                                 Завершить
                               </Button>

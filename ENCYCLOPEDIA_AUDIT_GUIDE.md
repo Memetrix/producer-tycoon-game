@@ -30,7 +30,7 @@
 
 ## Core Loop
 
-```
+\`\`\`
 1. Create Beats (rhythm game)
    → Earn money + reputation
 
@@ -51,7 +51,7 @@
 
 7. Accept Beat Contracts
    → Challenge-based rewards
-```
+\`\`\`
 
 ---
 

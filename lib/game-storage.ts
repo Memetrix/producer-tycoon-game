@@ -129,6 +129,7 @@ export async function loadGameState(): Promise<GameState | null> {
           cover: b.cover_url,
           createdAt: new Date(b.created_at).getTime(),
         })) || [],
+      nfts: [],
       artists: artistsMap,
       purchasedUpgrades: courses?.map((c) => c.course_id) || [],
       dailyTasks: {
@@ -157,12 +158,14 @@ export async function loadGameState(): Promise<GameState | null> {
         activeContracts: (beatContractsData?.active as string[]) || [],
         completedContracts: (beatContractsData?.completed as string[]) || [],
         lastRefreshDate: beatContractsData?.lastRefresh || "",
+        contractProgress: (beatContractsData?.progress as Record<string, any>) || {},
       },
       labelDeals: {
         indie: labelDealsArray.includes("indie"),
         small: labelDealsArray.includes("small"),
         major: labelDealsArray.includes("major"),
       },
+      tutorialCompleted: false,
       lastActive: lastActiveFromDB,
     }
   } catch (error) {
@@ -233,12 +236,12 @@ export async function saveGameState(gameState: GameState): Promise<boolean> {
     if (gameState.skills?.businessman) skillsUnlocked.push("businessman")
     if (gameState.skills?.mogul) skillsUnlocked.push("mogul")
 
-    // Phase 3: Prepare beat contracts JSON
     const beatContractsJSON = {
       available: gameState.beatContracts?.availableContracts || [],
       active: gameState.beatContracts?.activeContracts || [],
       completed: gameState.beatContracts?.completedContracts || [],
       lastRefresh: gameState.beatContracts?.lastRefreshDate || "",
+      progress: gameState.beatContracts?.contractProgress || {},
     }
 
     // Phase 3: Prepare label deals array

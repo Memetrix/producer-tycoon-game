@@ -31,6 +31,10 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
   const [combo, setCombo] = useState(0)
   const [score, setScore] = useState(0)
   const [accuracy, setAccuracy] = useState(100)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [isPaused, setIsPaused] = useState(false)
+  const [songDuration, setSongDuration] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
 
   const [oszBeatmaps, setOszBeatmaps] = useState<OsuBeatmap[]>([])
   const [selectedBeatmapIndex, setSelectedBeatmapIndex] = useState<number>(0)
@@ -47,25 +51,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
     const firstTrack = tracks[0]
     const lastTrack = tracks[tracks.length - 1]
     const totalWidth = lastTrack.x + lastTrack.width - firstTrack.x
-
-    console.log("[v0] Highway width calculated:", totalWidth, "from tracks:", {
-      first: { x: firstTrack.x, width: firstTrack.width },
-      last: { x: lastTrack.x, width: lastTrack.width },
-    })
-
-    console.log(
-      "[v0] All track positions:",
-      tracks.map((t, i) => ({
-        index: i,
-        x: t.x,
-        width: t.width,
-        key: t.keyBind,
-      })),
-    )
-    console.log("[v0] Canvas dimensions:", {
-      width: gameInstanceRef.current.canvasWidth,
-      height: gameInstanceRef.current.canvasHeight,
-    })
 
     setHighwayWidth(totalWidth)
   }, [])
@@ -90,6 +75,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
     async (beatmapUrl: string) => {
       try {
         setIsLoading(true)
+        setLoadError(null)
 
         const oszPackage = await parseOszFile(beatmapUrl)
 
@@ -101,21 +87,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
 
         const beatmap = oszPackage.beatmaps[selectedIndex]
 
-        console.log("[v0] Selected beatmap:", beatmap.title, beatmap.version)
-        console.log("[v0] AudioLeadIn:", beatmap.audioLeadIn, "ms")
-        console.log("[v0] First timing point:", beatmap.timingPoints[0]?.time, "ms")
-
         const notes = convertOsuToRhythmPlus(beatmap)
-
-        if (notes.length > 0) {
-          console.log(
-            "[v0] Converted notes - First:",
-            notes[0].t.toFixed(2),
-            "s, Last:",
-            notes[notes.length - 1].t.toFixed(2),
-            "s",
-          )
-        }
 
         if (gameInstanceRef.current) {
           gameInstanceRef.current.loadSong(notes)
@@ -129,23 +101,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
           const arrayBuffer = await response.arrayBuffer()
           const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer)
 
-          console.log("[v0] Audio duration:", audioBuffer.duration.toFixed(2), "seconds")
-
-          if (notes.length > 0) {
-            const lastNoteTime = notes[notes.length - 1].t
-            const timeDifference = audioBuffer.duration - lastNoteTime
-            console.log("[v0] Time difference (audio end - last note):", timeDifference.toFixed(2), "seconds")
-
-            if (timeDifference < -5) {
-              console.warn(
-                "[v0] WARNING: Last note is",
-                Math.abs(timeDifference).toFixed(2),
-                "seconds AFTER audio ends!",
-              )
-            } else if (timeDifference > 30) {
-              console.warn("[v0] WARNING: Audio continues for", timeDifference.toFixed(2), "seconds after last note")
-            }
-          }
+          setSongDuration(audioBuffer.duration)
 
           const source = audioContextRef.current.createBufferSource()
           source.buffer = audioBuffer
@@ -158,6 +114,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
         setIsLoading(false)
       } catch (error) {
         console.error("[Rhythm Plus] Failed to load beatmap:", error)
+        setLoadError("Не удалось загрузить beatmap. Попробуй другой трек.")
         setIsLoading(false)
       }
     },
@@ -197,7 +154,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
     })
 
     game.setOnGameEnd(() => {
-      console.log("[v0] Game ended callback triggered")
       handleSkip()
     })
 
@@ -247,13 +203,9 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
     const result = gameInstanceRef.current.result
     const finalAccuracy = result.totalHitNotes > 0 ? result.totalPercentage / result.totalHitNotes : 0
 
-    console.log("[v0] Rhythm game completed with accuracy:", finalAccuracy)
-
     try {
       backgroundMusicRef.current?.stop()
-    } catch (error) {
-      // Audio might not have been started yet, ignore the error
-    }
+    } catch (error) {}
     gameInstanceRef.current.pauseGame()
 
     onComplete?.(finalAccuracy)
@@ -270,9 +222,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
     gameInstanceRef.current.startGame()
 
     if (backgroundMusicRef.current && audioContextRef.current) {
-      // Start audio immediately
       backgroundMusicRef.current.start(audioContextRef.current.currentTime)
-      console.log("[v0] Audio started at:", audioContextRef.current.currentTime)
     }
 
     setIsPlaying(true)
@@ -287,6 +237,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
     gameInstanceRef.current.pauseGame()
     audioContextRef.current?.suspend()
     setIsPlaying(false)
+    setIsPaused(true)
   }, [])
 
   /**
@@ -298,6 +249,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
     gameInstanceRef.current.resumeGame()
     audioContextRef.current?.resume()
     setIsPlaying(true)
+    setIsPaused(false)
   }, [])
 
   // Update highway width when canvas resizes or game initializes
@@ -315,15 +267,12 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
       const totalWidth = lastTrack.x + lastTrack.width - firstTrack.x
 
       if (totalWidth > 0 && Math.abs(totalWidth - highwayWidth) > 1) {
-        console.log("[Rhythm Plus] Highway width updated:", totalWidth)
         setHighwayWidth(totalWidth)
       }
     }
 
-    // Initial update
     const initialTimer = setTimeout(updateHighwayWidth, 100)
 
-    // Watch for canvas resize
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -342,7 +291,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
    * Update UI with game state
    */
   useEffect(() => {
-    if (!isPlaying) return // Don't run updateUI loop if not playing
+    if (!isPlaying) return
 
     const updateUI = () => {
       if (!gameInstanceRef.current) return
@@ -355,11 +304,9 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
         setAccuracy(Math.round(acc * 100) / 100)
       }
 
-      // Check for game over condition
       if (gameInstanceRef.current.health <= 0 && isPlaying) {
-        console.log("[Rhythm Plus] Game Over - HP reached 0, ending game")
         handleSkip()
-        return // Stop the update loop
+        return
       }
 
       requestAnimationFrame(updateUI)
@@ -369,25 +316,61 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
     return () => cancelAnimationFrame(animId)
   }, [isPlaying, handleSkip])
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isPlaying && !isPaused) {
+        handlePause()
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange)
+  }, [isPlaying, isPaused])
+
+  useEffect(() => {
+    if (!isPlaying) return
+
+    const updateTime = () => {
+      if (gameInstanceRef.current) {
+        const time = gameInstanceRef.current.currentTime || 0
+        setCurrentTime(time)
+      }
+      requestAnimationFrame(updateTime)
+    }
+
+    const animId = requestAnimationFrame(updateTime)
+    return () => cancelAnimationFrame(animId)
+  }, [isPlaying])
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, "0")}`
+  }
+
   return (
     <div
       ref={containerRef}
       className="fixed inset-0 w-full h-full bg-gradient-to-b from-gray-900 to-black overflow-hidden z-50"
     >
-      {/* Close button in top-center to avoid overlapping with score or HP */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-auto">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => {
+            if (isPlaying) {
+              handlePause()
+              setIsPaused(true)
+            }
             if (confirm("Выйти из игры? Прогресс не будет сохранён.")) {
               try {
                 backgroundMusicRef.current?.stop()
-              } catch (error) {
-                // Audio might not have been started yet, ignore the error
-              }
+              } catch (error) {}
               gameInstanceRef.current?.pauseGame()
               onClose?.()
+            } else if (isPaused) {
+              handleResume()
+              setIsPaused(false)
             }
           }}
           className="bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white"
@@ -409,7 +392,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
         </Button>
       </div>
 
-      {/* Canvas for Rhythm Plus rendering */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full"
@@ -467,15 +449,15 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
                 }}
                 className="h-32 flex flex-col items-center justify-center gap-2 transition-all border-r border-white/10 last:border-r-0"
                 style={{
-                  width: `${trackWidth}px`, // Explicit width matching track width
+                  width: `${trackWidth}px`,
                   background: isActive
                     ? `linear-gradient(to top, ${laneColors[index]}88, ${laneColors[index]}22)`
                     : "linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0.1))",
                   touchAction: "none",
                   userSelect: "none",
                   WebkitTapHighlightColor: "transparent",
-                  WebkitUserSelect: "none", // Prevent text selection on iOS
-                  WebkitTouchCallout: "none", // Prevent text selection on iOS
+                  WebkitUserSelect: "none",
+                  WebkitTouchCallout: "none",
                 }}
               >
                 <div
@@ -484,17 +466,17 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
                     borderColor: laneColors[index],
                     background: isActive ? laneColors[index] : "rgba(255,255,255,0.1)",
                     transform: isActive ? "scale(0.9)" : "scale(1)",
-                    userSelect: "none", // Prevent text selection on the circle
-                    WebkitUserSelect: "none", // Prevent text selection on the circle
+                    userSelect: "none",
+                    WebkitUserSelect: "none",
                   }}
                 >
                   <span
                     className="text-lg font-bold"
                     style={{
                       color: isActive ? "#000" : laneColors[index],
-                      userSelect: "none", // Prevent text selection on the letter
-                      WebkitUserSelect: "none", // Prevent text selection on the letter
-                      pointerEvents: "none", // Prevent text selection on the letter
+                      userSelect: "none",
+                      WebkitUserSelect: "none",
+                      pointerEvents: "none",
                     }}
                   >
                     {key}
@@ -503,9 +485,9 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
                 <span
                   className="text-xs text-white/60"
                   style={{
-                    userSelect: "none", // Prevent text selection on the label
-                    WebkitUserSelect: "none", // Prevent text selection on the label
-                    pointerEvents: "none", // Prevent text selection on the label
+                    userSelect: "none",
+                    WebkitUserSelect: "none",
+                    pointerEvents: "none",
                   }}
                 >
                   {["Kick", "Snare", "Hat", "Tom"][index]}
@@ -516,7 +498,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
         </div>
       </div>
 
-      {/* Judgement Display */}
       {currentJudgement && (
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50">
           <div
@@ -539,7 +520,6 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
         </div>
       )}
 
-      {/* Score & Stats HUD - Compact */}
       <div className="absolute top-2 left-2 right-2 flex justify-between items-center pointer-events-none z-40">
         <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs">
           <span className="text-white/60">Score: </span>
@@ -548,21 +528,27 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
           <span className="text-blue-400 font-bold">{combo}x</span>
         </div>
 
-        {/* Health Bar - Compact */}
+        {songDuration > 0 && (
+          <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs">
+            <span className="text-white/60">
+              {formatTime(currentTime)} / {formatTime(songDuration)}
+            </span>
+          </div>
+        )}
+
         <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1.5">
           <div className="flex items-center gap-2">
             <span className="text-xs text-white/60">HP</span>
             <div className="w-24 h-2 bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 transition-all duration-300"
-                style={{ width: `${gameInstanceRef.current?.health || 100}%` }}
+                style={{ width: `${Math.max(0, Math.min(100, gameInstanceRef.current?.health || 100))}%` }}
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Control Buttons - Hidden during play */}
       {!isPlaying && (
         <div className="absolute bottom-36 left-1/2 -translate-x-1/2 pointer-events-auto z-40">
           <Button
@@ -577,10 +563,56 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
         </div>
       )}
 
-      {/* Loading Overlay */}
       {isLoading && (
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
           <div className="text-white text-2xl">Loading beatmap...</div>
+        </div>
+      )}
+
+      {loadError && (
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="text-red-400 text-xl">{loadError}</div>
+            <Button onClick={onClose} variant="outline" className="bg-transparent">
+              Вернуться назад
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {isPaused && (
+        <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-auto">
+          <div className="text-center space-y-4">
+            <div className="text-white text-3xl font-bold">Пауза</div>
+            <div className="flex gap-4">
+              <Button
+                onClick={() => {
+                  handleResume()
+                  setIsPaused(false)
+                }}
+                size="lg"
+                className="bg-green-500 hover:bg-green-600"
+              >
+                Продолжить
+              </Button>
+              <Button
+                onClick={() => {
+                  if (confirm("Выйти из игры? Прогресс не будет сохранён.")) {
+                    try {
+                      backgroundMusicRef.current?.stop()
+                    } catch (error) {}
+                    gameInstanceRef.current?.pauseGame()
+                    onClose?.()
+                  }
+                }}
+                size="lg"
+                variant="outline"
+                className="bg-transparent"
+              >
+                Выйти
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

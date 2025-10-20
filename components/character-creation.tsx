@@ -119,8 +119,6 @@ export function CharacterCreation({ onComplete }: CharacterCreationProps) {
       const style = MUSIC_STYLES.find((s) => s.id === selectedStyle)
       const genderText = selectedGender === "male" ? "male" : "female"
 
-      console.log("[v0] Generating avatar for:", { name: playerName, gender: genderText, style: style?.name })
-
       const response = await fetch("/api/generate-avatar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -131,15 +129,11 @@ export function CharacterCreation({ onComplete }: CharacterCreationProps) {
         }),
       })
 
-      console.log("[v0] Avatar API response status:", response.status)
       const data = await response.json()
-      console.log("[v0] Avatar API response data:", data)
 
       if (!data.imageUrl) {
         throw new Error("Avatar generation failed: no imageUrl in response")
       }
-
-      console.log("[v0] Successfully generated avatar:", data.imageUrl)
 
       onComplete({
         name: playerName.trim() || "Продюсер",

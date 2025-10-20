@@ -27,7 +27,7 @@
 **Как вызвать:**
 
 **Пример сцены 1: Дедлайн контракта**
-```
+\`\`\`
 [Notification]
 "У тебя осталось 48 часов, чтобы сдать бит для MC Flow.
 Если не успеешь — он потеряет deal с лейблом.
@@ -41,13 +41,13 @@ Money: $50 (недостаточно для кофе/энергетиков)
 - Взять в долг у Street Poet (-reputation, но +energy)
 - Попросить extension (MC Flow будет разочарован)
 - Пахать всю ночь (риск burnout, energy = 0 на неделю)
-```
+\`\`\`
 
 **Механика:** Real-time таймер, который идет даже когда ты offline (как в mobile играх).
 **Emotional payoff:** Когда успеваешь — огромное облегчение. Когда проваливаешь — crushing guilt.
 
 **Пример сцены 2: Health meter падает**
-```
+\`\`\`
 [Notification после 5-го бита подряд]
 "Ты работаешь без остановки уже 3 дня.
 Голова кружится. Руки трясутся.
@@ -63,7 +63,7 @@ Street Poet говорит: 'Ты идешь моим путем. Останов
 Если продолжишь работать:
 - Energy regen -50% на неделю
 - Chance of "breakdown" (принудительный отдых 3 дня)
-```
+\`\`\`
 
 **Почему это страшно:** Игрок боится потерять прогресс, подвести друзей, упустить возможности.
 
@@ -76,7 +76,7 @@ Street Poet говорит: 'Ты идешь моим путем. Останов
 **Как вызвать:**
 
 **Пример сцены 1: Первый хит**
-```
+\`\`\`
 [После 10+ попыток создать quality бит]
 
 MC Flow звонит в 2 ночи:
@@ -98,7 +98,7 @@ MC Flow (голосовое): "Bro... ты изменил мою жизнь. С�
 
 [Phone vibration]
 +15 новых сообщений от артистов, которые хотят работать с тобой
-```
+\`\`\`
 
 **Механика:** Long buildup (борьба, failure, борьба) → Internal reward (эмоции) → External reward (деньги/репутация)
 
@@ -109,7 +109,7 @@ MC Flow (голосовое): "Bro... ты изменил мою жизнь. С�
 - Character reaction (MC Flow эмоционален)
 
 **Пример сцены 2: Street Poet comeback**
-```
+\`\`\`
 [После 20 часов работы с ним, помог ему победить addiction]
 
 [Concert scene]
@@ -138,7 +138,7 @@ Street Poet подходит, обнимает тебя.
 Street Poet теперь permanent mentor
 +1000 reputation
 Ending "Redemption" unlocked
-```
+\`\`\`
 
 **Почему эйфория:**
 - Emotional investment (20 часов его arc)
@@ -159,7 +159,7 @@ Ending "Redemption" unlocked
 Не просто "тыкни кнопку +10 relationship", а **реальные разговоры**.
 
 **Пример сцены 1: Studio hangout с Lil Dreamer**
-```
+\`\`\`
 [Trigg: После 5 совместных треков]
 
 [Scene: Твоя bedroom studio, 1 AM]
@@ -206,7 +206,7 @@ Lil Dreamer: "Думаешь, это... слишком depressing?"
    → +15 relationship
    → Lil Dreamer tears up: "Спасибо. Серьезно."
    → [Unlock: "Brotherhood" path]
-```
+\`\`\`
 
 **Почему connection:**
 - Vulnerability (он открывается)
@@ -215,7 +215,7 @@ Lil Dreamer: "Думаешь, это... слишком depressing?"
 - Reciprocity (он делится, ты отвечаешь)
 
 **Пример сцены 2: MC Flow защищает тебя**
-```
+\`\`\`
 [Trigger: Young Legend (rival) публично троллит тебя в соцсетях]
 
 [Notification]
@@ -239,7 +239,7 @@ MC Flow: "Yo, не парься за этого clown. Он просто jealous
 3. "Давай ответим треком? Disstrack?"
    → MC Flow: "YO! Let's go!" (+15 relationship)
    → [Unlock: Battle mode with Young Legend]
-```
+\`\`\`
 
 **Почему connection:**
 - He has your back (action, не слова)
@@ -255,7 +255,7 @@ MC Flow: "Yo, не парься за этого clown. Он просто jealous
 **Как вызвать:**
 
 **Пример сцены 1: Young Legend offers better deal**
-```
+\`\`\`
 [После 15 треков с MC Flow, он стал популярным]
 
 [DM from Young Legend]
@@ -281,11 +281,11 @@ MC Flow: "Bro, you free this week? Got a big opportunity."
 3. Tell Young Legend no, но не говорить MC Flow
    → Young Legend respects it (+5 relationship)
    → MC Flow never knows (но ты living with secret)
-```
+\`\`\`
 
 **[Если выбрал #2: Betray MC Flow]**
 
-```
+\`\`\`
 [2 недели спустя, MC Flow видит фото тебя с Young Legend в студии]
 
 [Phone call]
@@ -323,7 +323,7 @@ MC Flow tweets: "Never work with snakes 🐍"
 
 [Ending affected]
 "Mogul Ending" — rich but alone
-```
+\`\`\`
 
 **Почему betrayal hurt:**
 - Investment (15 треков вместе)
@@ -332,7 +332,7 @@ MC Flow tweets: "Never work with snakes 🐍"
 - Social cost (другие знают)
 
 **Пример сцены 2: Young Legend betrays YOU**
-```
+\`\`\`
 [Если ты отклонил Young Legend's offer]
 
 [3 месяца спустя]
@@ -376,7 +376,7 @@ You get compensation + reputation boost
 
 [Emotional payoff]
 MC Flow: "That's what friends do. We protect each other."
-```
+\`\`\`
 
 **Почему betrayal важен:**
 - Shows trust has value
@@ -393,7 +393,7 @@ MC Flow: "That's what friends do. We protect each other."
 **Как вызвать:**
 
 **Пример сцены 1: Save MC Flow or Save Money**
-```
+\`\`\`
 [Как в Walking Dead — forced impossible choice]
 
 [Situation]
@@ -426,10 +426,10 @@ Sofia (A&R) calls: "We're ready to sign you. But we need $5000 deposit for studi
    → IF successful: both MC Flow saved AND deal secured
    → IF failed: debt + lose both opportunities
    → Gambling path
-```
+\`\`\`
 
 **Если выбрал #2 (sacrifice):**
-```
+\`\`\`
 [Cutscene]
 Ты приходишь в участок, платишь залог.
 
@@ -458,7 +458,7 @@ They offer deal — not as big as Sofia's, but no deposit.
 Independent path (alternative success route)
 MC Flow permanent loyalty (can't betray you)
 Ending "True Artist" unlocked
-```
+\`\`\`
 
 **Почему sacrifice мощный:**
 - Concrete loss (видишь что теряешь)
@@ -467,7 +467,7 @@ Ending "True Artist" unlocked
 - Redemption mechanic (хороший выбор rewarded)
 
 **Пример сцены 2: Street Poet asks for money (addiction test)**
-```
+\`\`\`
 [Recurring choice — can happen 3 times]
 
 [Call at 3 AM]
@@ -518,7 +518,7 @@ Street Poet (weak): "I'm sorry. I couldn't stop."
    → "I know. I will."
    → Street Poet cries
    → [Redemption arc begins]
-```
+\`\`\`
 
 **Почему sacrifice работает:**
 - Repeated choice (учишь последствия)
@@ -548,7 +548,7 @@ Street Poet (weak): "I'm sorry. I couldn't stop."
 #### Новые проблемы (interesting):
 
 **1. Time Management Dilemma**
-```
+\`\`\`
 [Scenario]
 Ты имеешь только 7 дней в неделе (real time or in-game time).
 Каждый день можешь делать ОДНУ активность:
@@ -575,7 +575,7 @@ Whatever you skip has negative outcome:
 - Skip Lil Dreamer → he feels neglected (-relationship)
 - Skip Street Poet → miss skill upgrade
 - Skip Sofia → miss career opportunity
-```
+\`\`\`
 
 **Почему интересно:**
 - Can't do everything (scarcity)
@@ -587,7 +587,7 @@ Whatever you skip has negative outcome:
 
 **2. Moral Dilemma: Art vs Commerce**
 
-```
+\`\`\`
 [Scenario]
 Sofia (major label): "We want to sign you. But you need to make pop beats.
 Commercial, accessible, nothing too experimental."
@@ -620,7 +620,7 @@ Hybrid route (difficult):
 - Risk failing at both
 - Need high skill level
 - Stressful (energy drain faster)
-```
+\`\`\`
 
 **Почему интересно:**
 - Philosophical question (not just numbers)
@@ -632,7 +632,7 @@ Hybrid route (difficult):
 
 **3. Resource Allocation: Save or Invest?**
 
-```
+\`\`\`
 [Scenario]
 Ты заработал $5000. Большие деньги для тебя.
 
@@ -669,7 +669,7 @@ Hybrid route (difficult):
 → But твой equipment still basic
 → Earn less money
 → Slower progression, но better relationships
-```
+\`\`\`
 
 **Почему интересно:**
 - Risk vs safety trade-off
@@ -681,7 +681,7 @@ Hybrid route (difficult):
 
 **4. Loyalty Test: Multiple Contracts Conflict**
 
-```
+\`\`\`
 [Scenario]
 Три артиста просят трек на ту же дату:
 
@@ -718,7 +718,7 @@ Sofia (label): "We need a demo beat Friday for major artist."
 Choice #1: MC Flow brings you more indie artists (steady income)
 Choice #2: Young Legend refers you to rich artists (high income, low loyalty)
 Choice #3: IF successful, biggest career boost (но high risk)
-```
+\`\`\`
 
 **Почему интересно:**
 - Competing loyalties
@@ -746,7 +746,7 @@ Choice #3: IF successful, biggest career boost (но high risk)
 У каждого персонажа есть **скрытая backstory**, которую узнаешь только на high relationship level.
 
 **Пример: MC Flow secret**
-```
+\`\`\`
 [Trigger: Relationship level 8, after night hangout]
 
 MC Flow пьяный, emotional:
@@ -774,7 +774,7 @@ MC Flow пьяный, emotional:
 3. "You're doing it for yourself. I see it."
    → MC Flow: "You think so?"
    → [Unlock side quest: Reconnect MC Flow with father]
-```
+\`\`\`
 
 **Почему любопытство:**
 - Unexpected depth (он не просто confident rapper)
@@ -785,7 +785,7 @@ MC Flow пьяный, emotional:
 ---
 
 **Пример: Lil Dreamer secret**
-```
+\`\`\`
 [Trigger: Relationship level 7, he seems distracted]
 
 You: "Bro, you good?"
@@ -820,7 +820,7 @@ Why chase a dream that will disappear?"
 3. "Then let's make you legendary before that."
    → Lil Dreamer: "Yes. Let's."
    → [Unlock: Ultra hard mode — create masterpiece in time limit]
-```
+\`\`\`
 
 **Почему любопытство:**
 - Stakes raised (now time matters even more)
@@ -835,7 +835,7 @@ Why chase a dream that will disappear?"
 Endings, которые ты можешь unlock только through specific choices.
 
 **Secret Ending 1: "The Mentor's Revenge"**
-```
+\`\`\`
 [Requirements]
 - Street Poet relationship level 10
 - Learn his full backstory (who betrayed him)
@@ -867,7 +867,7 @@ He gets fired, loses everything
 Street Poet retires peacefully.
 You inherit his legacy.
 Title: "The Mentor's Heir"
-```
+\`\`\`
 
 **Почему любопытство:**
 - Hidden requirement (не все увидят)
@@ -878,7 +878,7 @@ Title: "The Mentor's Heir"
 ---
 
 **Secret Ending 2: "The Betrayal Loop"**
-```
+\`\`\`
 [Requirements]
 - Betray MC Flow (work with Young Legend)
 - Betray Young Legend later (expose him stealing beats)
@@ -904,7 +904,7 @@ Description: "You won. But at what cost?"
 
 [Post-game]
 New Game+ unlocked: "Can you win differently?"
-```
+\`\`\`
 
 **Почему любопытство:**
 - Dark path hidden (not advertised)
@@ -917,7 +917,7 @@ New Game+ unlocked: "Can you win differently?"
 #### 3. **Mystery Elements**
 
 **Пример: Who is DJ Nova?**
-```
+\`\`\`
 [Throughout game, DJ Nova appears randomly]
 - Throws parties where your tracks play
 - Seems to know everyone
@@ -949,7 +949,7 @@ DJ Nova offers: "Leave the industry. Travel the world with me. Make music for fu
 [Choice]
 Accept = "Free Spirit" ending (non-traditional success)
 Decline = Continue career path
-```
+\`\`\`
 
 **Почему любопытство:**
 - Mysterious character (вопросы с начала игры)
@@ -972,7 +972,7 @@ Decline = Continue career path
 
 #### Решение 1: Dynamic Rhythm Game Difficulty
 
-```
+\`\`\`
 [Early Game: 0-10 beats created]
 Rhythm game:
 - Slow BPM (80-100)
@@ -1013,7 +1013,7 @@ Rhythm game:
 - Requires perfect timing
 
 Reward: Legendary beats (quality 90-100)
-```
+\`\`\`
 
 **Почему flow:**
 - Scales with player skill
@@ -1025,7 +1025,7 @@ Reward: Legendary beats (quality 90-100)
 
 #### Решение 2: Increasing Relationship Complexity
 
-```
+\`\`\`
 [Early game relationships]
 Simple binary choices:
 "Help MC Flow?"
@@ -1047,7 +1047,7 @@ Sofia says business comes first."
 → 4 different philosophies
 → No clear "right" answer
 → Long-term consequences
-```
+\`\`\`
 
 **Почему flow:**
 - Matches player emotional intelligence growth
@@ -1072,7 +1072,7 @@ Sofia says business comes first."
 
 #### Emergent System 1: Reputation Economy
 
-```
+\`\`\`
 [Simple Rules]
 1. Reputation in one scene affects другие scenes
 2. Artists talk to each other (relationships propagate)
@@ -1099,7 +1099,7 @@ Example 3: "The Bridge Builder"
 - Harder to maintain, but unique position
 - Can collaborate indie + mainstream (unprecedented)
 - Unlock: "Fusion" ending — created new genre
-```
+\`\`\`
 
 **Почему emergent:**
 - Player discovers strategies (not taught)
@@ -1111,7 +1111,7 @@ Example 3: "The Bridge Builder"
 
 #### Emergent System 2: Character Relationship Web
 
-```
+\`\`\`
 [Simple Rules]
 1. If you help A, B might get jealous
 2. If A and B are friends, helping A helps B indirectly
@@ -1155,7 +1155,7 @@ Example 3: "The Betrayal Ripple"
 - DJ Nova was neutral but heard rumors
 - DJ Nova: "Industry is brutal, huh?"
 - Only Sofia doesn't care (business-focused)
-```
+\`\`\`
 
 **Почему emergent:**
 - Actions have ripple effects
@@ -1174,7 +1174,7 @@ Example 3: "The Betrayal Ripple"
 #### **Act 1: Skepticism (Relationship 1-3)**
 
 **Scene 1: First Meeting**
-```
+\`\`\`
 [Location: Your bedroom, phone setup]
 
 [Knock on door]
@@ -1212,10 +1212,10 @@ MC Flow: "Okay. Okay, this actually go hard."
 
 Notification: MC Flow added to contacts
 Relationship: 2/10 (Cautious Interest)
-```
+\`\`\`
 
 **Scene 2: First Test**
-```
+\`\`\`
 [3 days later, text from MC Flow]
 MC Flow: "Yo, I got a verse. Send me a beat by Friday?"
 MC Flow: "Nothing crazy. Just wanna test you."
@@ -1238,10 +1238,10 @@ MC Flow: "This shit fire! We recording tonight."
 [If beat is quality <50]
 MC Flow: "It's... aight. Keep working."
 (+1 relationship)
-```
+\`\`\`
 
 **Scene 3: The Showcase Disaster**
-```
+\`\`\`
 [MC Flow invites you to his showcase]
 
 [Location: Small club, 50 people]
@@ -1278,14 +1278,14 @@ MC Flow texts: "Yo. I was harsh yesterday. My bad."
 "I know you trying. Let's run it back."
 
 Relationship: 4/10 (Warming Up)
-```
+\`\`\`
 
 ---
 
 #### **Act 2: Building Trust (Relationship 4-7)**
 
 **Scene 4: The Cypher**
-```
+\`\`\`
 [MC Flow invites you to underground cypher]
 
 [Location: Parking lot, 20 rappers]
@@ -1315,10 +1315,10 @@ MC Flow: "Thanks for having my back."
 "A lot of producers work with everybody. You're different."
 
 Relationship: 6/10 (Trust Building)
-```
+\`\`\`
 
 **Scene 5: The Confession**
-```
+\`\`\`
 [Late night, MC Flow calls drunk]
 
 MC Flow: "Yo... you up?"
@@ -1355,14 +1355,14 @@ MC Flow: "My brother died. 5 years ago. Shooting."
 
 Relationship: 7/10 (Deep Bond)
 Unlock: MC Flow backstory complete
-```
+\`\`\`
 
 ---
 
 #### **Act 3: Brotherhood (Relationship 8-10)**
 
 **Scene 6: The Ultimatum**
-```
+\`\`\`
 [Sofia offers you major deal, but without MC Flow]
 
 Sofia: "We like you. But MC Flow isn't our brand."
@@ -1396,10 +1396,10 @@ MC Flow brings you to independent label.
 
 Unlock: Partnership ending
 Relationship: 10/10 (Brothers for Life)
-```
+\`\`\`
 
 **Scene 7: The Payoff**
-```
+\`\`\`
 [6 months later]
 
 [Your indie album drops, produced by you, featuring MC Flow]
@@ -1430,7 +1430,7 @@ Description: "You stayed loyal. You won together."
 [Post-credits]
 MC Flow and you start your own label.
 "Flow Productions"
-```
+\`\`\`
 
 ---
 
@@ -1441,7 +1441,7 @@ MC Flow and you start your own label.
 #### **Act 1: Insecurity (Relationship 1-3)**
 
 **Scene 1: First Encounter**
-```
+\`\`\`
 [Location: Small venue после MC Flow show]
 
 Shy kid подходит к тебе, держит блокнот.
@@ -1474,10 +1474,10 @@ Lil Dreamer (удивлен): "You think so? Nobody ever... usually people say i
 
 [Unlock]
 Lil Dreamer relationship: 2/10 (Hopeful)
-```
+\`\`\`
 
 **Scene 2: First Session**
-```
+\`\`\`
 [Location: Your studio, late night]
 
 Lil Dreamer arrives early, nervous.
@@ -1513,14 +1513,14 @@ Lil Dreamer hears himself for the first time — really hears.
 Tears in eyes: "I sound... I sound like a real artist."
 
 Relationship: 4/10 (Growing Confidence)
-```
+\`\`\`
 
 ---
 
 #### **Act 2: Opening Up (Relationship 4-7)**
 
 **Scene 3: The Late Night Talk** (from earlier analysis)
-```
+\`\`\`
 [The vulnerability scene where he shares his lyrics about childhood]
 Already detailed above — he opens up about father leaving, mother working 3 jobs.
 
@@ -1535,10 +1535,10 @@ Choice shapes YOUR character, not just relationship.
 
 Unlock: Lil Dreamer now considers you his best friend
 Relationship: 6/10 (Deep Trust)
-```
+\`\`\`
 
 **Scene 4: The Hearing Loss Revelation**
-```
+\`\`\`
 [Already detailed — he reveals progressive hearing loss]
 
 [Extended version]
@@ -1571,14 +1571,14 @@ Lil Dreamer: "I haven't told anyone. Not even MC Flow."
    → Lil Dreamer: "Thank you for not treating me like I'm broken."
 
 Relationship: 7/10 (Unbreakable Bond)
-```
+\`\`\`
 
 ---
 
 #### **Act 3: Self-Acceptance (Relationship 8-10)**
 
 **Scene 5: The Major Label Ultimatum**
-```
+\`\`\`
 [Already detailed — Sofia wants YOU but not Lil Dreamer]
 
 [Extended version with more choices]
@@ -1622,10 +1622,10 @@ Lil Dreamer: "She's right, you know."
 
 [If chose #1 or #3 success]
 Unlock: "Brotherhood" path with Lil Dreamer
-```
+\`\`\`
 
 **Scene 6: The Performance**
-```
+\`\`\`
 [6 months later, Lil Dreamer's first big show]
 
 [Backstage]
@@ -1683,7 +1683,7 @@ Description: "You helped someone find their voice."
 [Post-credits]
 Lil Dreamer now mentors young artists.
 "Just like someone once did for me."
-```
+\`\`\`
 
 ---
 
@@ -1694,7 +1694,7 @@ Lil Dreamer now mentors young artists.
 #### **Act 1: The Broken Star (Relationship 1-3)**
 
 **Scene 1: The Legend**
-```
+\`\`\`
 [Trigger: You're at local record store]
 
 Store owner: "You make beats?"
@@ -1744,10 +1744,10 @@ You: "It's legendary."
 Street Poet: "Was. Past tense."
 
 Relationship: 2/10 (Bitter)
-```
+\`\`\`
 
 **Scene 2: The Offer**
-```
+\`\`\`
 [Few days later, you find him same spot]
 
 You: "Want to make music again?"
@@ -1774,14 +1774,14 @@ Street Poet: "Kid, you don't want to work with me."
 [He agrees to try]
 
 Relationship: 4/10 (Cautious Hope)
-```
+\`\`\`
 
 ---
 
 #### **Act 2: The Struggle (Relationship 4-7)**
 
 **Scene 3: The Relapse**
-```
+\`\`\`
 [Trigger: After 2 weeks clean, he disappears]
 
 [Call at 3 AM from unknown number]
@@ -1829,10 +1829,10 @@ Street Poet: "Every time I try to get clean... I remember why I started using."
 Street Poet: "Okay. I'll try. One more time."
 
 Relationship: 5/10 (Fighting)
-```
+\`\`\`
 
 **Scene 4: The Withdrawal**
-```
+\`\`\`
 [2 weeks into rehab, you visit]
 
 [Location: Rehab facility]
@@ -1869,10 +1869,10 @@ Street Poet listens... eyes closed...
 Visit him weekly, work on beats together in therapy
 
 Relationship: 6/10 (Progress)
-```
+\`\`\`
 
 **Scene 5: The Confession**
-```
+\`\`\`
 [Month 2 of rehab, he's clearer, healthier]
 
 Street Poet: "I need to tell you something. About what happened to me."
@@ -1918,14 +1918,14 @@ Street Poet: "I need to tell you something. About what happened to me."
    → [Unlock: "Reunion" side quest]
 
 Relationship: 7/10 (Deep Trust)
-```
+\`\`\`
 
 ---
 
 #### **Act 3: Redemption (Relationship 8-10)**
 
 **Scene 6: The Comeback Track**
-```
+\`\`\`
 [90 days sober, he's out of rehab]
 
 Street Poet: "I'm ready."
@@ -1969,10 +1969,10 @@ Street Poet listens... tears streaming...
 
 [Unlock]
 Relationship: 9/10 (Almost Complete)
-```
+\`\`\`
 
 **Scene 7: The Reunion**
-```
+\`\`\`
 [If you unlocked "Reunion" side quest]
 
 Street Poet: "I found her. Maya."
@@ -2053,10 +2053,10 @@ They exchange numbers.
 Small step. But a step.
 
 Relationship: 10/10 (Redemption Complete)
-```
+\`\`\`
 
 **Scene 8: The Concert (Grand Finale)**
-```
+\`\`\`
 [6 months later]
 
 Street Poet announces comeback concert.
@@ -2108,7 +2108,7 @@ They're rebuilding
 
 [Final shot]
 Street Poet and you in studio, mentoring young artists together
-```
+\`\`\`
 
 ---
 
@@ -2119,7 +2119,7 @@ Street Poet and you in studio, mentoring young artists together
 #### **Act 1: The Enemy (Relationship -5 to 2)**
 
 **Scene 1: The Callout**
-```
+\`\`\`
 [Trigger: After your first viral beat with MC Flow]
 
 [Notification]
@@ -2145,10 +2145,10 @@ Young Legend tweets: "@YourName nice little beat. Cute."
 
 [If chose #1 — Battle unlocked]
 Relationship: -3/10 (Competitive Rival)
-```
+\`\`\`
 
 **Scene 2: The Battle**
-```
+\`\`\`
 [Location: Underground producer battle]
 
 Rules:
@@ -2174,10 +2174,10 @@ If TIE:
 Young Legend: "Not bad. We should run this back."
 +3 relationship
 Mutual respect begins
-```
+\`\`\`
 
 **Scene 3: The Offer (Betrayal Attempt)**
-```
+\`\`\`
 [After battle, he DMs you]
 
 Young Legend: "Real talk. You're talented."
@@ -2211,14 +2211,14 @@ MC Flow: "Studio session tomorrow? Got something big."
 
 [Most interesting path: #3]
 Relationship: 2/10 → 7/10 (Respect forming)
-```
+\`\`\`
 
 ---
 
 #### **Act 2: Mutual Respect (Relationship 3-6)**
 
 **Scene 4: The Collaboration Offer**
-```
+\`\`\`
 [3 months later, Young Legend reaches out again]
 
 Young Legend: "Yo. I got a proposition."
@@ -2272,10 +2272,10 @@ Young Legend: "We should drop this."
    → +15 relationship
 
 Relationship: 6/10 (Respect Established)
-```
+\`\`\`
 
 **Scene 5: He Helps You**
-```
+\`\`\`
 [Trigger: You're struggling financially]
 
 [Bank account: $50]
@@ -2315,14 +2315,14 @@ Young Legend: "Because someone helped me once."
 [Unlock]
 Access to Young Legend's studio (limited time)
 Relationship: 7/10 (Ally)
-```
+\`\`\`
 
 ---
 
 #### **Act 3: From Rival to Brother (Relationship 7-10)**
 
 **Scene 6: His Vulnerability**
-```
+\`\`\`
 [Late night session at his studio]
 
 Young Legend: "Can I tell you something?"
@@ -2365,10 +2365,10 @@ Young Legend: "Nobody's ever... I don't know what to say."
 "Thank you."
 
 Relationship: 8/10 (True Friendship)
-```
+\`\`\`
 
 **Scene 7: The Defense**
-```
+\`\`\`
 [Sofia (major label) tries to sign you]
 
 Sofia: "We love your work. But we need exclusivity."
@@ -2408,10 +2408,10 @@ He brings you to HIS label connection.
 [Both of you get signed together]
 
 Unlock: Partnership ending
-```
+\`\`\`
 
 **Scene 8: Back to Back**
-```
+\`\`\`
 [1 year later — Joint concert]
 
 "MC Flow × Lil Dreamer × Young Legend × [Your Name]"
@@ -2447,7 +2447,7 @@ Description: "You turned your greatest enemy into your greatest ally."
 [Post-credits]
 Young Legend and you start production company together
 "Flow & Legend Studios"
-```
+\`\`\`
 
 ---
 
@@ -2458,7 +2458,7 @@ Young Legend and you start production company together
 #### **Act 1: The Business Relationship (Relationship 1-3)**
 
 **Scene 1: The Pitch Meeting**
-```
+\`\`\`
 [Trigger: After 20 beats created, you get email]
 
 From: sofia.chen@empirelabel.com
@@ -2507,10 +2507,10 @@ Sofia: "I used to. Before I went corporate."
 [Hint of regret in her voice]
 
 Relationship: 2/10 (Professional Interest)
-```
+\`\`\`
 
 **Scene 2: The Test**
-```
+\`\`\`
 [Sofia emails you]
 
 "I'm giving you a test. Make a beat for our artist 'Jasmine Moore.'"
@@ -2537,14 +2537,14 @@ Sofia: "You passed. Welcome to the industry."
 "But know this: I'm not your friend. I'm your boss."
 
 Relationship: 3/10 (Professional)
-```
+\`\`\`
 
 ---
 
 #### **Act 2: Cracks in the Armor (Relationship 4-7)**
 
 **Scene 3: The After-Hours Call**
-```
+\`\`\`
 [11 PM, Sofia calls — unusual]
 
 Sofia: "Are you busy?"
@@ -2601,10 +2601,10 @@ Sofia: "I was a producer. 10 years ago."
    → (+15 relationship)
 
 Relationship: 6/10 (Opening Up)
-```
+\`\`\`
 
 **Scene 4: The Secret Session**
-```
+\`\`\`
 [Week later, Sofia invites you to her home studio]
 
 [She has a full setup — dusty, unused]
@@ -2641,14 +2641,14 @@ Sofia: "Because it's ours. The label doesn't own it."
 File name: "Freedom.wav"
 
 Relationship: 7/10 (Trust)
-```
+\`\`\`
 
 ---
 
 #### **Act 3: The Choice (Relationship 8-10)**
 
 **Scene 5: The Ultimatum**
-```
+\`\`\`
 [Sofia calls, distressed]
 
 Sofia: "I need to talk. In person."
@@ -2715,10 +2715,10 @@ She calls you: "I did it. I'm free."
 "You chose yourself."
 
 Relationship: 10/10 (Partners)
-```
+\`\`\`
 
 **Scene 6: The Independent Label**
-```
+\`\`\`
 [3 months later]
 
 Sofia and you launch: "True Sound Records"
@@ -2754,7 +2754,7 @@ Sofia and you at Grammys — Independent Label of the Year
 
 Sofia (speech): "This is for everyone who was told to sell out."
 "Stay true. It's worth it."
-```
+\`\`\`
 
 ---
 
@@ -2765,7 +2765,7 @@ Sofia (speech): "This is for everyone who was told to sell out."
 #### **Act 1: The Enigma (Relationship 1-3)**
 
 **Scene 1: The Party**
-```
+\`\`\`
 [Trigger: After first viral track]
 
 [Invitation]
@@ -2810,10 +2810,10 @@ Nova: "You're talented. And you don't seem fake."
 "Let's work sometime. When the vibe is right."
 
 Relationship: 2/10 (Intrigued)
-```
+\`\`\`
 
 **Scene 2: The Cryptic Message**
-```
+\`\`\`
 [Random 3 AM text from Nova]
 
 Nova: "You ever feel like you're running but don't know from what?"
@@ -2848,14 +2848,14 @@ Nova: "I come here when the noise gets too loud."
 [First glimpse of depth]
 
 Relationship: 3/10 (Curiosity Growing)
-```
+\`\`\`
 
 ---
 
 #### **Act 2: Peeling the Layers (Relationship 4-7)**
 
 **Scene 3: The Breakdown**
-```
+\`\`\`
 [Nova's party — but something's wrong]
 
 [Nova is TOO energetic. Manic. Eyes dilated.]
@@ -2911,10 +2911,10 @@ Nova: "Sometimes... the mask slips."
    → (+10 relationship)
 
 Relationship: 6/10 (Trust Building)
-```
+\`\`\`
 
 **Scene 4: The Past**
-```
+\`\`\`
 [Nova invites you to quiet café — very unlike them]
 
 Nova (serious): "I want to tell you something."
@@ -2965,14 +2965,14 @@ Nova: "I was a prodigy. Julliard. Symphony orchestras."
    → (+15 relationship)
 
 Relationship: 7/10 (Deep Trust)
-```
+\`\`\`
 
 ---
 
 #### **Act 3: Healing (Relationship 8-10)**
 
 **Scene 5: The Fusion**
-```
+\`\`\`
 [Studio session — your idea]
 
 You: "What if we blend violin and electronic?"
@@ -3017,10 +3017,10 @@ Nova: "...Alex Rivera. My real name."
    → (+20 relationship)
 
 Relationship: 9/10 (Almost Complete)
-```
+\`\`\`
 
 **Scene 6: The Reunion**
-```
+\`\`\`
 [Track releases — goes viral]
 
 [Article]: "Classical prodigy Alex Rivera returns with electronic fusion masterpiece"
@@ -3064,10 +3064,10 @@ Nova looks at you: "I can't believe..."
 "You gave me my life back."
 
 Relationship: 10/10 (Soul Connection)
-```
+\`\`\`
 
 **Scene 7: The Free Spirit Ending**
-```
+\`\`\`
 [Nova fully healed — balances both identities]
 
 DJ Nova for parties (fun, expression)
@@ -3135,7 +3135,7 @@ Representing new era of music
 Nova: "Thanks for choosing adventure."
 
 You: "Thanks for showing me there's more than one path."
-```
+\`\`\`
 
 ---
 
@@ -3155,7 +3155,7 @@ You: "Thanks for showing me there's more than one path."
 **Как улучшить:**
 
 #### Пример 1: The Homeless Artist Dilemma
-```
+\`\`\`
 [Ты видишь талантливого артиста, живущего на улице]
 
 Street Poet: "That kid has raw talent. But he needs help."
@@ -3183,7 +3183,7 @@ Street Poet: "That kid has raw talent. But he needs help."
    → But builds deep relationship
    → Later: He becomes your protégé
    → Ending path: "The Mentor"
-```
+\`\`\`
 
 **Почему это мощный выбор:**
 - No "right" answer (all valid philosophies)
@@ -3194,7 +3194,7 @@ Street Poet: "That kid has raw talent. But he needs help."
 ---
 
 #### Пример 2: The Copyright Dilemma
-```
+\`\`\`
 [You accidentally discover: Young Legend stole a beat from unknown producer]
 
 [You have evidence — screenshot, original file]
@@ -3227,7 +3227,7 @@ Young Legend (unaware you know): "Yo, you coming to my release party?"
    → Young Legend gets away with it
    → You feel complicit
    → Later: Can you live with yourself?
-```
+\`\`\`
 
 **Почему это трудный выбор:**
 - Moral complexity (justice vs loyalty)
@@ -3252,7 +3252,7 @@ Young Legend (unaware you know): "Yo, you coming to my release party?"
 
 #### Добавить: Advanced Production Techniques
 
-```
+\`\`\`
 [New mechanic unlocked at 50 beats created]
 
 "Pro Tools" mode:
@@ -3275,7 +3275,7 @@ Example: EQ Mini-game
 [If done poorly]
 → Beat sounds worse than simple version
 → Artists: "Something sounds off..."
-```
+\`\`\`
 
 **Skill progression:**
 - Beginner: Just rhythm game (easy)
@@ -3300,7 +3300,7 @@ Example: EQ Mini-game
 
 #### Mechanic: Experimental Beats
 
-```
+\`\`\`
 [When creating beat, new option appears]
 
 "Experimental Mode"
@@ -3335,13 +3335,13 @@ MC Flow: "I need a beat for my album. Make it fire."
 2. 🎲 Experimental (random 10-100)
    → Could be legendary or disaster
    → High risk, high reward
-```
+\`\`\`
 
 ---
 
 #### Mechanic: Invest or Save
 
-```
+\`\`\`
 [Every month, investment opportunity appears]
 
 Crypto investor: "Invest $5000 in new music NFT platform?"
@@ -3358,7 +3358,7 @@ Keep money safe in bank
 
 [Risk management mini-game]
 Teaches: Don't bet what you can't afford to lose
-```
+\`\`\`
 
 ---
 
@@ -3377,7 +3377,7 @@ Teaches: Don't bet what you can't afford to lose
 
 #### Feature: Group Studio Sessions
 
-```
+\`\`\`
 [Unlock at relationship level 5 with any artist]
 
 "Group Session" option:
@@ -3399,13 +3399,13 @@ Both artists gain relationship (+5 each)
 If you invite artists who don't like each other:
 Young Legend + MC Flow = tension
 "I don't work with fake people." [Session fails]
-```
+\`\`\`
 
 ---
 
 #### Feature: Crew Formation
 
-```
+\`\`\`
 [Late game unlock]
 
 Form your "crew" (max 3 people):
@@ -3425,7 +3425,7 @@ MC Flow (Day 1) + Lil Dreamer (Support) + Street Poet (Mentor)
 [Crew bonuses]
 +20% to all work with crew members
 Unlock special "Crew Album" ending
-```
+\`\`\`
 
 ---
 
@@ -3444,7 +3444,7 @@ Unlock special "Crew Album" ending
 
 #### Feature: Producer Identity System
 
-```
+\`\`\`
 [Game tracks your choices and creates "identity"]
 
 Based on:
@@ -3471,13 +3471,13 @@ Sofia to "Ruthless Mogul":
 
 Street Poet to "The People's Producer":
 "You restore my faith in humanity."
-```
+\`\`\`
 
 ---
 
 #### Feature: Custom Beat Signature
 
-```
+\`\`\`
 [Players develop "signature sound"]
 
 After 30 beats, game analyzes:
@@ -3497,7 +3497,7 @@ That dark piano with heavy 808s? Classic [YourName]."
 
 [Reputation system]
 Known for specific style → Attract specific artists
-```
+\`\`\`
 
 ---
 
@@ -3516,7 +3516,7 @@ Known for specific style → Attract specific artists
 
 #### Dynamic Obstacles: Industry Events
 
-```
+\`\`\`
 [Random events that block progress]
 
 Event 1: "Studio Eviction"
@@ -3543,13 +3543,13 @@ Label claims you used their sample.
 1. Pay (expensive)
 2. Fight (time-consuming, risky)
 3. Take down track (lose progress)
-```
+\`\`\`
 
 ---
 
 #### Progressive Obstacle Chain
 
-```
+\`\`\`
 [Act 1 obstacles: Personal]
 - Low money
 - No equipment
@@ -3570,7 +3570,7 @@ Label claims you used their sample.
 Early: Resource management
 Mid: Emotional intelligence
 Late: Strategic thinking
-```
+\`\`\`
 
 ---
 
@@ -3589,7 +3589,7 @@ Late: Strategic thinking
 
 #### Milestone Celebration System
 
-```
+\`\`\`
 [Major achievements trigger special cutscenes]
 
 Achievement: "First Viral Hit"
@@ -3627,13 +3627,13 @@ Achievement: "Save Street Poet"
 - "Lifesaver" title
 - Street Poet permanent loyalty
 - Special ending path
-```
+\`\`\`
 
 ---
 
 #### Visual Trophy Room
 
-```
+\`\`\`
 [Physical space in game that shows achievements]
 
 Studio wall displays:
@@ -3650,7 +3650,7 @@ Young Legend: "Respect. You earned all this."
 
 [Player can look at wall and remember journey]
 Emotional payoff: Visual proof of growth
-```
+\`\`\`
 
 ---
 
@@ -3669,7 +3669,7 @@ Emotional payoff: Visual proof of growth
 
 #### High-Intensity Moments
 
-```
+\`\`\`
 [Deadline Mode]
 Sofia: "I need this beat in 24 hours for Beyoncé."
 
@@ -3684,13 +3684,13 @@ Sofia: "I need this beat in 24 hours for Beyoncé."
 
 [Success = Euphoria]
 [Failure = Crushing disappointment]
-```
+\`\`\`
 
 ---
 
 #### Low-Intensity Moments (Contrast)
 
-```
+\`\`\`
 [After intense deadline, forced rest]
 
 [Cutscene: Rooftop at sunset]
@@ -3709,13 +3709,13 @@ Lil Dreamer: "Let's just chill. No music. No work."
 
 [Next day, you wake refreshed]
 Ready for next challenge
-```
+\`\`\`
 
 ---
 
 #### Pacing Through Contrast
 
-```
+\`\`\`
 Pattern:
 1. Grind (steady work, medium intensity)
 2. Crisis (high intensity, deadline)
@@ -3729,7 +3729,7 @@ Example Arc:
 - Week 3: Concert success (resolution)
 - Week 4: Vacation with crew (rest)
 - Week 5: Bigger challenge (escalation)
-```
+\`\`\`
 
 ---
 
@@ -3748,7 +3748,7 @@ Example Arc:
 
 #### Hidden ARG Elements
 
-```
+\`\`\`
 [Easter eggs in beat files]
 
 [Player discovers: Hidden message in spectrogram]
@@ -3766,13 +3766,13 @@ He was a legend who disappeared
 [Mystery unfolds]
 Who was he? Where did he go?
 Clues scattered across multiple artist stories
-```
+\`\`\`
 
 ---
 
 #### Character Secret Network
 
-```
+\`\`\`
 [All character secrets interconnect]
 
 Example web:
@@ -3791,7 +3791,7 @@ Final revelation changes entire narrative.
 "The Conspiracy" — expose Marcus Drake
 All characters unite
 Industry-changing moment
-```
+\`\`\`
 
 ---
 
@@ -3810,7 +3810,7 @@ Industry-changing moment
 
 #### Seasonal System
 
-```
+\`\`\`
 [Game tracks real-time seasons OR in-game months]
 
 Spring:
@@ -3833,13 +3833,13 @@ Winter:
 - Best time for emotional tracks
 - Artists available for deep work
 - Relationship building focus
-```
+\`\`\`
 
 ---
 
 #### Finite Time Mechanic
 
-```
+\`\`\`
 [Example: Lil Dreamer's hearing loss]
 
 [Timer: 2 years game time until he's fully deaf]
@@ -3864,13 +3864,13 @@ Can't postpone — it's now or never
 When time runs out:
 → Album complete = Beautiful send-off
 → Album incomplete = Heartbreaking regret
-```
+\`\`\`
 
 ---
 
 #### Real-Time Events (Optional)
 
-```
+\`\`\`
 [If game is online-connected]
 
 Special events on real dates:
@@ -3883,7 +3883,7 @@ Special events on real dates:
 [FOMO]
 Miss the event = Miss unique content
 Creates urgency to log in
-```
+\`\`\`
 
 ---
 
@@ -3902,7 +3902,7 @@ Creates urgency to log in
 
 #### Butterfly Effect System
 
-```
+\`\`\`
 [Small choices create big consequences]
 
 Example Chain:
@@ -3928,13 +3928,13 @@ Week 6: Label offers him deal
 → He asks your advice
 
 [Your choice shapes his entire career]
-```
+\`\`\`
 
 ---
 
 #### Reputation Tracking System
 
-```
+\`\`\`
 [Game remembers EVERYTHING]
 
 Datapoints tracked:
@@ -3954,7 +3954,7 @@ Random NPC: "I heard you saved Street Poet's life. Respect."
 [Reputation spreads organically]
 Good deeds → More opportunities
 Bad rep → Doors close
-```
+\`\`\`
 
 ---
 
@@ -3973,7 +3973,7 @@ Bad rep → Doors close
 
 #### Ending Variety (20+ unique endings)
 
-```
+\`\`\`
 Based on:
 - Which artists you prioritized
 - Moral alignment
@@ -4010,13 +4010,13 @@ Example Endings:
 [Each ending has unique cutscene]
 [Each reflects YOUR choices]
 [Each tells different story]
-```
+\`\`\`
 
 ---
 
 #### Story Recap System
 
-```
+\`\`\`
 [End-game summary]
 
 "Your Journey"
@@ -4049,7 +4049,7 @@ Reputation: Underground Legend
 [Player can share this story]
 Screenshot-worthy
 Unique to their choices
-```
+\`\`\`
 
 ---
 
@@ -4057,7 +4057,7 @@ Unique to their choices
 
 ## Optimal Emotional Journey (3-Hour Session)
 
-```
+\`\`\`
 [Graph format — imagine Y-axis = Intensity, X-axis = Time]
 
 Minutes 0-15: CALM (Tutorial, World-building)
@@ -4095,7 +4095,7 @@ Minutes 150-180: SETUP (Next Arc)
 → New mystery introduced
 → "Wait, Sofia used to produce?"
 → Hook for next session
-```
+\`\`\`
 
 **Pattern:**
 Calm → Rising → Peak → Valley → Rising → Crisis → Resolution → Calm
@@ -4162,7 +4162,7 @@ Calm → Rising → Peak → Valley → Rising → Crisis → Resolution → Cal
 **Lesson:** Daily life balancing creates attachment
 
 **Application:**
-```
+\`\`\`
 Daily schedule:
 Morning: Check messages (relationship maintenance)
 Afternoon: Create beats (work)
@@ -4173,7 +4173,7 @@ Night: Random events (surprises)
 Forces prioritization
 Makes time valuable
 FOMO drives engagement
-```
+\`\`\`
 
 ---
 
@@ -4181,7 +4181,7 @@ FOMO drives engagement
 **Lesson:** No-win scenarios = Memorable moments
 
 **Application:**
-```
+\`\`\`
 "Save MC Flow or Save Money" (earlier example)
 "Betray friend or lose career"
 "Enable addict or practice tough love"
@@ -4191,7 +4191,7 @@ Both options hurt
 No "right" answer
 Live with guilt
 Replay to see other path
-```
+\`\`\`
 
 ---
 
@@ -4199,7 +4199,7 @@ Replay to see other path
 **Lesson:** Build connection, then force player to destroy it
 
 **Application:**
-```
+\`\`\`
 [Spend 20 hours with Street Poet]
 → Build deep father-figure relationship
 → Help him recover
@@ -4218,7 +4218,7 @@ Replay to see other path
 [Emotional impact]
 Like killing The Boss in MGS3
 Player FEELS the weight
-```
+\`\`\`
 
 ---
 
@@ -4226,7 +4226,7 @@ Player FEELS the weight
 **Lesson:** Skill system that reflects character
 
 **Application:**
-```
+\`\`\`
 [Producer stats affect dialogue]
 
 High "Empathy" stat:
@@ -4242,7 +4242,7 @@ High "Creativity" stat:
 → Street Poet: "You're a real artist."
 
 [Stats shape narrative, not just mechanics]
-```
+\`\`\`
 
 ---
 
@@ -4250,7 +4250,7 @@ High "Creativity" stat:
 **Lesson:** NPCs have lives independent of player
 
 **Application:**
-```
+\`\`\`
 [Artists do things without you]
 
 If you ignore MC Flow for 2 weeks:
@@ -4261,7 +4261,7 @@ If you ignore MC Flow for 2 weeks:
 [Makes world feel real]
 Urgency to maintain relationships
 FOMO drives engagement
-```
+\`\`\`
 
 ---
 
@@ -4284,7 +4284,7 @@ FOMO drives engagement
 
 ## The Perfect Session Loop
 
-```
+\`\`\`
 1. Enter game (check messages, world state)
 2. Morning choice (work vs social)
 3. Create beat (skill gameplay)
@@ -4294,7 +4294,7 @@ FOMO drives engagement
 7. Character moment (emotional scene)
 8. Setup next session (cliffhanger)
 9. Exit game (thinking about next choice)
-```
+\`\`\`
 
 ---
 
@@ -4389,7 +4389,7 @@ FOMO drives engagement
 
 ## Branching Narrative Structure
 
-```
+\`\`\`
 [Main path — guaranteed events]
 - Meet MC Flow
 - Create first beat
@@ -4410,7 +4410,7 @@ FOMO drives engagement
 - Betrayal loop ending (betray everyone)
 - Free spirit ending (leave with Nova)
 - Mentor ending (teach new generation)
-```
+\`\`\`
 
 ---
 

@@ -36,7 +36,7 @@
 **Tier:** 1 (0 rep)
 **Сцена:** "Первая встреча с MC Flow"
 
-```
+\`\`\`
 Location: Твоя bedroom studio
 Context: Tutorial — первое создание бита
 
@@ -47,7 +47,7 @@ MC Flow: "Значит, ты тот новый продюсер, о которо
 
 If quality > 70%: "Окей... неплохо. Давай работать." (+5 rel)
 If quality < 70%: "Ага, это не то. Пока." (уходит, -10 rep)
-```
+\`\`\`
 
 **Unlock:** MC Flow как первый клиент
 **Emotional beat:** Anxiety → Relief/Disappointment
@@ -58,13 +58,13 @@ If quality < 70%: "Ага, это не то. Пока." (уходит, -10 rep)
 **Tier:** 1 (100-300 rep)
 **Сцена:** "Daily grind montage"
 
-```
+\`\`\`
 [Montage cutscene]
 - Day 2: Creating beats in bedroom
 - Night 2: MC Flow texts: "Yo, drop another one?"
 - Day 3: First $500 earned
 - Night 3: Buy first equipment upgrade
-```
+\`\`\`
 
 **Unlock:** Daily tasks система
 **Emotional beat:** Routine → Small wins
@@ -75,7 +75,7 @@ If quality < 70%: "Ага, это не то. Пока." (уходит, -10 rep)
 **Tier:** 1→2 (400-500 rep)
 **Сцена:** "Young Legend появляется"
 
-```
+\`\`\`
 [Notification]
 MC Flow: "Bro, Young Legend слышал твой трек!"
 
@@ -86,7 +86,7 @@ Young Legend (DM): "@ТвоеИмя милый битик. Мило."
 → 💬 Respond politely (+0 rel, neutral)
 → 🔥 Clap back (-5 rel, rivalry starts)
 → 🤐 Ignore (+5 rel with MC Flow, -3 with Young Legend)
-```
+\`\`\`
 
 **Unlock:** Young Legend rivalry arc begins
 **Emotional beat:** Pride → Jealousy/Challenge
@@ -97,7 +97,7 @@ Young Legend (DM): "@ТвоеИмя милый битик. Мило."
 **Tier:** 2 (500-600 rep)
 **Сцена:** "Местный продюсер"
 
-```
+\`\`\`
 [Tier up cutscene]
 Narrator: "500 reputation. You're no longer unknown."
 
@@ -109,7 +109,7 @@ Street Poet (new): "Heard you're making moves. Let's talk."
 → 📞 Call Street Poet immediately (начало его arc)
 → 📧 DM back later (delayed arc)
 → 🚫 Ignore (miss Street Poet arc в Week 1)
-```
+\`\`\`
 
 **Unlock:** Tier 2 artists (Local Hero, Scene Leader, Street Poet)
 **Emotional beat:** Recognition → Opportunity
@@ -122,7 +122,7 @@ Street Poet (new): "Heard you're making moves. Let's talk."
 **Tier:** 2 (600-1000 rep)
 **Сцена:** "Падший наставник"
 
-```
+\`\`\`
 Location: Dark alley, 11 PM meeting
 
 Street Poet: "10 лет назад я был звездой. Теперь... я ничто."
@@ -138,7 +138,7 @@ Street Poet: "Я могу научить тебя всему. Но..."
 → 💵 Give money (enabler path, -$200, +3 rel)
 → 🏠 Offer shelter instead (+10 rel, redemption path начинается)
 → 🚶 Walk away (miss arc, lose Street Poet)
-```
+\`\`\`
 
 **Unlock:** Street Poet mentor arc OR miss him permanently
 **Emotional beat:** Compassion vs Self-preservation
@@ -149,7 +149,7 @@ Street Poet: "Я могу научить тебя всему. Но..."
 **Tier:** 2 (1000-1500 rep)
 **Сцена:** "Ранимый талант"
 
-```
+\`\`\`
 [Notification]
 Lil Dreamer (DM): "Hi... I know I'm nobody, but..."
 "Can you listen to my demo? No one else will."
@@ -161,7 +161,7 @@ Lil Dreamer (DM): "Hi... I know I'm nobody, but..."
 → 💚 "This is amazing. Let's work together." (+15 rel, start arc)
 → 💬 "Good, but needs work." (+5 rel, slower arc)
 → 🚫 Ignore (miss Lil Dreamer completely)
-```
+\`\`\`
 
 **Unlock:** Lil Dreamer collaboration
 **Emotional beat:** Discovery → Excitement
@@ -172,7 +172,7 @@ Lil Dreamer (DM): "Hi... I know I'm nobody, but..."
 **Tier:** 2 (1500-2000 rep)
 **Сцена:** "Первая веха"
 
-```
+\`\`\`
 [Login Day 7]
 Notification: "🔥 7-Day Streak! Reward: $500 + 100 reputation"
 
@@ -182,7 +182,7 @@ MC Flow (call): "Yo! Week down. You're still here."
 [Unlock]
 MC Flow relationship +10
 First viral moment tease (setup for Week 3)
-```
+\`\`\`
 
 **Emotional beat:** Pride → Motivation
 
@@ -194,7 +194,7 @@ First viral moment tease (setup for Week 3)
 **Tier:** 3 (2000-2500 rep)
 **Сцена:** "Региональный мастер"
 
-```
+\`\`\`
 [Tier up cutscene — MAJOR MOMENT]
 Narrator: "2,000 reputation. The city knows your name."
 
@@ -205,7 +205,7 @@ Narrator: "2,000 reputation. The city knows your name."
 - DMs flooding in
 
 Sofia (new, A&R at Empire Records): "We need to talk. Tomorrow. 3 PM."
-```
+\`\`\`
 
 **Unlock:** Tier 3 content, Sofia arc, Industry attention
 **Emotional beat:** Success → Pressure
@@ -216,7 +216,7 @@ Sofia (new, A&R at Empire Records): "We need to talk. Tomorrow. 3 PM."
 **Tier:** 3 (2500-3000 rep)
 **Сцена:** "Взрыв популярности"
 
-```
+\`\`\`
 [2 AM phone call]
 MC Flow (screaming): "YO BRO! ТРЕК ВЗОРВАЛСЯ!"
 "50K PLAYS ЗА НОЧЬ! ЭТО INSANE!"
@@ -231,7 +231,7 @@ Notification: "+500 reputation, +$2000"
 +20 new DMs from artists
 
 MC Flow (voice message): "Bro... ты изменил мою жизнь. Спасибо."
-```
+\`\`\`
 
 **Unlock:** Viral track achievement
 **Emotional beat:** Euphoria → Validation
@@ -242,7 +242,7 @@ MC Flow (voice message): "Bro... ты изменил мою жизнь. Спас
 **Tier:** 3 (3000-3500 rep)
 **Сцена:** "Industry gatekeeper"
 
-```
+\`\`\`
 Location: Empire Records офис, downtown
 
 Sofia: "Impressive. Most producers take years to get here."
@@ -260,7 +260,7 @@ MC Flow (later, finds out): "I understand. This is your shot."
 → 💰 Take the deal (betray MC Flow, fast track)
 → 🤝 Stay loyal (refuse deal, indie path)
 → 💡 Negotiate both (skill check, hard path)
-```
+\`\`\`
 
 **Unlock:** Branching narrative paths
 **Emotional beat:** Temptation → Moral dilemma
@@ -275,7 +275,7 @@ MC Flow (later, finds out): "I understand. This is your shot."
 **Tier:** 3-4 (3500-5000 rep)
 **Сцена:** "Цена успеха"
 
-```
+\`\`\`
 [3 months later montage]
 - You're making $10K per beat
 - Working with famous artists
@@ -295,7 +295,7 @@ MC Flow released album... WITHOUT YOU. #1 on charts.
 
 [Realization]
 They didn't need you. You needed them.
-```
+\`\`\`
 
 **Unlock:** Redemption arc trigger
 **Emotional beat:** Success → Loneliness → Regret
@@ -308,7 +308,7 @@ They didn't need you. You needed them.
 **Tier:** 3 (3500-4000 rep)
 **Сцена:** "Семья важнее"
 
-```
+\`\`\`
 [MC Flow's reaction]
 MC Flow: "You... you refused $50K. For me?"
 [Tries not to cry]
@@ -323,7 +323,7 @@ MC Flow: "I called everyone. We're starting OUR label."
 - Planning indie label together
 - Street Poet: "This is how it should be."
 - Lil Dreamer: "Family first."
-```
+\`\`\`
 
 **Unlock:** Indie label creation path
 **Emotional beat:** Sacrifice → Brotherhood
@@ -334,7 +334,7 @@ MC Flow: "I called everyone. We're starting OUR label."
 **Tier:** 3-4 (4000-5000 rep)
 **Сцена:** "Загадочный DJ"
 
-```
+\`\`\`
 [Club scene, midnight]
 Mysterious DJ with LED mask performing.
 Crowd going WILD.
@@ -350,7 +350,7 @@ DJ Nova: "You. Producer. I need you."
 → 🤝 Accept mystery (start DJ Nova arc)
 → 🔍 Investigate identity (different arc branch)
 → 🚫 Refuse (miss DJ Nova)
-```
+\`\`\`
 
 **Unlock:** DJ Nova mystery arc
 **Emotional beat:** Curiosity → Intrigue
@@ -364,7 +364,7 @@ DJ Nova: "You. Producer. I need you."
 **Multiple character arcs climax**
 
 #### Street Poet Redemption (если помогал)
-```
+\`\`\`
 Day 30: First concert за 10 лет
 Street Poet: "10 лет назад я потерял всё."
 "Один человек поверил в меня. Этот трек для тебя."
@@ -373,10 +373,10 @@ Street Poet: "10 лет назад я потерял всё."
 Crowd crying, standing ovation
 
 Result: +1000 rep, Street Poet mentor unlocked
-```
+\`\`\`
 
 #### Lil Dreamer's Crisis (если работал с ним)
-```
+\`\`\`
 Day 32: Discovers he's going deaf
 Lil Dreamer: "Врач сказал... я потеряю слух. Полностью."
 "Музыка — это всё что у меня есть."
@@ -384,7 +384,7 @@ Lil Dreamer: "Врач сказал... я потеряю слух. Полнос�
 [Choice]
 → 🎵 Help him transition to producing
 → 💔 This is too much burden
-```
+\`\`\`
 
 ---
 
@@ -392,7 +392,7 @@ Lil Dreamer: "Врач сказал... я потеряю слух. Полнос�
 **Tier:** 4 (6000-10000 rep)
 **Convergence всех арок**
 
-```
+\`\`\`
 Day 40: Industry Awards Night
 ALL characters attend together
 
@@ -406,7 +406,7 @@ ALL characters attend together
 
 [Cutscene]
 You realize: Success = People, not money
-```
+\`\`\`
 
 **Emotional beat:** Catharsis → Resolution
 
@@ -415,7 +415,7 @@ You realize: Success = People, not money
 ### День 46-60: Post-Game / TGE Prep
 
 #### Casual/Active Players: Tier 4 Completion
-```
+\`\`\`
 Focus: Finishing character arcs
 - Street Poet: Open rehab facility
 - MC Flow: Start label
@@ -423,23 +423,23 @@ Focus: Finishing character arcs
 - Young Legend: True friendship
 - Sofia: Leave corporate, join indie
 - DJ Nova: Tour together
-```
+\`\`\`
 
 #### Whale Players: Tier 5 Content
-```
+\`\`\`
 Day 50: Tier 5 unlock (15K rep)
 - International level content
 - Collaboration with Black Star Inc
 - NFT drops
 - Leaderboard competition
-```
+\`\`\`
 
 ---
 
 ## 📍 День 60: TGE EVENT 🚀
 
 ### MASSIVE FINALE
-```
+\`\`\`
 [Special Event]
 Token Generation Event
 $BEAT token launches
@@ -465,7 +465,7 @@ MC Flow: "Yo, продюсер! У нас новый артист. Приход�
 
 [Text]
 "The music never stops."
-```
+\`\`\`
 
 ---
 
@@ -525,7 +525,7 @@ MC Flow: "Yo, продюсер! У нас новый артист. Приход�
 
 # 🎭 ЭМОЦИОНАЛЬНАЯ КАРТА (60 ДНЕЙ)
 
-```
+\`\`\`
 Intensity (0-10)
 
 10 |                                    🎉              🏆
@@ -549,7 +549,7 @@ Day 28: (varies by choice path)
 Day 40: 🎉 Awards night climax
 Day 50: Building to finale
 Day 60: 🏆 TGE MASSIVE EVENT
-```
+\`\`\`
 
 ---
 

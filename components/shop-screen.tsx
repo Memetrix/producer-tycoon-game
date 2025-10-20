@@ -16,6 +16,7 @@ import {
 } from "@/lib/telegram-stars"
 import { saveGameState } from "@/lib/game-storage"
 import { DesktopLayout } from "@/components/desktop-layout"
+import { calculateMaxEnergy } from "@/lib/game-state"
 
 interface ShopScreenProps {
   gameState: GameState
@@ -35,14 +36,18 @@ export function ShopScreen({ gameState, setGameState, onNavigate }: ShopScreenPr
       const result = await purchaseTelegramStarsProduct(product.id)
 
       if (result.success && result.reward) {
+        const maxEnergy = calculateMaxEnergy(
+          gameState.musicStyle,
+          gameState.startingBonus,
+          gameState.artists,
+          gameState.skills,
+        )
+
         // Apply rewards to game state
         const updatedState = {
           ...gameState,
           money: gameState.money + (result.reward.money || 0),
-          energy: Math.min(
-            gameState.energy + (result.reward.energy || 0),
-            200, // Max energy cap (TODO: calculate properly)
-          ),
+          energy: Math.min(gameState.energy + (result.reward.energy || 0), maxEnergy),
           reputation: gameState.reputation + (result.reward.reputation || 0),
         }
 

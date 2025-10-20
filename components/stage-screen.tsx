@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { ArrowLeft, Play, Music, Sparkles, ImageIcon } from "lucide-react"
+import { ArrowLeft, Play, Music, Sparkles, ImageIcon, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
@@ -16,8 +16,12 @@ import {
   getSkillPriceMultiplier,
   getSkillEnergyCostReduction,
   getTierPriceMultiplier,
+  getReputationTier,
+  getStageTitle,
+  BEAT_CONTRACTS_POOL,
+  doesBeatQualifyForContract,
 } from "@/lib/game-state"
-import { saveBeat, sellBeats } from "@/lib/game-storage"
+import { saveBeat, sellBeats, saveGameState } from "@/lib/game-storage"
 import { RhythmGameResults } from "@/components/rhythm-game-results"
 import { OSZ_TRACKS, type OszTrack } from "@/lib/music-config"
 import { NftMintModal } from "@/components/nft-mint-modal"
@@ -53,12 +57,22 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
   const [isLoadingTracks, setIsLoadingTracks] = useState(false)
   const [availableDifficulties, setAvailableDifficulties] = useState(0)
   const [isLoadingDifficulties, setIsLoadingDifficulties] = useState(false)
+  const [loadTracksError, setLoadTracksError] = useState<string | null>(null)
+
+  const currentStage = getReputationTier(gameState.reputation)
+  const currentStageTitle = getStageTitle(currentStage)
 
   useEffect(() => {
     const loadTracks = async () => {
       setIsLoadingTracks(true)
+      setLoadTracksError(null)
       try {
         const response = await fetch("/api/songs")
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch songs: ${response.status}`)
+        }
+
         const data = await response.json()
 
         if (data.songs && Array.isArray(data.songs)) {
@@ -71,12 +85,12 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
             oszUrl: song.osz_url,
           }))
 
-          // Combine hardcoded tracks with database tracks
           setAvailableTracks([...OSZ_TRACKS, ...dbTracks])
           console.log("[v0] Loaded tracks:", OSZ_TRACKS.length + dbTracks.length, "total")
         }
       } catch (error) {
         console.error("[v0] Failed to load tracks from database:", error)
+        setLoadTracksError("Не удалось загрузить треки из базы данных")
         // Keep using hardcoded tracks if database fetch fails
       } finally {
         setIsLoadingTracks(false)
@@ -141,19 +155,55 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
       const reputationGain = Math.floor(currentBeat.quality / 5)
       console.log("[v0] Reputation gain:", reputationGain, "(quality:", currentBeat.quality, "/ 5)")
 
-      setGameState((prev) => {
-        const newReputation = prev.reputation + reputationGain
-        console.log("[v0] New reputation:", newReputation, "(was:", prev.reputation, ")")
+      const updatedContractProgress = { ...gameState.beatContracts.contractProgress }
+      let contractsUpdated = false
 
-        return {
+      for (const contractId of gameState.beatContracts.activeContracts) {
+        const contract = BEAT_CONTRACTS_POOL.find((c) => c.id === contractId)
+        if (!contract) continue
+
+        const progress = updatedContractProgress[contractId]
+        if (!progress) continue
+
+        // Check if beat qualifies for this contract
+        if (doesBeatQualifyForContract(contract, currentBeat.quality, rhythmAccuracy)) {
+          progress.qualifyingBeats.push(currentBeat.id)
+          progress.beatsCreated += 1
+          contractsUpdated = true
+          console.log(
+            "[v0] Beat qualifies for contract:",
+            contractId,
+            "Progress:",
+            progress.qualifyingBeats.length,
+            "/",
+            contract.requirements.beats,
+          )
+        }
+      }
+
+      setGameState((prev) => {
+        const newState = {
           ...prev,
           beats: [currentBeat, ...prev.beats],
           money: prev.money + currentBeat.price,
-          reputation: newReputation,
+          reputation: prev.reputation + reputationGain,
           totalMoneyEarned: prev.totalMoneyEarned + currentBeat.price,
           totalBeatsEarnings: (prev.totalBeatsEarnings || 0) + currentBeat.price,
           stageProgress: Math.min(100, prev.stageProgress + 5),
+          beatContracts: contractsUpdated
+            ? {
+                ...prev.beatContracts,
+                contractProgress: updatedContractProgress,
+              }
+            : prev.beatContracts,
         }
+
+        // Save to database
+        if (contractsUpdated) {
+          saveGameState(newState)
+        }
+
+        return newState
       })
 
       setCurrentBeat(null)
@@ -359,6 +409,24 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     setShowResults(true)
     setIsPlayingRhythm(false)
     onRhythmGameStateChange?.(false)
+  }
+
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+
+    if (diffMins < 1) return "Только что"
+    if (diffMins < 60) return `${diffMins} мин назад`
+
+    const diffHours = Math.floor(diffMins / 60)
+    if (diffHours < 24) return `${diffHours} ч назад`
+
+    const diffDays = Math.floor(diffHours / 24)
+    if (diffDays < 7) return `${diffDays} дн назад`
+
+    return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" })
   }
 
   // Render rhythm game when isPlayingRhythm is true
@@ -567,13 +635,17 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
           </Button>
           <div>
             <h1 className="text-lg font-semibold">Создать бит</h1>
-            <p className="text-xs text-muted-foreground">Этап 1: Улица - Начало пути</p>
+            <p className="text-xs text-muted-foreground">
+              Этап {currentStage}: {currentStageTitle}
+            </p>
           </div>
         </div>
 
         <div className="hidden lg:block mb-6">
           <h1 className="text-3xl font-bold mb-2">Создать бит</h1>
-          <p className="text-muted-foreground">Этап 1: Улица - Начало пути</p>
+          <p className="text-muted-foreground">
+            Этап {currentStage}: {currentStageTitle}
+          </p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 lg:p-0 pb-20 lg:pb-0 space-y-4">
@@ -656,7 +728,7 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
                         variant="outline"
                         className="w-full border-primary/30 hover:bg-primary/10 bg-transparent"
                         onClick={() => setShowNftModal(true)}
-                        disabled={isGeneratingName || isGeneratingCover}
+                        disabled={isGeneratingName || isGeneratingCover || isSelling}
                       >
                         <ImageIcon className="w-5 h-5 mr-2" />
                         Создать NFT
@@ -716,8 +788,12 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm">{beat.name}</p>
+                            <p className="font-semibold text-sm truncate">{beat.name}</p>
                             <p className="text-xs text-muted-foreground">Качество: {beat.quality}%</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3" />
+                              {formatDate(beat.createdAt)}
+                            </p>
                           </div>
                           <div className="text-right">
                             <p className="font-bold text-primary">${beat.price}</p>

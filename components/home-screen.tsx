@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
-import { getStageTitle, getReputationTier } from "@/lib/game-state"
+import { getStageTitle, getReputationTier, ENERGY_CONFIG } from "@/lib/game-state"
 import { OfflineEarningsModal } from "@/components/offline-earnings-modal"
 import { DesktopLayout } from "@/components/desktop-layout"
 
@@ -32,6 +32,15 @@ export function HomeScreen({
   const currentStage = getReputationTier(gameState.reputation)
   const currentStageTitle = getStageTitle(currentStage)
 
+  const getMaxEnergy = () => {
+    let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
+    if (gameState.musicStyle === "electronic") maxEnergy += 30
+    if (gameState.startingBonus === "energizer") maxEnergy += 50
+    return maxEnergy
+  }
+
+  const maxEnergy = getMaxEnergy()
+
   useEffect(() => {
     if (offlineEarnings && offlineEarnings.earnings > 0) {
       setShowOfflineModal(true)
@@ -43,9 +52,17 @@ export function HomeScreen({
     setShowOfflineModal(false)
   }
 
+  const getNextTierInfo = () => {
+    const nextStage = currentStage + 1
+    const nextStageTitle = getStageTitle(nextStage)
+    return { nextStage, nextStageTitle }
+  }
+
+  const { nextStageTitle } = getNextTierInfo()
+
   return (
     <DesktopLayout maxWidth="2xl">
-      <div className="flex flex-col h-full pb-20 lg:pb-0">
+      <div className="flex flex-col h-full pb-20 lg:pb-0 bg-background">
         {showOfflineModal && offlineEarnings && (
           <OfflineEarningsModal
             earnings={offlineEarnings.earnings}
@@ -113,13 +130,7 @@ export function HomeScreen({
                 <span className="text-xs text-muted-foreground">Энергия</span>
               </div>
               <p className="text-lg font-bold text-accent">
-                {Math.round(gameState.energy)}/{(() => {
-                  const ENERGY_CONFIG = { BASE_MAX_ENERGY: 150 }
-                  let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
-                  if (gameState.musicStyle === "electronic") maxEnergy += 30
-                  if (gameState.startingBonus === "energizer") maxEnergy += 50
-                  return maxEnergy
-                })()}
+                {Math.round(gameState.energy)}/{maxEnergy}
               </p>
             </div>
           </div>
@@ -152,13 +163,7 @@ export function HomeScreen({
                 <span className="text-sm text-muted-foreground">Энергия</span>
               </div>
               <p className="text-2xl font-bold text-accent">
-                {Math.round(gameState.energy)}/{(() => {
-                  const ENERGY_CONFIG = { BASE_MAX_ENERGY: 150 }
-                  let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
-                  if (gameState.musicStyle === "electronic") maxEnergy += 30
-                  if (gameState.startingBonus === "energizer") maxEnergy += 50
-                  return maxEnergy
-                })()}
+                {Math.round(gameState.energy)}/{maxEnergy}
               </p>
             </div>
           </div>
@@ -171,10 +176,19 @@ export function HomeScreen({
               <Card className="p-6 bg-gradient-to-br from-card via-card to-primary/10 border-primary/30 shadow-lg animate-slide-in-up">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h2 className="text-xl font-semibold mb-1">Этап {currentStage}: Улица</h2>
+                    <h2 className="text-xl font-semibold mb-1">
+                      Этап {currentStage}: {currentStageTitle}
+                    </h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Ты начинаешь с нуля. Создавай биты на телефоне, продавай местным рэперам и зарабатывай репутацию.
-                      Впереди путь от уличного битмейкера до мирового продюсера.
+                      {currentStage === 1 &&
+                        "Ты начинаешь с нуля. Создавай биты на телефоне, продавай местным рэперам и зарабатывай репутацию."}
+                      {currentStage === 2 &&
+                        "Ты уже известен в районе. Пора обзавестись домашней студией и работать с более серьезными артистами."}
+                      {currentStage === 3 &&
+                        "Твое имя знают в городе. Профессиональная студия и контракты с известными артистами ждут тебя."}
+                      {currentStage === 4 && "Ты стал национальной звездой. Крупные лейблы хотят работать с тобой."}
+                      {currentStage === 5 && "Твои биты звучат по всему миру. Ты на пути к легендарному статусу."}
+                      {currentStage >= 6 && "Ты достиг вершины. Ты - легенда музыкальной индустрии!"}
                     </p>
                   </div>
                   <div className="text-3xl animate-float">🎧</div>
@@ -182,7 +196,9 @@ export function HomeScreen({
 
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">До домашней студии</span>
+                    <span className="text-muted-foreground">
+                      {currentStage < 6 ? `До ${nextStageTitle}` : "Максимальный уровень"}
+                    </span>
                     <span className="font-semibold text-primary">{gameState.stageProgress}%</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -261,24 +277,23 @@ export function HomeScreen({
                   Последняя активность
                 </h3>
                 <div className="space-y-2">
-                  {gameState.beats.slice(0, 5).map((beat, i) => (
-                    <Card key={beat.id} className="p-3 flex items-center gap-3 shadow-sm">
-                      <span className="text-2xl">💰</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          Продал бит "{beat.name}" за ${beat.price}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Только что</p>
-                      </div>
-                    </Card>
-                  ))}
-                  {gameState.beats.length === 0 && (
-                    <Card className="p-3 flex items-center gap-3 shadow-sm">
-                      <span className="text-2xl">🎵</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">Начни создавать биты!</p>
-                        <p className="text-xs text-muted-foreground">Твой путь к славе начинается здесь</p>
-                      </div>
+                  {gameState.beats.length > 0 ? (
+                    gameState.beats.slice(0, 5).map((beat) => (
+                      <Card key={beat.id} className="p-3 flex items-center gap-3 shadow-sm">
+                        <span className="text-2xl">💰</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            Продал бит "{beat.name}" за ${beat.price}
+                          </p>
+                          <p className="text-xs text-muted-foreground">Качество: {beat.quality}%</p>
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <Card className="p-4 text-center shadow-sm">
+                      <span className="text-4xl mb-2 block">🎵</span>
+                      <p className="text-sm font-medium mb-1">Начни создавать биты!</p>
+                      <p className="text-xs text-muted-foreground">Твой путь к славе начинается здесь</p>
                     </Card>
                   )}
                 </div>

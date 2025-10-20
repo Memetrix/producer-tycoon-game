@@ -90,6 +90,14 @@ export interface GameState {
     activeContracts: string[] // IDs of active contracts
     completedContracts: string[] // IDs of completed contracts (for history)
     lastRefreshDate: string // ISO date string
+    contractProgress: Record<
+      string,
+      {
+        beatsCreated: number // Number of beats created for this contract
+        startedAt: string // ISO date when contract was accepted
+        qualifyingBeats: string[] // IDs of beats that meet requirements
+      }
+    >
   }
 
   labelDeals: {
@@ -282,6 +290,7 @@ export const INITIAL_GAME_STATE: GameState = {
     activeContracts: [],
     completedContracts: [],
     lastRefreshDate: "",
+    contractProgress: {},
   },
   labelDeals: {
     indie: false,
@@ -1151,4 +1160,125 @@ export function calculateNFTMintCost(quality: number): number {
     case "common":
       return 25
   }
+}
+
+export function doesBeatQualifyForContract(contract: BeatContract, beatQuality: number, beatAccuracy: number): boolean {
+  if (contract.requirements.minQuality && beatQuality < contract.requirements.minQuality) {
+    return false
+  }
+  if (contract.requirements.minAccuracy && beatAccuracy < contract.requirements.minAccuracy) {
+    return false
+  }
+  return true
+}
+
+export function isContractCompleted(
+  contract: BeatContract,
+  progress: { beatsCreated: number; qualifyingBeats: string[] },
+): boolean {
+  const requiredBeats = contract.requirements.beats || 1
+  return progress.qualifyingBeats.length >= requiredBeats
+}
+
+export function isContractExpired(contract: BeatContract, startedAt: string): boolean {
+  if (!contract.requirements.timeLimit) return false
+
+  const started = new Date(startedAt)
+  const now = new Date()
+  const hoursElapsed = (now.getTime() - started.getTime()) / (1000 * 60 * 60)
+
+  return hoursElapsed > contract.requirements.timeLimit
+}
+
+export function getContractRemainingTime(contract: BeatContract, startedAt: string): number {
+  if (!contract.requirements.timeLimit) return 0
+
+  const started = new Date(startedAt)
+  const now = new Date()
+  const hoursElapsed = (now.getTime() - started.getTime()) / (1000 * 60 * 60)
+  const hoursRemaining = Math.max(0, contract.requirements.timeLimit - hoursElapsed)
+
+  return Math.floor(hoursRemaining)
+}
+
+// ============================================================================
+// GAME MECHANICS CALCULATIONS
+// ============================================================================
+
+export function calculateBeatQuality(
+  accuracy: number,
+  equipment: GameState["equipment"],
+  skills: GameState["skills"],
+): number {
+  // Base quality from accuracy (0-100)
+  let quality = accuracy
+
+  // Equipment bonus (each level adds quality)
+  const equipmentBonus =
+    equipment.phone * 2 +
+    equipment.headphones * 2 +
+    equipment.microphone * 2 +
+    equipment.computer * 3 +
+    equipment.midi * 2 +
+    equipment.audioInterface * 3
+
+  quality += equipmentBonus
+
+  // Skills bonus
+  const skillBonus = getSkillQualityBonus(skills)
+  quality += skillBonus
+
+  // Cap at 100
+  return Math.min(100, Math.round(quality))
+}
+
+export function calculateBeatPrice(
+  quality: number,
+  difficulty: number,
+  reputation: number,
+  skills: GameState["skills"],
+): number {
+  // Base price from quality and difficulty
+  const basePrice = quality * 10 + difficulty * 50
+
+  // Reputation tier multiplier
+  const tierMultiplier = getTierPriceMultiplier(reputation)
+
+  // Skills multiplier
+  const skillMultiplier = getSkillPriceMultiplier(skills)
+
+  const finalPrice = Math.floor(basePrice * tierMultiplier * skillMultiplier)
+
+  return Math.max(100, finalPrice) // Minimum $100
+}
+
+export function calculateMaxEnergy(
+  musicStyle: MusicStyle,
+  startingBonus: StartingBonus,
+  artists: GameState["artists"],
+  skills: GameState["skills"],
+): number {
+  let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
+
+  // Skills bonus
+  const skillMaxEnergyBonus = getSkillMaxEnergyBonus(skills)
+  maxEnergy = Math.floor(maxEnergy * (1 + skillMaxEnergyBonus))
+
+  // Music style bonus
+  if (musicStyle === "electronic") maxEnergy += 30
+
+  // Starting bonus
+  if (startingBonus === "energizer") maxEnergy += 50
+
+  // Artists bonus
+  const artistBonus = getTotalEnergyBonus(artists)
+  maxEnergy += artistBonus
+
+  return maxEnergy
+}
+
+export function calculateEnergyCost(skills: GameState["skills"]): number {
+  const baseCost = ENERGY_CONFIG.ENERGY_COST_PER_BEAT
+  const reduction = getSkillEnergyCostReduction(skills)
+  return Math.floor(baseCost * (1 - reduction))
 }
