@@ -57,7 +57,7 @@
 **БАГИ:**
 
 #### 🔴 CRITICAL: Price calculation bug (строки 127-142)
-```typescript
+\`\`\`typescript
 const calculatePrice = (quality: number, difficulty: number) => {
   const basePrice = 30
   const qualityBonus = Math.floor((quality - 60) * 1.5)  // ❌ БАГ! Отрицательное при quality < 60
@@ -68,17 +68,17 @@ const calculatePrice = (quality: number, difficulty: number) => {
     Math.floor((basePrice + qualityBonus + reputationBonus) * difficultyMultiplier),
   )
 }
-```
+\`\`\`
 
 **Проблема:** Если quality < 60%, `qualityBonus` станет отрицательным, что может существенно снизить цену.
 
 **Предложенное решение:**
-```typescript
+\`\`\`typescript
 const qualityBonus = Math.max(0, Math.floor((quality - 60) * 1.5))
-```
+\`\`\`
 
 #### ⚠️ MEDIUM: Quality calculation equipment bonus (строка 114)
-```typescript
+\`\`\`typescript
 const equipmentBonus = Math.floor(
   (gameState.equipment.phone * 2 +
     gameState.equipment.headphones * 2 +
@@ -88,7 +88,7 @@ const equipmentBonus = Math.floor(
     (gameState.equipment.audioInterface || 0) * 4) *
     0.3, // ⚠️ Раньше было 0.5, теперь 0.3 - балансовое изменение?
 )
-```
+\`\`\`
 
 **Вопрос:** Было ли это намеренное изменение баланса?
 
@@ -110,7 +110,7 @@ const equipmentBonus = Math.floor(
 **БАГИ:**
 
 #### ⚠️ MEDIUM: Refresh logic (строки 254-266)
-```typescript
+\`\`\`typescript
 <Button
   variant="outline"
   onClick={refreshContracts}
@@ -120,7 +120,7 @@ const equipmentBonus = Math.floor(
     ? "Завершите активные контракты для обновления"
     : "Обновить доступные контракты"}
 </Button>
-```
+\`\`\`
 
 **Проблема:** Игроки не могут обновить доступные контракты, пока не завершат ВСЕ активные. Но в реальности может быть ситуация, когда хочешь взять новый контракт, не завершая старый.
 
@@ -225,7 +225,7 @@ const equipmentBonus = Math.floor(
 
 ### ARTISTS_CONFIG (строки ~800-850)
 ✅ Полная конфигурация 8 артистов:
-```typescript
+\`\`\`typescript
 {
   "street-poet": { tier: 1, genre: "conscious", basePrice: 50, requiresReputation: 0 },
   "mc-flow": { tier: 1, genre: "hip-hop", basePrice: 75 },
@@ -236,18 +236,18 @@ const equipmentBonus = Math.floor(
   "city-star": { tier: 3, genre: "pop", basePrice: 300, requiresReputation: 2000 },
   "state-champion": { tier: 3, genre: "hip-hop", basePrice: 400, requiresReputation: 2000 },
 }
-```
+\`\`\`
 
 **Проверка:** Все артисты имеют avatars в artists-screen.tsx? ✅ ДА
 
 ### ENERGY_CONFIG (строки ~700-750)
-```typescript
+\`\`\`typescript
 {
   BASE_MAX_ENERGY: 150,
   ENERGY_REGEN_PER_MINUTE: 2,
   ENERGY_COST_PER_BEAT: 15,
 }
-```
+\`\`\`
 
 **Математика:**
 - Full regen time: 150 / 2 = **75 минут** ✅
@@ -366,13 +366,13 @@ const equipmentBonus = Math.floor(
 ## 🔧 Предложенные фиксы
 
 ### Fix #1: Price Calculation
-```typescript
+\`\`\`typescript
 // stage-screen.tsx, строка 132
 const qualityBonus = Math.max(0, Math.floor((quality - 60) * 1.5))
-```
+\`\`\`
 
 ### Fix #2: Contracts Refresh
-```typescript
+\`\`\`typescript
 // contracts-screen.tsx, строка 260
 disabled={false}  // Всегда разрешать refresh
 // И в handleRefresh добавить:
@@ -386,15 +386,15 @@ setGameState(prev => ({
     activeContracts: remainingActive, // Не трогать активные
   }
 }))
-```
+\`\`\`
 
 ### Fix #3: Offline Earnings Cap
-```typescript
+\`\`\`typescript
 // Добавить где-то в game-state.ts или offline calculation:
 const MAX_OFFLINE_HOURS = 4
 const cappedMinutes = Math.min(minutesAway, MAX_OFFLINE_HOURS * 60)
 const earnings = totalPassiveIncome * cappedMinutes
-```
+\`\`\`
 
 ---
 

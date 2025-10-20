@@ -23,6 +23,7 @@ import {
   getLabelDealsPassiveIncome,
   getSkillMaxEnergyBonus,
   getSkillEnergyRegenBonus,
+  type Contract,
 } from "@/lib/game-state"
 import { createBrowserClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
@@ -115,6 +116,32 @@ export default function Page() {
             savedState.money += offlineData.earnings
             savedState.totalMoneyEarned += offlineData.earnings
             setOfflineEarnings(offlineData)
+          }
+
+          if (savedState.activeContracts && savedState.activeContracts.length > 0) {
+            const now = Date.now()
+            const expiredContracts: Contract[] = []
+            const validContracts: Contract[] = []
+
+            savedState.activeContracts.forEach((contract) => {
+              if (contract.timeLimit && contract.acceptedAt) {
+                const timeElapsed = now - contract.acceptedAt
+                const timeLimitMs = contract.timeLimit * 60 * 1000 // convert minutes to ms
+
+                if (timeElapsed >= timeLimitMs) {
+                  expiredContracts.push(contract)
+                } else {
+                  validContracts.push(contract)
+                }
+              } else {
+                validContracts.push(contract)
+              }
+            })
+
+            if (expiredContracts.length > 0) {
+              console.log(`[v0] ${expiredContracts.length} contract(s) expired while offline`)
+              savedState.activeContracts = validContracts
+            }
           }
 
           savedState.lastActive = new Date().toISOString()

@@ -42,7 +42,7 @@
 Обновил все строки бонусов в `MUSIC_STYLES` и `STARTING_BONUSES` чтобы точно соответствовать реальным значениям из `lib/game-state.ts`.
 
 **Код ДО исправления:**
-```typescript
+\`\`\`typescript
 const MUSIC_STYLES = [
   {
     id: "hiphop",
@@ -84,10 +84,10 @@ const STARTING_BONUSES = [
     bonus: "+50 к максимальной энергии", // ⚠️ НЕПОЛНО
   },
 ]
-```
+\`\`\`
 
 **Код ПОСЛЕ исправления:**
-```typescript
+\`\`\`typescript
 const MUSIC_STYLES = [
   {
     id: "hip-hop", // ALSO FIXED: added hyphen for consistency
@@ -130,7 +130,7 @@ const STARTING_BONUSES = [
     bonus: "+50 энергии + $200", // FIXED: было +50 энергии без денег
   },
 ]
-```
+\`\`\`
 
 ### 📊 Результат:
 ✅ UI теперь показывает ПРАВИЛЬНЫЕ значения бонусов
@@ -161,7 +161,7 @@ const STARTING_BONUSES = [
 Добавил `Math.max(0, ...)` обертку для предотвращения отрицательных значений.
 
 **Код ДО исправления:**
-```typescript
+\`\`\`typescript
 const calculatePrice = (quality: number, difficulty: number) => {
   const basePrice = 30
   const qualityBonus = Math.floor((quality - 60) * 1.5) // ❌ BUG: может быть отрицательным!
@@ -177,10 +177,10 @@ const calculatePrice = (quality: number, difficulty: number) => {
 
   return Math.max(10, finalPrice)
 }
-```
+\`\`\`
 
 **Код ПОСЛЕ исправления:**
-```typescript
+\`\`\`typescript
 const calculatePrice = (quality: number, difficulty: number) => {
   const basePrice = 30
   const qualityBonus = Math.max(0, Math.floor((quality - 60) * 1.5)) // FIXED: prevent negative bonus
@@ -196,7 +196,7 @@ const calculatePrice = (quality: number, difficulty: number) => {
 
   return Math.max(10, finalPrice)
 }
-```
+\`\`\`
 
 ### 📊 Результат:
 ✅ Теперь при качестве < 60% бонус просто 0 (честно)
@@ -222,25 +222,25 @@ const calculatePrice = (quality: number, difficulty: number) => {
 ### 🔍 Что было сломано:
 
 **Старая логика:**
-```typescript
+\`\`\`typescript
 disabled={activeContractsList.length > 0}
-```
+\`\`\`
 
 Если игрок брал хотя бы 1 контракт, кнопка обновления блокировалась навсегда (пока все не завершишь).
 
 **Текст кнопки:**
-```typescript
+\`\`\`typescript
 {activeContractsList.length > 0
   ? "Завершите активные контракты для обновления"
   : "Обновить доступные контракты"}
-```
+\`\`\`
 
 ### ✅ Решение:
 
 Убрал ограничение - теперь игроки могут обновлять доступные контракты в любое время.
 
 **Код ДО исправления:**
-```typescript
+\`\`\`typescript
 <Button
   variant="outline"
   size="sm"
@@ -253,10 +253,10 @@ disabled={activeContractsList.length > 0}
     ? "Завершите активные контракты для обновления"
     : "Обновить доступные контракты"}
 </Button>
-```
+\`\`\`
 
 **Код ПОСЛЕ исправления:**
-```typescript
+\`\`\`typescript
 <Button
   variant="outline"
   size="sm"
@@ -267,7 +267,7 @@ disabled={activeContractsList.length > 0}
   <RefreshCw className="w-4 h-4 mr-2" />
   Обновить доступные контракты
 </Button>
-```
+\`\`\`
 
 ### 📊 Результат:
 ✅ Игроки могут обновлять доступные контракты в любое время
@@ -293,13 +293,13 @@ disabled={activeContractsList.length > 0}
 ### 🔍 Что было сломано:
 
 **Inconsistency:**
-```typescript
+\`\`\`typescript
 // character-creation.tsx
 id: "hiphop", // ❌ БЕЗ дефиса
 
 // game-state.ts
 type MusicStyle = "hip-hop" | "trap" | "rnb" | "pop" | "electronic"
-```
+\`\`\`
 
 **Потенциальные проблемы:**
 - TypeScript type checking не работает
@@ -313,27 +313,27 @@ type MusicStyle = "hip-hop" | "trap" | "rnb" | "pop" | "electronic"
 **Изменения в `character-creation.tsx`:**
 
 1. **Music style ID** (строка 23):
-```typescript
+\`\`\`typescript
 // ДО:
 id: "hiphop",
 
 // ПОСЛЕ:
 id: "hip-hop", // FIXED: added hyphen for consistency
-```
+\`\`\`
 
 2. **Border color conditional** (строка 254):
-```typescript
+\`\`\`typescript
 // ДО:
 borderColor: `oklch(0.65 0.25 ${style.id === "hiphop" ? "30" : ...})`
 
 // ПОСЛЕ:
 borderColor: `oklch(0.65 0.25 ${style.id === "hip-hop" ? "30" : ...})`
-```
+\`\`\`
 
 **Изменения в `app/page.tsx`:**
 
 1. **Avatar regeneration** (строка 238):
-```typescript
+\`\`\`typescript
 // ДО:
 const MUSIC_STYLES = [
   { id: "hiphop", prompt: "hip hop music producer..." },
@@ -345,10 +345,10 @@ const MUSIC_STYLES = [
   { id: "hip-hop", prompt: "hip hop music producer..." },
   // ...
 ]
-```
+\`\`\`
 
 2. **Bonus application** (строка 290):
-```typescript
+\`\`\`typescript
 // ДО:
 if (pendingCharacter.musicStyle === "hiphop") {
   updatedState.money += 200
@@ -358,7 +358,7 @@ if (pendingCharacter.musicStyle === "hiphop") {
 if (pendingCharacter.musicStyle === "hip-hop") {
   updatedState.money += 200
 }
-```
+\`\`\`
 
 ### 📊 Результат:
 ✅ Все ID теперь используют "hip-hop" с дефисом
@@ -407,7 +407,7 @@ if (pendingCharacter.musicStyle === "hip-hop") {
 **Проблема:** Character Creation и Game State дублируют данные о бонусах
 
 **Решение:**
-```typescript
+\`\`\`typescript
 // character-creation.tsx
 import { MUSIC_STYLES, STARTING_BONUSES } from "@/lib/game-state"
 
@@ -419,14 +419,14 @@ const musicStylesArray = Object.entries(MUSIC_STYLES).map(([id, data]) => ({
   color: getColorForStyle(id),
   prompt: getPromptForStyle(id),
 }))
-```
+\`\`\`
 
 ### 2. TypeScript строгость
 Добавить строгую типизацию для music style IDs:
-```typescript
+\`\`\`typescript
 // Вместо string использовать:
 musicStyle: MusicStyle // "hip-hop" | "trap" | "rnb" | "pop" | "electronic"
-```
+\`\`\`
 
 ### 3. Тесты
 Добавить unit тесты для:

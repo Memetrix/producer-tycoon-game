@@ -38,7 +38,7 @@
 ### Код расхождений
 
 #### Character Creation (НЕВЕРНЫЕ данные):
-```typescript
+\`\`\`typescript
 // components/character-creation.tsx:21-62
 const MUSIC_STYLES = [
   {
@@ -81,10 +81,10 @@ const STARTING_BONUSES = [
     bonus: "+50 к максимальной энергии", // ⚠️ НЕПОЛНО! Ещё +$200
   },
 ]
-```
+\`\`\`
 
 #### Game State (ПРАВИЛЬНЫЕ данные):
-```typescript
+\`\`\`typescript
 // lib/game-state.ts:154-215
 export const MUSIC_STYLES: Record<MusicStyle, ...> = {
   "hip-hop": {
@@ -118,7 +118,7 @@ export const STARTING_BONUSES: Record<StartingBonus, ...> = {
     bonus: "+50 максимальной энергии + $200", // ✅ ПРАВИЛЬНО
   },
 }
-```
+\`\`\`
 
 ### Решение
 **Нужно обновить `character-creation.tsx` чтобы показывать ПРАВИЛЬНЫЕ значения.**
@@ -140,14 +140,14 @@ export const STARTING_BONUSES: Record<StartingBonus, ...> = {
 Character Creation использует `id: "hiphop"`, но Game State ожидает `"hip-hop"` (с дефисом).
 
 ### Код
-```typescript
+\`\`\`typescript
 // character-creation.tsx:23
 id: "hiphop", // ❌ БЕЗ дефиса
 
 // game-state.ts:155 + 229
 musicStyle: "hip-hop", // ✅ С дефисом
 export type MusicStyle = "hip-hop" | "trap" | "rnb" | "pop" | "electronic"
-```
+\`\`\`
 
 ### Влияние
 Если игрок выбирает Hip-Hop:
@@ -162,9 +162,9 @@ export type MusicStyle = "hip-hop" | "trap" | "rnb" | "pop" | "electronic"
 
 ### Решение
 Изменить `character-creation.tsx` строка 23:
-```typescript
+\`\`\`typescript
 id: "hip-hop", // Добавить дефис
-```
+\`\`\`
 
 ### Приоритет
 ⚠️ **HIGH** - может сломать применение бонусов
@@ -185,7 +185,7 @@ id: "hip-hop", // Добавить дефис
 ## 🔧 Рекомендуемые фиксы (в порядке приоритета)
 
 ### Fix #1: Character Creation bonuses (CRITICAL)
-```typescript
+\`\`\`typescript
 // components/character-creation.tsx
 // ВМЕСТО hardcoded MUSIC_STYLES и STARTING_BONUSES:
 
@@ -208,25 +208,25 @@ const startingBonusesArray = Object.entries(STARTING_BONUSES).map(([id, data]) =
   bonus: data.bonus, // ✅ Теперь всегда правильный!
   icon: data.icon,
 }))
-```
+\`\`\`
 
 ### Fix #2: Music Style ID
-```typescript
+\`\`\`typescript
 // character-creation.tsx, строка 23
 id: "hip-hop", // Добавить дефис
-```
+\`\`\`
 
 ### Fix #3: Price calculation
-```typescript
+\`\`\`typescript
 // stage-screen.tsx, строка 132
 const qualityBonus = Math.max(0, Math.floor((quality - 60) * 1.5))
-```
+\`\`\`
 
 ### Fix #4: Contracts refresh
-```typescript
+\`\`\`typescript
 // contracts-screen.tsx, строка 260
 disabled={false} // Всегда разрешать
-```
+\`\`\`
 
 ---
 
