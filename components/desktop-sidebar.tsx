@@ -30,7 +30,7 @@ export function DesktopSidebar({ currentScreen, onNavigate, gameState }: Desktop
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/50">
             <img
-              src={gameState.playerAvatar || "/placeholder.svg?height=48&width=48"}
+              src={gameState.playerAvatar || "/default-avatar.svg"}
               alt={gameState.playerName}
               className="w-full h-full object-cover"
             />

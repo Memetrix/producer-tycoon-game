@@ -15,22 +15,22 @@ export function Onboarding({ onComplete }: OnboardingProps) {
     {
       title: "Добро пожаловать в Producer Tycoon",
       description: "Пройди путь от уличного битмейкера до мирового продюсера и владельца лейбла",
-      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/loading-screen.png",
+      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/loading-screen.webp",
     },
     {
       title: "Создавай биты на улице",
       description: "Начни с телефона, продавай треки местным рэперам и зарабатывай первую репутацию",
-      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/stage-bg.png",
+      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/stage-bg.webp",
     },
     {
       title: "Работай с артистами",
       description: "Находи таланты, создавай коллаборации и выпускай хиты, которые прославят тебя",
-      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-0.png",
+      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-0.webp",
     },
     {
       title: "Построй музыкальную империю",
       description: "Открой свой лейбл, улучшай студию и становись легендой музыкальной индустрии",
-      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/studio-bg.png",
+      image: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/studio-bg.webp",
     },
   ]
 
@@ -66,7 +66,7 @@ export function Onboarding({ onComplete }: OnboardingProps) {
         <div className="w-full max-w-sm mb-8 relative">
           <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[oklch(0.65_0.25_250)]/20 to-[oklch(0.6_0.22_320)]/20">
             <img
-              src={slides[currentSlide].image || "/placeholder.svg"}
+              src={slides[currentSlide].image || "/onboarding-1-welcome.webp"}
               alt={slides[currentSlide].title}
               className="w-full h-full object-cover"
             />

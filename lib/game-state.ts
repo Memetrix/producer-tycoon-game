@@ -440,7 +440,7 @@ export const ARTISTS_CONFIG = {
   "street-poet": {
     id: "street-poet",
     name: "Street Poet",
-    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-1.png",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-1.webp",
     skill: 58,
     popularity: 52,
     genre: "Сознательный",
@@ -453,7 +453,7 @@ export const ARTISTS_CONFIG = {
   "mc-flow": {
     id: "mc-flow",
     name: "MC Flow",
-    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-2.png",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-2.webp",
     skill: 65,
     popularity: 45,
     genre: "Хип-хоп",
@@ -466,7 +466,7 @@ export const ARTISTS_CONFIG = {
   "lil-dreamer": {
     id: "lil-dreamer",
     name: "Lil Dreamer",
-    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-3.png",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-3.webp",
     skill: 72,
     popularity: 38,
     genre: "Трэп",
@@ -479,7 +479,7 @@ export const ARTISTS_CONFIG = {
   "young-legend": {
     id: "young-legend",
     name: "Young Legend",
-    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-4.png",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-4.webp",
     skill: 85,
     popularity: 70,
     genre: "Хип-хоп",
@@ -495,7 +495,7 @@ export const ARTISTS_CONFIG = {
   "local-hero": {
     id: "local-hero",
     name: "Local Hero",
-    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-5.png",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-5.webp",
     skill: 78,
     popularity: 65,
     genre: "R&B",
@@ -509,7 +509,7 @@ export const ARTISTS_CONFIG = {
   "scene-leader": {
     id: "scene-leader",
     name: "Scene Leader",
-    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-6.png",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-6.webp",
     skill: 82,
     popularity: 72,
     genre: "Trap",
@@ -525,7 +525,7 @@ export const ARTISTS_CONFIG = {
   "city-star": {
     id: "city-star",
     name: "City Star",
-    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-7.png",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-7.webp",
     skill: 88,
     popularity: 80,
     genre: "Pop",
@@ -539,7 +539,7 @@ export const ARTISTS_CONFIG = {
   "state-champion": {
     id: "state-champion",
     name: "State Champion",
-    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-8.png",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-8.webp",
     skill: 92,
     popularity: 85,
     genre: "Hip-Hop",

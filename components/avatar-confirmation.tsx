@@ -49,7 +49,7 @@ export function AvatarConfirmation({ character, onConfirm, onRegenerate }: Avata
           <div className="relative">
             <div className="w-48 h-48 rounded-3xl overflow-hidden border-4 border-[oklch(0.65_0.25_250)] shadow-2xl">
               <img
-                src={character.avatar || "/placeholder.svg"}
+                src={character.avatar || "/default-avatar.svg"}
                 alt={character.name}
                 className="w-full h-full object-cover"
               />

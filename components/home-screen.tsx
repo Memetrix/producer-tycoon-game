@@ -76,7 +76,7 @@ export function HomeScreen({
             <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg ring-2 ring-primary/30 flex-shrink-0">
               {gameState.playerAvatar ? (
                 <img
-                  src={gameState.playerAvatar || "/placeholder.svg"}
+                  src={gameState.playerAvatar || "/default-avatar.svg"}
                   alt={`${gameState.playerName} avatar`}
                   className="w-full h-full object-cover"
                   onError={(e) => {

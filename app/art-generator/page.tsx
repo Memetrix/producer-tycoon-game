@@ -426,7 +426,7 @@ export default function ArtGeneratorPage() {
               <div className="relative aspect-square mb-2 bg-slate-900 rounded-lg overflow-hidden">
                 {asset.generatedUrl ? (
                   <img
-                    src={asset.generatedUrl || "/placeholder.svg"}
+                    src={asset.generatedUrl || "/default-beat-cover.svg"}
                     alt={asset.name}
                     className="w-full h-full object-cover"
                   />

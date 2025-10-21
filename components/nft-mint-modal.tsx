@@ -79,7 +79,7 @@ export function NftMintModal({ beat, onClose, onMint }: NftMintModalProps) {
           {/* Beat Preview */}
           <div className="space-y-4">
             <div className="relative rounded-xl overflow-hidden shadow-lg ring-2 ring-primary/30">
-              <img src={beat.cover || "/placeholder.svg"} alt={beat.name} className="w-full h-48 object-cover" />
+              <img src={beat.cover || "/default-beat-cover.svg"} alt={beat.name} className="w-full h-48 object-cover" />
               <div className="absolute top-2 right-2">
                 <div
                   className={`px-3 py-1 rounded-full text-xs font-bold backdrop-blur-xl bg-black/50 ${getRarityColor()}`}

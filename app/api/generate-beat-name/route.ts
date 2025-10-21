@@ -1,12 +1,33 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { requireAuth } from "@/lib/api-auth"
+import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter"
+import { validateRequest, schemas } from "@/lib/api-validation"
 
 export async function POST(request: NextRequest) {
-  try {
-    const { originalTrackName, artistName } = await request.json()
+  // ✅ SECURITY: Require authentication
+  const { user, error: authError } = await requireAuth(request)
+  if (authError) return authError
 
-    if (!originalTrackName) {
-      return NextResponse.json({ error: "Original track name is required" }, { status: 400 })
-    }
+  // ✅ SECURITY: Rate limiting (10 requests per minute)
+  const { allowed, error: rateLimitError } = await checkRateLimit(request, {
+    identifier: user.id,
+    ...RATE_LIMITS.AI_GENERATION,
+    endpoint: "generate-beat-name",
+  })
+  if (!allowed) return rateLimitError
+
+  // ✅ SECURITY: Input validation
+  const { data: validatedData, error: validationError } = await validateRequest(
+    request,
+    schemas.generateBeatName
+  )
+  if (validationError) return validationError
+
+  const { originalTrackName, artistName } = validatedData
+
+  console.log("[API Auth] Authenticated user:", user?.id)
+
+  try {
 
     console.log("[v0] Generating beat name for:", originalTrackName, "by", artistName)
     console.log("[v0] Groq API key available:", !!process.env.GROQ_API_KEY)

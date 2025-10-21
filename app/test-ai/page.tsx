@@ -132,7 +132,7 @@ export default function TestAIPage() {
               <div className="space-y-2">
                 <p className="text-xs text-green-400">Cover Art Generated:</p>
                 <img
-                  src={coverUrl || "/placeholder.svg"}
+                  src={coverUrl || "/default-beat-cover.svg"}
                   alt="Generated cover"
                   className="w-full rounded-lg border border-zinc-700"
                 />

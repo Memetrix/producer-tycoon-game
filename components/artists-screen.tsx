@@ -144,7 +144,7 @@ export function ArtistsScreen({ gameState, setGameState, onNavigate }: ArtistsSc
                     <div className="flex items-start gap-3">
                       <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 shadow-md bg-gradient-to-br from-primary/20 to-secondary/20 relative">
                         <img
-                          src={artist.avatar || "/placeholder.svg"}
+                          src={artist.avatar || "/default-avatar.svg"}
                           alt={artist.name}
                           className="w-full h-full object-cover"
                         />
