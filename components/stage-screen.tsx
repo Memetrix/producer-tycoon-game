@@ -357,34 +357,46 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     setAvailableDifficulties(0)
 
     fetch(track.oszUrl)
-      .then((res) => res.arrayBuffer())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+        return res.arrayBuffer()
+      })
       .then(async (buffer) => {
-        const JSZip = (await import("jszip")).default
-        const zip = await JSZip.loadAsync(buffer)
-        const osuFiles = Object.keys(zip.files).filter((name) => name.endsWith(".osu"))
-        const numDifficulties = osuFiles.length
-        console.log("[v0] OSZ file has", numDifficulties, "difficulties")
-        setAvailableDifficulties(numDifficulties)
+        try {
+          const JSZip = (await import("jszip")).default
+          const zip = await JSZip.loadAsync(buffer)
+          const osuFiles = Object.keys(zip.files).filter((name) => name.endsWith(".osu"))
 
-        // Auto-select difficulty based on equipment, but cap at available difficulties
-        const equipmentLevel =
-          gameState.equipment.phone +
-          gameState.equipment.headphones +
-          gameState.equipment.microphone +
-          gameState.equipment.computer
-        const suggestedDifficulty = Math.min(numDifficulties, Math.max(1, Math.floor(equipmentLevel / 3) + 1))
-        setSelectedDifficulty(suggestedDifficulty)
+          if (osuFiles.length === 0) {
+            throw new Error("No .osu files found in archive")
+          }
+
+          const numDifficulties = osuFiles.length
+          console.log("[v0] OSZ file has", numDifficulties, "difficulties")
+          setAvailableDifficulties(numDifficulties)
+
+          // Auto-select difficulty based on equipment, but cap at available difficulties
+          const equipmentLevel =
+            gameState.equipment.phone +
+            gameState.equipment.headphones +
+            gameState.equipment.microphone +
+            gameState.equipment.computer
+          const suggestedDifficulty = Math.min(numDifficulties, Math.max(1, Math.floor(equipmentLevel / 3) + 1))
+          setSelectedDifficulty(suggestedDifficulty)
+        } catch (zipError) {
+          console.error("[v0] Failed to parse OSZ file:", zipError)
+          throw new Error("Corrupted or invalid OSZ file")
+        }
       })
       .catch((error) => {
         console.error("[v0] Failed to load OSZ file:", error)
-        setAvailableDifficulties(5)
-        const equipmentLevel =
-          gameState.equipment.phone +
-          gameState.equipment.headphones +
-          gameState.equipment.microphone +
-          gameState.equipment.computer
-        const suggestedDifficulty = Math.min(5, Math.max(1, Math.floor(equipmentLevel / 3) + 1))
-        setSelectedDifficulty(suggestedDifficulty)
+        alert(`Не удалось загрузить трек "${track.name}". Файл может быть поврежден. Попробуй выбрать другой трек.`)
+        // Reset to track selector
+        setSelectedTrack(null)
+        setShowTrackSelector(true)
+        setAvailableDifficulties(0)
       })
       .finally(() => {
         setIsLoadingDifficulties(false)

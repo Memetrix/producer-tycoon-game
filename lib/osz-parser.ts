@@ -40,70 +40,109 @@ export interface OszPackage {
 export async function parseOszFile(url: string): Promise<OszPackage> {
   console.log("[v0] Fetching OSZ file:", url)
 
-  const response = await fetch(url)
-  const arrayBuffer = await response.arrayBuffer()
+  try {
+    const response = await fetch(url)
 
-  const zip = await JSZip.loadAsync(arrayBuffer)
-  console.log("[v0] OSZ archive loaded. Files:", Object.keys(zip.files).length)
-
-  const osuFiles = Object.keys(zip.files).filter((name) => name.endsWith(".osu"))
-  console.log("[v0] Found .osu files:", osuFiles.length)
-
-  const beatmaps: OsuBeatmap[] = []
-  let audioBlob: Blob | null = null
-  let audioFilename = ""
-
-  for (const filename of osuFiles) {
-    const file = zip.files[filename]
-    const content = await file.async("text")
-    const beatmap = parseOsuFile(content)
-    beatmaps.push(beatmap)
-
-    if (!audioFilename && beatmap.audioFilename) {
-      audioFilename = beatmap.audioFilename
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
-  }
 
-  if (audioFilename) {
-    console.log("[v0] Looking for audio file:", audioFilename)
+    const arrayBuffer = await response.arrayBuffer()
 
-    // Try exact match first
-    if (zip.files[audioFilename]) {
-      console.log("[v0] Found audio file (exact match):", audioFilename)
-      audioBlob = await zip.files[audioFilename].async("blob")
-    } else {
-      // Try case-insensitive search
-      const audioFilenameLower = audioFilename.toLowerCase()
-      const matchingFile = Object.keys(zip.files).find((name) => name.toLowerCase() === audioFilenameLower)
+    if (arrayBuffer.byteLength === 0) {
+      throw new Error("Empty file received")
+    }
 
-      if (matchingFile) {
-        console.log("[v0] Found audio file (case-insensitive):", matchingFile)
-        audioBlob = await zip.files[matchingFile].async("blob")
-      } else {
-        // Try finding any audio file
-        const audioExtensions = [".mp3", ".ogg", ".wav", ".m4a"]
-        const audioFile = Object.keys(zip.files).find((name) =>
-          audioExtensions.some((ext) => name.toLowerCase().endsWith(ext)),
-        )
+    console.log("[v0] Downloaded OSZ file:", arrayBuffer.byteLength, "bytes")
 
-        if (audioFile) {
-          console.log("[v0] Found audio file (by extension):", audioFile)
-          audioBlob = await zip.files[audioFile].async("blob")
-          audioFilename = audioFile
+    const zip = await JSZip.loadAsync(arrayBuffer, {
+      // Add options to handle corrupted files more gracefully
+      checkCRC32: false, // Skip CRC check for corrupted files
+    })
+
+    console.log("[v0] OSZ archive loaded. Files:", Object.keys(zip.files).length)
+
+    const osuFiles = Object.keys(zip.files).filter((name) => name.endsWith(".osu"))
+
+    if (osuFiles.length === 0) {
+      throw new Error("No .osu files found in archive")
+    }
+
+    console.log("[v0] Found .osu files:", osuFiles.length)
+
+    const beatmaps: OsuBeatmap[] = []
+    let audioBlob: Blob | null = null
+    let audioFilename = ""
+
+    for (const filename of osuFiles) {
+      try {
+        const file = zip.files[filename]
+        const content = await file.async("text")
+        const beatmap = parseOsuFile(content)
+        beatmaps.push(beatmap)
+
+        if (!audioFilename && beatmap.audioFilename) {
+          audioFilename = beatmap.audioFilename
         }
+      } catch (fileError) {
+        console.error(`[v0] Failed to parse ${filename}:`, fileError)
+        // Continue with other files instead of failing completely
       }
     }
-  }
 
-  console.log("[v0] Parsed beatmaps:", beatmaps.length)
-  console.log("[v0] Audio:", audioFilename, audioBlob ? `found (${audioBlob.size} bytes)` : "not found")
+    if (beatmaps.length === 0) {
+      throw new Error("Failed to parse any beatmaps from archive")
+    }
 
-  beatmaps.sort((a, b) => a.hitObjects.length - b.hitObjects.length)
+    if (audioFilename) {
+      console.log("[v0] Looking for audio file:", audioFilename)
 
-  return {
-    beatmaps,
-    audioBlob,
-    audioFilename,
+      try {
+        // Try exact match first
+        if (zip.files[audioFilename]) {
+          console.log("[v0] Found audio file (exact match):", audioFilename)
+          audioBlob = await zip.files[audioFilename].async("blob")
+        } else {
+          // Try case-insensitive search
+          const audioFilenameLower = audioFilename.toLowerCase()
+          const matchingFile = Object.keys(zip.files).find((name) => name.toLowerCase() === audioFilenameLower)
+
+          if (matchingFile) {
+            console.log("[v0] Found audio file (case-insensitive):", matchingFile)
+            audioBlob = await zip.files[matchingFile].async("blob")
+          } else {
+            // Try finding any audio file
+            const audioExtensions = [".mp3", ".ogg", ".wav", ".m4a"]
+            const audioFile = Object.keys(zip.files).find((name) =>
+              audioExtensions.some((ext) => name.toLowerCase().endsWith(ext)),
+            )
+
+            if (audioFile) {
+              console.log("[v0] Found audio file (by extension):", audioFile)
+              audioBlob = await zip.files[audioFile].async("blob")
+              audioFilename = audioFile
+            }
+          }
+        }
+      } catch (audioError) {
+        console.error("[v0] Failed to extract audio file:", audioError)
+        // Continue without audio - game can still work
+      }
+    }
+
+    console.log("[v0] Parsed beatmaps:", beatmaps.length)
+    console.log("[v0] Audio:", audioFilename, audioBlob ? `found (${audioBlob.size} bytes)` : "not found")
+
+    beatmaps.sort((a, b) => a.hitObjects.length - b.hitObjects.length)
+
+    return {
+      beatmaps,
+      audioBlob,
+      audioFilename,
+    }
+  } catch (error) {
+    console.error("[v0] Failed to parse OSZ file:", error)
+    throw new Error(`Failed to load beatmap: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
