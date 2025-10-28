@@ -1,36 +1,13 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import * as fal from "@fal-ai/serverless-client"
-import { requireAuth } from "@/lib/api-auth"
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter"
-import { validateRequest, schemas } from "@/lib/api-validation"
 
 fal.config({
   credentials: process.env.FAL_KEY,
 })
 
-export async function POST(request: NextRequest) {
-  // ✅ SECURITY: Require authentication
-  const { user, error: authError } = await requireAuth(request)
-  if (authError) return authError
-
-  // ✅ SECURITY: Rate limiting (10 requests per minute)
-  const { allowed, error: rateLimitError } = await checkRateLimit(request, {
-    identifier: user.id,
-    ...RATE_LIMITS.AI_GENERATION,
-    endpoint: "generate-cover",
-  })
-  if (!allowed) return rateLimitError
-
-  // ✅ SECURITY: Input validation
-  const { data: validatedData, error: validationError } = await validateRequest(
-    request,
-    schemas.generateCover
-  )
-  if (validationError) return validationError
-
-  const { prompt, style } = validatedData
-
+export async function POST(request: Request) {
   try {
+    const { prompt, style } = await request.json()
 
     const styleKeywords = {
       "Hip-Hop": "graffiti wall, urban street, boombox, turntables",

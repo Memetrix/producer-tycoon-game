@@ -191,7 +191,7 @@ export function LeaderboardsScreen({ gameState, onNavigate }: LeaderboardsScreen
               <div className="relative">
                 <div
                   className="w-14 h-14 rounded-full bg-cover bg-center border-2 border-primary/50"
-                  style={{ backgroundImage: `url(${gameState.playerAvatar || "/default-avatar.svg"})` }}
+                  style={{ backgroundImage: `url(${gameState.playerAvatar || "/placeholder-avatar.jpg"})` }}
                 />
                 <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full">
                   #{playerRank || "—"}

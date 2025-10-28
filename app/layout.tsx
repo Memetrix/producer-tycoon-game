@@ -4,7 +4,6 @@ import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Suspense } from "react"
-import { ErrorBoundary } from "@/components/error-boundary"
 
 import { Geist, Geist_Mono, Geist as V0_Font_Geist, Geist_Mono as V0_Font_Geist_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
 import { Geist, Geist_Mono, Geist as V0_Font_Geist, Geist_Mono as V0_Font_Geist_Mono, Source_Serif_4 as V0_Font_Source_Serif_4 } from 'next/font/google'
@@ -35,7 +34,7 @@ export const metadata: Metadata = {
     title: "Producer Tycoon - Создай свою музыкальную империю",
     description:
       "Начни путь от уличного битмейкера до звездного продюсера. Создавай биты, работай с артистами и строй музыкальную империю!",
-    images: ["/og-image.webp"],
+    images: ["/og-image.jpg"],
     type: "website",
   },
   twitter: {
@@ -43,11 +42,11 @@ export const metadata: Metadata = {
     title: "Producer Tycoon - Создай свою музыкальную империю",
     description:
       "Начни путь от уличного битмейкера до звездного продюсера. Создавай биты, работай с артистами и строй музыкальную империю!",
-    images: ["/og-image.webp"],
+    images: ["/og-image.jpg"],
   },
   icons: {
-    icon: "/icon.webp",
-    apple: "/icon.webp",
+    icon: "/icon.jpg",
+    apple: "/icon.jpg",
   },
 }
 
@@ -59,12 +58,10 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${geist.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased dark bg-[oklch(0.12_0_0)]">
-        <ErrorBoundary>
-          <Suspense fallback={null}>
-            {children}
-            <Analytics />
-          </Suspense>
-        </ErrorBoundary>
+        <Suspense fallback={null}>
+          {children}
+          <Analytics />
+        </Suspense>
       </body>
     </html>
   )

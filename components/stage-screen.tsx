@@ -2,16 +2,20 @@
 
 import type React from "react"
 
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Play, Music, Sparkles, ImageIcon, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { Card } from "@/components/ui/card"
+import { useState, useEffect } from "react"
 import type { Screen } from "@/app/page"
 import {
   type GameState,
   type Beat,
   BEAT_NAMES,
   ENERGY_CONFIG,
+  getSkillQualityBonus,
+  getSkillPriceMultiplier,
   getSkillEnergyCostReduction,
+  getTierPriceMultiplier,
   getReputationTier,
   getStageTitle,
   BEAT_CONTRACTS_POOL,
@@ -23,12 +27,6 @@ import { OSZ_TRACKS, type OszTrack } from "@/lib/music-config"
 import { NftMintModal } from "@/components/nft-mint-modal"
 import { DesktopLayout } from "@/components/desktop-layout"
 import { RhythmGameRhythmPlus } from "@/components/rhythm-game-rhythm-plus"
-import { TrackSelector } from "@/components/stage/track-selector"
-import { DifficultySelector } from "@/components/stage/difficulty-selector"
-import { BeatCreationCard } from "@/components/stage/beat-creation-card"
-import { BeatStatsCards } from "@/components/stage/beat-stats-cards"
-import { BeatHistory } from "@/components/stage/beat-history"
-import { calculateBeatQuality, calculateBeatPrice } from "@/lib/beat-calculations"
 
 interface StageScreenProps {
   gameState: GameState
@@ -60,6 +58,9 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
   const [availableDifficulties, setAvailableDifficulties] = useState(0)
   const [isLoadingDifficulties, setIsLoadingDifficulties] = useState(false)
   const [loadTracksError, setLoadTracksError] = useState<string | null>(null)
+
+  const currentStage = getReputationTier(gameState.reputation)
+  const currentStageTitle = getStageTitle(currentStage)
 
   useEffect(() => {
     const loadTracks = async () => {
@@ -99,18 +100,49 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     loadTracks()
   }, [])
 
-  // Memoize expensive calculations
-  const ENERGY_COST = useMemo(() => {
-    const baseEnergyCost = ENERGY_CONFIG.ENERGY_COST_PER_BEAT
-    const energyCostReduction = getSkillEnergyCostReduction(gameState.skills)
-    return Math.floor(baseEnergyCost * (1 - energyCostReduction))
-  }, [gameState.skills])
+  const baseEnergyCost = ENERGY_CONFIG.ENERGY_COST_PER_BEAT
+  const energyCostReduction = getSkillEnergyCostReduction(gameState.skills)
+  const ENERGY_COST = Math.floor(baseEnergyCost * (1 - energyCostReduction))
 
-  const currentStage = useMemo(() => getReputationTier(gameState.reputation), [gameState.reputation])
-  const currentStageTitle = useMemo(() => getStageTitle(currentStage), [currentStage])
+  const calculateQuality = (rhythmAccuracy: number, difficulty: number) => {
+    const baseQuality = 20
+    const rhythmBonus = Math.floor(rhythmAccuracy * 0.6) // Up to 60 points from rhythm
+    const difficultyBonus = difficulty * 3
 
-  // Memoize callback functions to prevent unnecessary re-renders
-  const handleSellBeat = useCallback(async () => {
+    // Equipment bonus (reduced impact)
+    const equipmentBonus = Math.floor(
+      (gameState.equipment.phone * 2 +
+        gameState.equipment.headphones * 2 +
+        gameState.equipment.microphone * 3 +
+        gameState.equipment.computer * 5 +
+        (gameState.equipment.midi || 0) * 2 +
+        (gameState.equipment.audioInterface || 0) * 4) *
+        0.3, // Reduced from 0.5 to 0.3
+    )
+
+    const skillBonus = getSkillQualityBonus(gameState.skills)
+
+    return Math.min(100, baseQuality + rhythmBonus + difficultyBonus + equipmentBonus + skillBonus)
+  }
+
+  const calculatePrice = (quality: number, difficulty: number) => {
+    const basePrice = 30
+    const qualityBonus = Math.max(0, Math.floor((quality - 60) * 1.5)) // FIXED: prevent negative bonus
+    const difficultyMultiplier = 1 + (difficulty - 1) * 0.3
+    const reputationBonus = Math.floor(gameState.reputation * 0.05)
+
+    const tierMultiplier = getTierPriceMultiplier(gameState.reputation)
+
+    const skillMultiplier = getSkillPriceMultiplier(gameState.skills)
+
+    const finalPrice = Math.floor(
+      (basePrice + qualityBonus + reputationBonus) * difficultyMultiplier * tierMultiplier * skillMultiplier,
+    )
+
+    return Math.max(10, finalPrice)
+  }
+
+  const handleSellBeat = async () => {
     if (!currentBeat || isSelling) return
 
     setIsSelling(true)
@@ -181,16 +213,16 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     } finally {
       setIsSelling(false)
     }
-  }, [currentBeat, isSelling, gameState.beatContracts, rhythmAccuracy])
+  }
 
-  const handleResultsContinue = useCallback(async () => {
+  const handleResultsContinue = async () => {
     setShowResults(false)
     setSelectedTrack(null)
     setIsCreating(true)
 
     // Calculate quality and price first
-    const quality = calculateBeatQuality(rhythmAccuracy, selectedDifficulty, gameState)
-    const price = calculateBeatPrice(quality, selectedDifficulty, gameState)
+    const quality = calculateQuality(rhythmAccuracy, selectedDifficulty)
+    const price = calculatePrice(quality, selectedDifficulty)
 
     // Create beat with placeholder data immediately
     const newBeat: Beat = {
@@ -198,7 +230,7 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
       name: "Создаю...", // Temporary name
       price: price,
       quality: quality,
-      cover: "/default-beat-cover.svg", // Temporary cover
+      cover: "/placeholder.svg?height=400&width=400", // Temporary cover
       createdAt: Date.now(),
     }
 
@@ -305,9 +337,9 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
       setIsGeneratingCover(false)
       setIsCreating(false)
     }
-  }, [rhythmAccuracy, selectedDifficulty, selectedTrack, gameState])
+  }
 
-  const startCreating = useCallback(() => {
+  const startCreating = () => {
     if (gameState.energy < ENERGY_COST) {
       alert("Недостаточно энергии! Подожди немного.")
       return
@@ -316,9 +348,9 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
     // Show track selector
     setShowTrackSelector(true)
     setCurrentBeat(null)
-  }, [gameState.energy, ENERGY_COST])
+  }
 
-  const handleTrackSelect = useCallback((track: OszTrack) => {
+  const handleTrackSelect = (track: OszTrack) => {
     setSelectedTrack(track)
     setShowTrackSelector(false)
     setIsLoadingDifficulties(true)
@@ -369,9 +401,9 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
       .finally(() => {
         setIsLoadingDifficulties(false)
       })
-  }, [gameState.equipment])
+  }
 
-  const handleStartGame = useCallback(() => {
+  const handleStartGame = () => {
     console.log("[Stage] Starting game with track:", selectedTrack?.name, "difficulty:", selectedDifficulty)
 
     setGameState((prev) => ({
@@ -382,14 +414,32 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
     setIsPlayingRhythm(true)
     onRhythmGameStateChange?.(true)
-  }, [setGameState, ENERGY_COST, onRhythmGameStateChange])
+  }
 
-  const handleRhythmComplete = useCallback((accuracy: number) => {
+  const handleRhythmComplete = (accuracy: number) => {
     setRhythmAccuracy(accuracy)
     setShowResults(true)
     setIsPlayingRhythm(false)
     onRhythmGameStateChange?.(false)
-  }, [onRhythmGameStateChange])
+  }
+
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+
+    if (diffMins < 1) return "Только что"
+    if (diffMins < 60) return `${diffMins} мин назад`
+
+    const diffHours = Math.floor(diffMins / 60)
+    if (diffHours < 24) return `${diffHours} ч назад`
+
+    const diffDays = Math.floor(diffHours / 24)
+    if (diffDays < 7) return `${diffDays} дн назад`
+
+    return date.toLocaleDateString("ru-RU", { day: "numeric", month: "short" })
+  }
 
   // Render rhythm game when isPlayingRhythm is true
   if (isPlayingRhythm && selectedTrack) {
@@ -414,27 +464,172 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
   // Show difficulty selection when track is selected but game hasn't started yet
   if (selectedTrack && !isPlayingRhythm && !showResults) {
     return (
-      <DifficultySelector
-        selectedTrack={selectedTrack}
-        selectedDifficulty={selectedDifficulty}
-        availableDifficulties={availableDifficulties}
-        isLoadingDifficulties={isLoadingDifficulties}
-        onDifficultySelect={setSelectedDifficulty}
-        onStartGame={handleStartGame}
-        onBack={() => setSelectedTrack(null)}
-      />
+      <DesktopLayout maxWidth="xl">
+        <div className="fixed inset-0 lg:relative lg:inset-auto flex flex-col bg-gradient-to-b from-background to-background/95">
+          <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80 flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSelectedTrack(null)}
+              className="active:scale-95 transition-transform"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-lg font-semibold">Выбери сложность</h1>
+              <p className="text-xs text-muted-foreground">
+                {selectedTrack.artist} - {selectedTrack.name}
+              </p>
+            </div>
+          </div>
+
+          <div className="hidden lg:block mb-6 flex-shrink-0">
+            <h1 className="text-3xl font-bold mb-2">Выбери сложность</h1>
+            <p className="text-muted-foreground">
+              {selectedTrack.artist} - {selectedTrack.name}
+            </p>
+          </div>
+
+          <div className="flex-1 overflow-hidden p-4 lg:p-0">
+            <Card className="h-full flex flex-col p-6 bg-gradient-to-br from-primary/10 to-secondary/10">
+              <div className="flex flex-col h-full">
+                <div className="text-center mb-4 flex-shrink-0">
+                  <Music className="w-16 h-16 mx-auto text-primary mb-4" />
+                  <h2 className="text-xl font-bold mb-2">Выбери сложность</h2>
+                  <p className="text-sm text-muted-foreground">Чем выше сложность, тем больше качество и цена бита</p>
+                </div>
+
+                {isLoadingDifficulties ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="text-center space-y-2">
+                      <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+                      <p className="text-sm text-muted-foreground">Загружаю сложности...</p>
+                    </div>
+                  </div>
+                ) : availableDifficulties === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">Не удалось загрузить сложности</p>
+                    <Button variant="outline" className="mt-4 bg-transparent" onClick={() => setSelectedTrack(null)}>
+                      Выбрать другой трек
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex-1 overflow-y-auto space-y-3 mb-4 -mx-2 px-2">
+                      {Array.from({ length: availableDifficulties }, (_, i) => i + 1).map((diff) => (
+                        <Card
+                          key={diff}
+                          className={`p-4 cursor-pointer transition-all hover:bg-card/80 ${
+                            selectedDifficulty === diff ? "ring-2 ring-primary bg-primary/10" : ""
+                          }`}
+                          onClick={() => setSelectedDifficulty(diff)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold">
+                                Сложность {diff}
+                                {diff === 1 && " - Легко"}
+                                {diff === 2 && " - Нормально"}
+                                {diff === 3 && " - Сложно"}
+                                {diff === 4 && " - Очень сложно"}
+                                {diff === 5 && " - Эксперт"}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">Бонус к качеству: +{diff * 3}%</p>
+                            </div>
+                            <div className="flex gap-1">
+                              {Array.from({ length: diff }).map((_, i) => (
+                                <div key={i} className="w-2 h-8 bg-primary rounded-full" />
+                              ))}
+                              {Array.from({ length: availableDifficulties - diff }).map((_, i) => (
+                                <div key={i} className="w-2 h-8 bg-muted rounded-full" />
+                              ))}
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+
+                    <Button
+                      size="lg"
+                      className="w-full flex-shrink-0 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90"
+                      onClick={handleStartGame}
+                    >
+                      <Play className="w-5 h-5 mr-2" />
+                      Начать игру
+                    </Button>
+                  </>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </DesktopLayout>
     )
   }
 
   // Track selection screen
   if (showTrackSelector) {
     return (
-      <TrackSelector
-        availableTracks={availableTracks}
-        isLoadingTracks={isLoadingTracks}
-        onTrackSelect={handleTrackSelect}
-        onBack={() => setShowTrackSelector(false)}
-      />
+      <DesktopLayout maxWidth="xl">
+        <div className="flex flex-col h-screen lg:h-auto bg-gradient-to-b from-background to-background/95">
+          <div className="lg:hidden p-4 border-b border-border/50 flex items-center gap-3 backdrop-blur-xl bg-card/80">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowTrackSelector(false)}
+              className="active:scale-95 transition-transform"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-lg font-semibold">Выбери трек</h1>
+              <p className="text-xs text-muted-foreground">Выбери музыку для создания бита</p>
+            </div>
+          </div>
+
+          <div className="hidden lg:block mb-6">
+            <h1 className="text-3xl font-bold mb-2">Выбери трек</h1>
+            <p className="text-muted-foreground">Выбери музыку для создания бита</p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 lg:p-0 space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+            {isLoadingTracks && (
+              <div className="lg:col-span-2 flex items-center justify-center py-8">
+                <div className="text-center space-y-2">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+                  <p className="text-sm text-muted-foreground">Загружаю треки...</p>
+                </div>
+              </div>
+            )}
+
+            {!isLoadingTracks && availableTracks.length === 0 && (
+              <div className="lg:col-span-2 text-center py-8">
+                <p className="text-muted-foreground">Нет доступных треков</p>
+                <p className="text-xs text-muted-foreground mt-2">Загрузи треки в разделе "Загрузка музыки"</p>
+              </div>
+            )}
+
+            {!isLoadingTracks &&
+              availableTracks.map((track) => (
+                <Card
+                  key={track.id}
+                  className="p-4 hover:bg-card/80 cursor-pointer transition-all active:scale-95"
+                  onClick={() => handleTrackSelect(track)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold">
+                        {track.artist} - {track.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">{track.genre}</p>
+                    </div>
+                    <Music className="w-6 h-6 text-primary" />
+                  </div>
+                </Card>
+              ))}
+          </div>
+        </div>
+      </DesktopLayout>
     )
   }
 
@@ -469,29 +664,159 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
           <div className="lg:grid lg:grid-cols-2 lg:gap-6 space-y-4 lg:space-y-0">
             {/* Left Column - Beat Creation */}
             <div className="space-y-4">
-              <BeatCreationCard
-                currentBeat={currentBeat}
-                isCreating={isCreating}
-                isGeneratingName={isGeneratingName}
-                isGeneratingCover={isGeneratingCover}
-                isSelling={isSelling}
-                energyCost={ENERGY_COST}
-                hasEnoughEnergy={gameState.energy >= ENERGY_COST}
-                onStartCreating={startCreating}
-                onSellBeat={handleSellBeat}
-                onCreateNFT={() => setShowNftModal(true)}
-              />
+              <Card className="p-8 bg-gradient-to-br from-primary/10 via-card to-secondary/10 border-primary/30 shadow-lg">
+                <div className="flex flex-col items-center text-center space-y-6">
+                  <div className="relative">
+                    {currentBeat ? (
+                      <div className="w-48 h-48 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-primary/30">
+                        {isGeneratingCover ? (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                            <div className="text-center space-y-2">
+                              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+                              <p className="text-xs text-muted-foreground">Генерирую обложку...</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <img
+                            src={currentBeat.cover || "/placeholder.svg"}
+                            alt={currentBeat.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <div
+                          className={`w-32 h-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-xl ${isCreating ? "animate-pulse" : ""}`}
+                        >
+                          <Music className="w-16 h-16 text-primary-foreground" />
+                        </div>
+                        {isCreating && (
+                          <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
+                        )}
+                      </>
+                    )}
+                  </div>
 
-              <BeatStatsCards
-                beatsCount={gameState.beats.length}
-                totalEarnings={gameState.totalBeatsEarnings || 0}
-                reputation={gameState.reputation}
-              />
+                  <div className="w-full space-y-2">
+                    <p className="text-lg font-semibold">
+                      {isGeneratingName
+                        ? "Придумываю название..."
+                        : isGeneratingCover
+                          ? "Создаю обложку..."
+                          : isCreating
+                            ? "Создаю бит..."
+                            : currentBeat
+                              ? `${currentBeat.name} готов!`
+                              : "Готов создать новый хит"}
+                    </p>
+                    {currentBeat && (
+                      <div className="flex items-center justify-center gap-4 text-sm">
+                        <span className="text-muted-foreground">Качество: {currentBeat.quality}%</span>
+                        <span className="text-primary font-bold">${currentBeat.price}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {currentBeat ? (
+                    <div className="w-full space-y-2">
+                      <Button
+                        size="lg"
+                        className="w-full bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition-transform"
+                        onClick={handleSellBeat}
+                        disabled={isGeneratingName || isGeneratingCover || isSelling}
+                      >
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        {isGeneratingName
+                          ? "Придумываю название..."
+                          : isGeneratingCover
+                            ? "Создаю обложку..."
+                            : isSelling
+                              ? "Продаю..."
+                              : `Продать бит ($${currentBeat?.price})`}
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant="outline"
+                        className="w-full border-primary/30 hover:bg-primary/10 bg-transparent"
+                        onClick={() => setShowNftModal(true)}
+                        disabled={isGeneratingName || isGeneratingCover || isSelling}
+                      >
+                        <ImageIcon className="w-5 h-5 mr-2" />
+                        Создать NFT
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="w-full space-y-2">
+                      <Button
+                        size="lg"
+                        className="w-full h-auto py-3 px-4 bg-gradient-to-r from-primary to-secondary text-primary-foreground hover:opacity-90 shadow-md active:scale-95 transition-transform whitespace-normal"
+                        onClick={startCreating}
+                        disabled={isCreating || gameState.energy < ENERGY_COST}
+                      >
+                        <Play className="w-5 h-5 mr-2 flex-shrink-0" />
+                        <span>Начать создание (-{ENERGY_COST} энергии)</span>
+                      </Button>
+                      {gameState.energy < ENERGY_COST && (
+                        <p className="text-xs text-muted-foreground">Недостаточно энергии. Подожди немного!</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              <div className="grid grid-cols-3 gap-3">
+                <Card className="p-4 text-center shadow-md">
+                  <p className="text-2xl font-bold text-primary">{gameState.beats.length}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Битов создано</p>
+                </Card>
+                <Card className="p-4 text-center shadow-md">
+                  <p className="text-2xl font-bold text-secondary">${gameState.totalBeatsEarnings || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Заработано</p>
+                </Card>
+                <Card className="p-4 text-center shadow-md">
+                  <p className="text-2xl font-bold text-accent">{gameState.reputation}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Репутация</p>
+                </Card>
+              </div>
             </div>
 
             {/* Right Column - Beat History */}
             <div className="space-y-4">
-              <BeatHistory beats={gameState.beats} />
+              {gameState.beats.length > 0 && (
+                <div>
+                  <div className="mb-3">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Твои биты</h3>
+                  </div>
+                  <div className="space-y-2">
+                    {gameState.beats.map((beat) => (
+                      <Card key={beat.id} className="p-4 shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
+                            <img
+                              src={beat.cover || "/placeholder.svg"}
+                              alt={beat.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate">{beat.name}</p>
+                            <p className="text-xs text-muted-foreground">Качество: {beat.quality}%</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3" />
+                              {formatDate(beat.createdAt)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-primary">${beat.price}</p>
+                            <p className="text-xs text-muted-foreground">Продано</p>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

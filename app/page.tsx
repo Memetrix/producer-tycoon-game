@@ -182,25 +182,18 @@ export default function Page() {
 
     const interval = setInterval(() => {
       setGameState((prev) => {
-        // Calculate energy recovery
+        const energyBonus = getTotalEnergyBonus(prev.artists)
         const skillRegenBonus = getSkillEnergyRegenBonus(prev.skills)
         const baseRecovery = (ENERGY_CONFIG.ENERGY_REGEN_PER_MINUTE + skillRegenBonus) / 6
-        const recoveryAmount = baseRecovery
+        const bonusMultiplier = 1 + energyBonus / 100
+        const recoveryAmount = baseRecovery * bonusMultiplier
 
-        // Calculate max energy with all bonuses
         let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
-
-        // Apply skill bonus first (multiplicative)
         const skillMaxEnergyBonus = getSkillMaxEnergyBonus(prev.skills)
         maxEnergy = Math.floor(maxEnergy * (1 + skillMaxEnergyBonus))
 
-        // Add character bonuses
         if (prev.musicStyle === "electronic") maxEnergy += 30
         if (prev.startingBonus === "energizer") maxEnergy += 50
-
-        // Add artist energy bonuses (additive)
-        const artistEnergyBonus = getTotalEnergyBonus(prev.artists)
-        maxEnergy += artistEnergyBonus
 
         const newEnergy = Math.min(maxEnergy, Math.round(prev.energy + recoveryAmount))
 

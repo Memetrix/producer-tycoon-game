@@ -1,11 +1,6 @@
 import { createClient } from "@/lib/supabase/client"
 import type { GameState, Beat } from "@/lib/game-state"
-import {
-  getReputationTier,
-  calculateMaxEnergy,
-  getSkillEnergyRegenBonus,
-  ENERGY_CONFIG,
-} from "@/lib/game-state"
+import { getReputationTier } from "@/lib/game-state"
 
 async function getAuthenticatedUserId(): Promise<string | null> {
   const supabase = createClient()
@@ -103,30 +98,7 @@ export async function loadGameState(): Promise<GameState | null> {
     const timeDiffMinutes = Math.floor(timeDiffMs / 60000)
 
     const baseEnergy = gameState.energy || 0
-
-    // Calculate max energy based on music style, starting bonus, artists, and skills
-    const skillsObject = {
-      caffeineRush: skillsArray.includes("caffeineRush"),
-      stamina: skillsArray.includes("stamina"),
-      flowState: skillsArray.includes("flowState"),
-      earTraining: skillsArray.includes("earTraining"),
-      musicTheory: skillsArray.includes("musicTheory"),
-      perfectionist: skillsArray.includes("perfectionist"),
-      negotiator: skillsArray.includes("negotiator"),
-      businessman: skillsArray.includes("businessman"),
-      mogul: skillsArray.includes("mogul"),
-    }
-
-    const maxEnergy = calculateMaxEnergy(
-      player.music_style as any,
-      player.starting_bonus as any,
-      artistsMap,
-      skillsObject
-    )
-
-    // Calculate energy regen rate (base 2/min + flowState bonus)
-    const regenRate = ENERGY_CONFIG.ENERGY_REGEN_PER_MINUTE + getSkillEnergyRegenBonus(skillsObject)
-    const regeneratedEnergy = Math.min(maxEnergy, baseEnergy + (timeDiffMinutes * regenRate))
+    const regeneratedEnergy = Math.min(100, baseEnergy + timeDiffMinutes)
 
     const currentStage = Math.min(6, getReputationTier(gameState.reputation))
 

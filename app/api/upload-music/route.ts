@@ -2,9 +2,6 @@ import { put } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { randomUUID } from "crypto"
-import { requireAuth } from "@/lib/api-auth"
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter"
-import { validateFile } from "@/lib/api-validation"
 
 function extractSongMetadata(filename: string) {
   // Remove .osz extension
@@ -37,18 +34,6 @@ function extractSongMetadata(filename: string) {
 }
 
 export async function POST(request: NextRequest) {
-  // ✅ SECURITY: Require authentication
-  const { user, error: authError } = await requireAuth(request)
-  if (authError) return authError
-
-  // ✅ SECURITY: Rate limiting (20 requests per minute)
-  const { allowed, error: rateLimitError } = await checkRateLimit(request, {
-    identifier: user.id,
-    ...RATE_LIMITS.FILE_UPLOAD,
-    endpoint: "upload-music",
-  })
-  if (!allowed) return rateLimitError
-
   try {
     const formData = await request.formData()
     const files = formData.getAll("files") as File[]
@@ -64,16 +49,6 @@ export async function POST(request: NextRequest) {
 
     for (const file of files) {
       console.log("[v0] Processing:", file.name, "Size:", file.size, "Type:", file.type)
-
-      // ✅ SECURITY: File validation
-      const { valid, error: fileError } = validateFile(file, {
-        maxSize: 100 * 1024 * 1024, // 100MB
-        allowedExtensions: ["osz"],
-      })
-
-      if (!valid) {
-        throw new Error(fileError || "Invalid file")
-      }
 
       const extension = file.name.split(".").pop()?.toLowerCase()
       if (!extension || extension !== "osz") {

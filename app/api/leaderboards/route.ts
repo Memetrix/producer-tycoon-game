@@ -1,31 +1,18 @@
 import { createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
-import { optionalAuth } from "@/lib/api-auth"
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limiter"
 
 export async function GET(request: Request) {
-  // ✅ SECURITY: Optional authentication (leaderboards are public)
-  const { user } = await optionalAuth(request)
-
-  // ✅ SECURITY: Rate limiting (200 requests per minute for public endpoint)
-  const { allowed, error: rateLimitError } = await checkRateLimit(request as any, {
-    identifier: user?.id,
-    ...RATE_LIMITS.PUBLIC,
-    endpoint: "leaderboards",
-  })
-  if (!allowed) return rateLimitError
-
   try {
     console.log("[v0] Leaderboards API called")
     const { searchParams } = new URL(request.url)
     const type = searchParams.get("type") || "global"
-    const playerId = searchParams.get("playerId") || user?.id || null // Use authenticated user ID if available
+    const playerId = searchParams.get("playerId") // Get player ID from query params
     console.log("[v0] Leaderboard type:", type, "Player ID:", playerId)
 
     const supabase = await createClient()
     console.log("[v0] Supabase client created")
 
-    const currentPlayerId = playerId
+    const currentPlayerId = playerId || null
     console.log("[v0] Current player:", currentPlayerId)
 
     // Build query based on type
@@ -72,7 +59,7 @@ export async function GET(request: Request) {
         rank: index + 1,
         playerId: entry.player_id,
         playerName: entry.players.character_name || "Безымянный продюсер",
-        playerAvatar: entry.players.character_avatar || "/default-avatar.svg",
+        playerAvatar: entry.players.character_avatar || "/placeholder-avatar.jpg",
         score,
         reputation: entry.reputation,
         beatsCreated: entry.total_beats_created,
