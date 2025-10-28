@@ -44,12 +44,12 @@ export function HomeScreen({
   useEffect(() => {
     if (offlineEarnings && offlineEarnings.earnings > 0) {
       setShowOfflineModal(true)
-      onOfflineEarningsShown()
     }
-  }, [offlineEarnings, onOfflineEarningsShown])
+  }, [offlineEarnings])
 
   const handleCloseOfflineModal = () => {
     setShowOfflineModal(false)
+    onOfflineEarningsShown()
   }
 
   const getNextTierInfo = () => {
