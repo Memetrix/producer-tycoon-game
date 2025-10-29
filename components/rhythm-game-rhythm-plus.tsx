@@ -412,7 +412,17 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
             const laneColors = ["#22FF22", "#FF2222", "#FFFF22", "#2222FF"]
             const isActive = gameInstanceRef.current?.keyHoldingStatus[key.toLowerCase()] || false
 
-            const trackWidth = gameInstanceRef.current?.dropTrackArr[index]?.width || highwayWidth / 4
+            // Get perspective width at hit line for this lane
+            const track = gameInstanceRef.current?.dropTrackArr[index]
+            let trackWidth = highwayWidth / 4
+            let trackX = 0
+
+            if (track && gameInstanceRef.current) {
+              const hitLineY = gameInstanceRef.current.checkHitLineY
+              const perspective = gameInstanceRef.current.getPerspectiveX(track.x, track.width, hitLineY)
+              trackWidth = perspective.width
+              trackX = perspective.x
+            }
 
             return (
               <button
@@ -447,7 +457,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
                     gameInstanceRef.current.dropTrackArr.forEach((track) => track.onKeyUp(keyLower))
                   }
                 }}
-                className="h-32 flex flex-col items-center justify-center gap-2 transition-all border-r border-white/10 last:border-r-0"
+                className="h-32 flex flex-col items-center justify-center gap-2 transition-all"
                 style={{
                   width: `${trackWidth}px`,
                   background: isActive
@@ -458,6 +468,7 @@ export function RhythmGameRhythmPlus({ difficulty, beatmapUrl, onComplete, onClo
                   WebkitTapHighlightColor: "transparent",
                   WebkitUserSelect: "none",
                   WebkitTouchCallout: "none",
+                  borderRight: index < 3 ? "1px solid rgba(255,255,255,0.05)" : "none",
                 }}
               >
                 <div
