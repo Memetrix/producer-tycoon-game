@@ -106,19 +106,20 @@ export function BeatInfoModal({ beat, onClose, onMintNFT }: BeatInfoModalProps) 
               </div>
             </div>
 
-            {/* NFT Button */}
-            <Button
-              onClick={onMintNFT}
-              className="w-full h-12 text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg"
-            >
-              <Coins className="w-5 h-5 mr-2" />
-              Создать NFT
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={onMintNFT}
+                className="flex-1 w-full h-12 text-base sm:text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg"
+              >
+                <Coins className="w-5 h-5 mr-2" />
+                Создать NFT
+              </Button>
 
-            {/* Close Button */}
-            <Button onClick={onClose} variant="outline" className="w-full">
-              Закрыть
-            </Button>
+              <Button onClick={onClose} variant="outline" className="flex-1 w-full h-12 text-base sm:text-lg">
+                Закрыть
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

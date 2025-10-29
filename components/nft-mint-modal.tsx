@@ -141,14 +141,14 @@ export function NftMintModal({ beat, onClose, onMint }: NftMintModalProps) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose} className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={onClose} className="flex-1 w-full">
               Отмена
             </Button>
             <Button
               onClick={handleMint}
               disabled={isMinting}
-              className="flex-1 bg-gradient-to-r from-primary to-secondary"
+              className="flex-1 w-full bg-gradient-to-r from-primary to-secondary"
             >
               {isMinting ? (
                 <>

@@ -430,11 +430,11 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
                               )}
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="flex-1 bg-transparent"
+                                className="flex-1 w-full bg-transparent"
                                 onClick={() => handleCancelContract(contract.id)}
                               >
                                 <XCircle className="w-4 h-4 mr-1" />
@@ -442,7 +442,7 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
                               </Button>
                               <Button
                                 size="sm"
-                                className="flex-1"
+                                className="flex-1 w-full"
                                 disabled={!isCompleted || isExpired}
                                 onClick={() => handleCompleteContract(contract.id)}
                               >
