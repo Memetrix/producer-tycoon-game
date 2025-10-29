@@ -51,7 +51,7 @@ export function BeatInfoModal({ beat, onClose, onMintNFT }: BeatInfoModalProps) 
                 {/* Back - Beat Name */}
                 <div className="album-face album-back">
                   <div className="w-full h-full bg-gradient-to-br from-primary via-secondary to-accent rounded-lg flex items-center justify-center p-8">
-                    <h2 className="text-4xl md:text-5xl font-bold text-white text-center rotate-[-15deg] leading-tight drop-shadow-2xl">
+                    <h2 className="text-4xl md:text-5xl font-black text-white text-center rotate-[-15deg] leading-tight drop-shadow-2xl uppercase tracking-wider" style={{ fontFamily: "'Impact', 'Arial Black', 'Bebas Neue', sans-serif", textShadow: '4px 4px 0px rgba(0,0,0,0.5), 8px 8px 0px rgba(0,0,0,0.2)' }}>
                       {beat.name}
                     </h2>
                   </div>
@@ -144,15 +144,45 @@ export function BeatInfoModal({ beat, onClose, onMintNFT }: BeatInfoModalProps) 
           height: 100%;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+          box-shadow:
+            0 25px 50px -12px rgba(0, 0, 0, 0.5),
+            0 0 0 8px rgba(0, 0, 0, 0.1),
+            0 0 0 10px rgba(0, 0, 0, 0.05);
         }
 
         .album-front {
-          transform: rotateY(0deg);
+          transform: rotateY(0deg) translateZ(5px);
         }
 
         .album-back {
-          transform: rotateY(180deg);
+          transform: rotateY(180deg) translateZ(5px);
+        }
+
+        /* Thickness sides */
+        .rotating-album::before,
+        .rotating-album::after {
+          content: '';
+          position: absolute;
+          background: linear-gradient(90deg, rgba(0,0,0,0.8), rgba(0,0,0,0.4), rgba(0,0,0,0.8));
+          transform-origin: left;
+        }
+
+        /* Top edge */
+        .rotating-album::before {
+          width: 100%;
+          height: 10px;
+          top: 0;
+          left: 0;
+          transform: rotateX(90deg) translateZ(-5px);
+        }
+
+        /* Bottom edge */
+        .rotating-album::after {
+          width: 100%;
+          height: 10px;
+          bottom: 0;
+          left: 0;
+          transform: rotateX(-90deg) translateZ(-5px);
         }
 
         @keyframes rotate-y {
