@@ -172,18 +172,32 @@ export class Track {
    * Draw track background and hit line
    */
   private drawTrack(ctx: CanvasRenderingContext2D): void {
-    // Draw track separator
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.1)"
-    ctx.lineWidth = 1
-    ctx.beginPath()
-    ctx.moveTo(this.x + this.width, 0)
-    ctx.lineTo(this.x + this.width, this.game.canvasHeight)
-    ctx.stroke()
+    // Note: Track separators are now drawn in highway background with perspective
+    // No need for vertical lines here as they don't follow perspective
 
     // Draw hit line glow when key is pressed
     if (this.keyDown && this.hitGradient) {
+      // Get perspective position for the glow effect at hit line
+      const glowTop = this.game.checkHitLineY - 20
+      const glowBottom = this.game.checkHitLineY + 20
+
+      const topPerspective = this.game.getPerspectiveX(this.x, this.width, glowTop)
+      const bottomPerspective = this.game.getPerspectiveX(this.x, this.width, glowBottom)
+
+      // Draw glow as trapezoid following perspective
+      ctx.save()
       ctx.fillStyle = this.hitGradient
-      ctx.fillRect(this.x, this.game.checkHitLineY - 20, this.width, 40)
+      ctx.globalAlpha = 0.6
+
+      ctx.beginPath()
+      ctx.moveTo(topPerspective.x, glowTop)
+      ctx.lineTo(topPerspective.x + topPerspective.width, glowTop)
+      ctx.lineTo(bottomPerspective.x + bottomPerspective.width, glowBottom)
+      ctx.lineTo(bottomPerspective.x, glowBottom)
+      ctx.closePath()
+      ctx.fill()
+
+      ctx.restore()
     }
   }
 }
