@@ -563,11 +563,13 @@ export class GameInstance {
   public getPerspectiveX(baseX: number, baseWidth: number, y: number): { x: number; width: number } {
     const hitLineY = this.checkHitLineY
     const maxDistance = hitLineY
-    const distance = Math.max(0, hitLineY - y)
+
+    // Clamp Y to valid range and calculate normalized position (0 at top, 1 at hit line)
+    const clampedY = Math.max(0, Math.min(y, hitLineY))
+    const normalizedY = clampedY / hitLineY
 
     const minScale = 0.3
     const maxScale = 1.0
-    const perspectiveScale = minScale + (maxScale - minScale) * (1 - distance / maxDistance)
 
     // Calculate highway perspective
     const trackWidth = Math.min(this.canvasWidth / this.trackNum, this.trackMaxWidth)
@@ -584,24 +586,24 @@ export class GameInstance {
 
     if (laneIndex === -1) {
       // Fallback to simple scaling
-      const scaledWidth = baseWidth * perspectiveScale
-      const widthOffset = (baseWidth - scaledWidth) / 2
-      return { x: baseX + widthOffset, width: scaledWidth }
+      const currentWidth = topWidth + (bottomWidth - topWidth) * normalizedY
+      const currentLaneWidth = currentWidth / this.trackNum
+      return {
+        x: centerX - currentWidth / 2 + (laneIndex + 0.5) * currentLaneWidth - currentLaneWidth / 2,
+        width: currentLaneWidth
+      }
     }
 
-    // Calculate lane position in perspective
-    const lanePercent = (laneIndex + 0.5) / this.trackNum // Center of lane
+    // Calculate current highway width at this Y position
+    const currentHighwayWidth = topWidth + (bottomWidth - topWidth) * normalizedY
+    const currentLaneWidth = currentHighwayWidth / this.trackNum
 
-    const topLaneWidth = topWidth / this.trackNum
-    const bottomLaneWidth = bottomWidth / this.trackNum
-    const currentLaneWidth = topLaneWidth + (bottomLaneWidth - topLaneWidth) * (1 - distance / maxDistance)
-
-    // Calculate X position at this Y
-    const currentHighwayWidth = topWidth + (bottomWidth - topWidth) * (1 - distance / maxDistance)
-    const currentX = centerX - currentHighwayWidth / 2 + currentHighwayWidth * lanePercent
+    // Calculate lane boundaries in perspective
+    const highwayLeft = centerX - currentHighwayWidth / 2
+    const laneLeft = highwayLeft + laneIndex * currentLaneWidth
 
     return {
-      x: currentX - currentLaneWidth / 2,
+      x: laneLeft,
       width: currentLaneWidth
     }
   }
