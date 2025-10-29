@@ -225,28 +225,28 @@ export function HomeScreen({
 
                 <div className="grid grid-cols-2 gap-2 mt-4">
                   <Button
-                    className="col-span-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md active:scale-95 transition-transform"
+                    className="col-span-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-md active:scale-95 transition-transform text-sm sm:text-base"
                     size="lg"
                     onClick={() => onNavigate("stage")}
                   >
-                    <Music2 className="w-4 h-4 mr-2" />
-                    Создать бит
+                    <Music2 className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                    <span className="truncate">Создать бит</span>
                   </Button>
                   <Button
                     variant="outline"
-                    className="bg-gradient-to-r from-primary/10 to-secondary/10 hover:from-primary/20 hover:to-secondary/20 border-primary/30 active:scale-95 transition-transform"
+                    className="bg-gradient-to-r from-primary/10 to-secondary/10 hover:from-primary/20 hover:to-secondary/20 border-primary/30 active:scale-95 transition-transform text-sm sm:text-base"
                     onClick={() => onNavigate("shop")}
                   >
-                    <ShoppingBag className="w-4 h-4 mr-2" />
-                    Магазин
+                    <ShoppingBag className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                    <span className="truncate">Магазин</span>
                   </Button>
                   <Button
                     variant="outline"
-                    className="bg-accent/10 hover:bg-accent/20 border-accent/30 active:scale-95 transition-transform"
+                    className="bg-accent/10 hover:bg-accent/20 border-accent/30 active:scale-95 transition-transform text-sm sm:text-base"
                     onClick={() => onNavigate("leaderboards")}
                   >
-                    <Trophy className="w-4 h-4 mr-2" />
-                    Рейтинг
+                    <Trophy className="w-4 h-4 mr-1.5 flex-shrink-0" />
+                    <span className="truncate">Рейтинг</span>
                   </Button>
                 </div>
               </Card>
