@@ -420,47 +420,98 @@ export class GameInstance {
 
   /**
    * Render game with 3D isometric perspective
-   * Uses canvas 2D transforms to simulate 3D depth
+   * Uses perspective scaling instead of matrix transforms
    */
   private renderIsometric3D(): void {
-    // Draw highway background
+    // Draw highway background with perspective
     this.drawHighwayBackground()
 
-    // Update and render all tracks WITHOUT perspective transform
-    // (tracks render in normal 2D space)
+    // Update and render all tracks
     for (const track of this.dropTrackArr) {
       track.update(this.ctx)
     }
   }
 
   /**
-   * Draw highway background with lanes
+   * Draw highway background with isometric perspective
    */
   private drawHighwayBackground(): void {
-    // Draw highway base
     const trackWidth = Math.min(this.canvasWidth / this.trackNum, this.trackMaxWidth)
     const highwayWidth = this.trackNum * trackWidth
-    const startX = this.canvasWidth / 2 - highwayWidth / 2
+    const centerX = this.canvasWidth / 2
+
+    // Perspective parameters
+    const minScale = 0.3 // Scale at far end (top)
+    const maxScale = 1.0 // Scale at near end (hit line)
+
+    // Draw highway as trapezoid (perspective)
+    const topWidth = highwayWidth * minScale
+    const bottomWidth = highwayWidth * maxScale
+
+    const topLeft = centerX - topWidth / 2
+    const topRight = centerX + topWidth / 2
+    const bottomLeft = centerX - bottomWidth / 2
+    const bottomRight = centerX + bottomWidth / 2
 
     // Background gradient
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvasHeight)
     gradient.addColorStop(0, "#1a1a2e")
+    gradient.addColorStop(0.5, "#16162b")
     gradient.addColorStop(1, "#0a0a0f")
 
+    this.ctx.save()
+    this.ctx.beginPath()
+    this.ctx.moveTo(topLeft, 0)
+    this.ctx.lineTo(topRight, 0)
+    this.ctx.lineTo(bottomRight, this.canvasHeight)
+    this.ctx.lineTo(bottomLeft, this.canvasHeight)
+    this.ctx.closePath()
     this.ctx.fillStyle = gradient
-    this.ctx.fillRect(startX, 0, highwayWidth, this.canvasHeight)
+    this.ctx.fill()
 
-    // Lane dividers
+    // Lane dividers with perspective
     for (let i = 0; i <= this.trackNum; i++) {
-      const x = startX + i * trackWidth
+      const lanePercent = i / this.trackNum
 
-      this.ctx.strokeStyle = i === 0 || i === this.trackNum ? "rgba(255, 215, 0, 0.3)" : "rgba(255, 255, 255, 0.1)"
-      this.ctx.lineWidth = i === 0 || i === this.trackNum ? 2 : 1
+      // Calculate X positions at top and bottom with perspective
+      const topX = topLeft + topWidth * lanePercent
+      const bottomX = bottomLeft + bottomWidth * lanePercent
+
+      // Draw lane divider
+      const isEdge = i === 0 || i === this.trackNum
+      this.ctx.strokeStyle = isEdge ? "rgba(255, 215, 0, 0.4)" : "rgba(255, 255, 255, 0.15)"
+      this.ctx.lineWidth = isEdge ? 3 : 1.5
+      this.ctx.shadowBlur = isEdge ? 15 : 0
+      this.ctx.shadowColor = "rgba(255, 215, 0, 0.5)"
+
       this.ctx.beginPath()
-      this.ctx.moveTo(x, 0)
-      this.ctx.lineTo(x, this.canvasHeight)
+      this.ctx.moveTo(topX, 0)
+      this.ctx.lineTo(bottomX, this.canvasHeight)
+      this.ctx.stroke()
+
+      this.ctx.shadowBlur = 0
+    }
+
+    // Add grid lines for depth perception
+    const gridLines = 10
+    for (let i = 1; i < gridLines; i++) {
+      const y = (this.canvasHeight / gridLines) * i
+      const yPercent = y / this.canvasHeight
+      const scale = minScale + (maxScale - minScale) * yPercent
+      const lineWidth = highwayWidth * scale
+
+      const leftX = centerX - lineWidth / 2
+      const rightX = centerX + lineWidth / 2
+
+      this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.05 + yPercent * 0.05})`
+      this.ctx.lineWidth = 1
+      this.ctx.beginPath()
+      this.ctx.moveTo(leftX, y)
+      this.ctx.lineTo(rightX, y)
       this.ctx.stroke()
     }
+
+    this.ctx.restore()
   }
 
   /**

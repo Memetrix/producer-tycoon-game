@@ -246,15 +246,35 @@ export class Note {
   }
 
   /**
-   * Draw single note
+   * Draw single note with perspective scaling
    */
   private drawSingleNote(ctx: CanvasRenderingContext2D, color: string): void {
+    // Calculate perspective scale based on Y position
+    // Notes far from hit line (top) are smaller, notes near hit line are larger
+    const hitLineY = this.game.checkHitLineY
+    const maxDistance = hitLineY // Distance from top to hit line
+    const distance = Math.max(0, hitLineY - this.y)
+
+    // Perspective scale: 0.3 at top (far), 1.0 at hit line (close)
+    const minScale = 0.3
+    const maxScale = 1.0
+    const perspectiveScale = minScale + (maxScale - minScale) * (1 - distance / maxDistance)
+
+    // Apply perspective width scaling
+    const scaledWidth = this.width * perspectiveScale
+    const widthOffset = (this.width - scaledWidth) / 2
+    const scaledX = this.x + widthOffset
+
+    // Draw note with perspective
     ctx.fillStyle = color
-    ctx.fillRect(this.x, this.y, this.width, this.singleNoteHeight)
+    ctx.shadowBlur = 10 * perspectiveScale
+    ctx.shadowColor = color
+    ctx.fillRect(scaledX, this.y, scaledWidth, this.singleNoteHeight)
+    ctx.shadowBlur = 0
   }
 
   /**
-   * Draw hold note (long note)
+   * Draw hold note (long note) with perspective scaling
    */
   private drawHoldNote(ctx: CanvasRenderingContext2D, color: string): void {
     const endTime = this.keyObj.h![this.key]
@@ -282,8 +302,48 @@ export class Note {
       }
     }
 
+    // Draw hold note with perspective (trapezoid shape)
+    const hitLineY = this.game.checkHitLineY
+    const maxDistance = hitLineY
+
+    // Calculate scale at top and bottom of hold note
+    const topDistance = Math.max(0, hitLineY - paintY)
+    const bottomDistance = Math.max(0, hitLineY - (paintY + paintHeight))
+
+    const minScale = 0.3
+    const maxScale = 1.0
+    const topScale = minScale + (maxScale - minScale) * (1 - topDistance / maxDistance)
+    const bottomScale = minScale + (maxScale - minScale) * (1 - bottomDistance / maxDistance)
+
+    // Draw as trapezoid using path
+    ctx.save()
     ctx.fillStyle = color
-    ctx.fillRect(this.x, paintY, this.width, paintHeight)
+    ctx.globalAlpha = 0.7
+
+    const topWidth = this.width * topScale
+    const bottomWidth = this.width * bottomScale
+    const topOffset = (this.width - topWidth) / 2
+    const bottomOffset = (this.width - bottomWidth) / 2
+
+    ctx.beginPath()
+    ctx.moveTo(this.x + topOffset, paintY)
+    ctx.lineTo(this.x + topOffset + topWidth, paintY)
+    ctx.lineTo(this.x + bottomOffset + bottomWidth, paintY + paintHeight)
+    ctx.lineTo(this.x + bottomOffset, paintY + paintHeight)
+    ctx.closePath()
+    ctx.fill()
+
+    ctx.restore()
+
+    // Draw head of hold note
+    const headScale = bottomScale
+    const headWidth = this.width * headScale
+    const headOffset = (this.width - headWidth) / 2
+    ctx.fillStyle = color
+    ctx.shadowBlur = 10 * headScale
+    ctx.shadowColor = color
+    ctx.fillRect(this.x + headOffset, this.y, headWidth, this.singleNoteHeight)
+    ctx.shadowBlur = 0
   }
 
   /**
