@@ -23,6 +23,7 @@ import {
   getLabelDealsPassiveIncome,
   getSkillMaxEnergyBonus,
   getSkillEnergyRegenBonus,
+  BEAT_CONTRACTS_POOL,
   type Contract,
 } from "@/lib/game-state"
 import { createBrowserClient } from "@/lib/supabase/client"
