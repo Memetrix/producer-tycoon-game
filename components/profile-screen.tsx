@@ -16,16 +16,19 @@ import {
   Award,
   Calendar,
   Target,
-  Star
+  Star,
+  ArrowLeft,
+  X
 } from "lucide-react"
 import { getTotalEnergyBonus, getTotalPassiveIncome } from "@/lib/game-state"
 
 interface ProfileScreenProps {
   gameState: GameState
   onLogout: () => void
+  onBack: () => void
 }
 
-export function ProfileScreen({ gameState, onLogout }: ProfileScreenProps) {
+export function ProfileScreen({ gameState, onLogout, onBack }: ProfileScreenProps) {
   const totalArtists = Object.values(gameState.artists).reduce((sum, level) => sum + level, 0)
   const totalSkills = Object.values(gameState.skills).filter(Boolean).length
   const totalPassiveIncome = getTotalPassiveIncome(gameState.artists)
@@ -55,6 +58,19 @@ export function ProfileScreen({ gameState, onLogout }: ProfileScreenProps) {
   return (
     <div className="h-full overflow-y-auto pb-20 md:pb-4">
       <div className="max-w-4xl mx-auto p-4 space-y-6">
+        {/* Back Button */}
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={onBack}
+            variant="ghost"
+            size="sm"
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Назад
+          </Button>
+        </div>
+
         {/* Header with Avatar */}
         <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6 shadow-xl border-2">
           <div className="flex flex-col md:flex-row items-center gap-6">

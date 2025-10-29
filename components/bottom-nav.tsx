@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Music, Zap, Users, Target, UserCircle } from "lucide-react"
+import { Home, Music, Zap, Users, Target } from "lucide-react"
 import type { Screen } from "@/app/page"
 
 interface BottomNavProps {
@@ -12,9 +12,9 @@ export function BottomNav({ currentScreen, onNavigate }: BottomNavProps) {
   const navItems = [
     { id: "home" as Screen, icon: Home, label: "Главная" },
     { id: "stage" as Screen, icon: Music, label: "Создать" },
+    { id: "studio" as Screen, icon: Zap, label: "Студия" },
     { id: "artists" as Screen, icon: Users, label: "Артисты" },
     { id: "contracts" as Screen, icon: Target, label: "Контракты" },
-    { id: "profile" as Screen, icon: UserCircle, label: "Профиль" },
   ]
 
   return (

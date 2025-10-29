@@ -72,7 +72,10 @@ export function HomeScreen({
         )}
 
         <div className="lg:hidden p-4 border-b border-border/50 backdrop-blur-xl bg-card/80">
-          <div className="flex items-center gap-3 mb-4">
+          <button
+            onClick={() => onNavigate("profile")}
+            className="flex items-center gap-3 mb-4 w-full text-left hover:bg-accent/50 rounded-lg p-2 -m-2 transition-colors active:scale-98"
+          >
             <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg ring-2 ring-primary/30 flex-shrink-0">
               {gameState.playerAvatar ? (
                 <img
@@ -102,7 +105,7 @@ export function HomeScreen({
               </h1>
               <p className="text-sm text-muted-foreground">{currentStageTitle}</p>
             </div>
-          </div>
+          </button>
 
           <div className="grid grid-cols-3 gap-2">
             {/* Money */}

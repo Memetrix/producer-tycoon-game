@@ -518,7 +518,9 @@ export default function Page() {
         {currentScreen === "shop" && (
           <ShopScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
         )}
-        {currentScreen === "profile" && <ProfileScreen gameState={gameState} onLogout={handleLogout} />}
+        {currentScreen === "profile" && (
+          <ProfileScreen gameState={gameState} onLogout={handleLogout} onBack={() => navigateTo("home")} />
+        )}
       </div>
       {!isRhythmGameActive && <BottomNav currentScreen={currentScreen} onNavigate={navigateTo} />}
     </div>

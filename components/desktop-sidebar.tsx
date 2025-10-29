@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Music, Zap, Users, Target, Trophy, ShoppingBag, TrendingUp, Settings, UserCircle } from "lucide-react"
+import { Home, Music, Zap, Users, Target, Trophy, ShoppingBag, TrendingUp, Settings } from "lucide-react"
 import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
 
@@ -21,13 +21,15 @@ export function DesktopSidebar({ currentScreen, onNavigate, gameState }: Desktop
     { id: "upgrades" as Screen, icon: Settings, label: "Улучшения" },
     { id: "leaderboards" as Screen, icon: Trophy, label: "Рейтинг" },
     { id: "shop" as Screen, icon: ShoppingBag, label: "Магазин" },
-    { id: "profile" as Screen, icon: UserCircle, label: "Профиль" },
   ]
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:w-64 lg:border-r lg:border-border/50 lg:bg-card/95 lg:backdrop-blur-xl lg:z-40">
       {/* Player Profile Section */}
-      <div className="p-6 border-b border-border/50">
+      <button
+        onClick={() => onNavigate("profile")}
+        className="p-6 border-b border-border/50 w-full text-left hover:bg-accent/30 transition-colors"
+      >
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary/50">
             <img
@@ -38,7 +40,7 @@ export function DesktopSidebar({ currentScreen, onNavigate, gameState }: Desktop
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-sm truncate">{gameState.playerName}</h3>
-            <p className="text-xs text-muted-foreground">Уровень {gameState.level}</p>
+            <p className="text-xs text-muted-foreground">Уровень {Math.floor(gameState.reputation / 500) + 1}</p>
           </div>
         </div>
 
@@ -50,10 +52,10 @@ export function DesktopSidebar({ currentScreen, onNavigate, gameState }: Desktop
           </div>
           <div className="bg-background/50 rounded-lg p-2">
             <p className="text-[10px] text-muted-foreground">Энергия</p>
-            <p className="text-sm font-bold text-secondary">{gameState.energy}</p>
+            <p className="text-sm font-bold text-secondary">{Math.round(gameState.energy)}</p>
           </div>
         </div>
-      </div>
+      </button>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
