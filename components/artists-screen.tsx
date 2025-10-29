@@ -117,9 +117,9 @@ export function ArtistsScreen({ gameState, setGameState, onNavigate }: ArtistsSc
             <Card className="p-3 text-center shadow-md bg-gradient-to-br from-secondary/10 to-secondary/5">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Zap className="w-4 h-4 text-secondary" />
-                <p className="text-xl font-bold text-secondary">+{totalEnergyBonus}%</p>
+                <p className="text-xl font-bold text-secondary">+{totalEnergyBonus}</p>
               </div>
-              <p className="text-xs text-muted-foreground">Энергия</p>
+              <p className="text-xs text-muted-foreground">Максимальная энергия</p>
             </Card>
           </div>
 

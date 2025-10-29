@@ -49,22 +49,20 @@ export function ContractsScreen({ gameState, setGameState, onNavigate }: Contrac
     const shuffled = [...contractPool].sort(() => Math.random() - 0.5)
     const newContracts = shuffled.slice(0, numContracts).map((c) => c.id)
 
-    setGameState((prev) => ({
-      ...prev,
-      beatContracts: {
-        ...prev.beatContracts,
-        availableContracts: newContracts,
-        lastRefreshDate: new Date().toISOString(),
-      },
-    }))
+    setGameState((prev) => {
+      const updated = {
+        ...prev,
+        beatContracts: {
+          ...prev.beatContracts,
+          availableContracts: newContracts,
+          lastRefreshDate: new Date().toISOString(),
+        },
+      }
 
-    saveGameState({
-      ...gameState,
-      beatContracts: {
-        ...gameState.beatContracts,
-        availableContracts: newContracts,
-        lastRefreshDate: new Date().toISOString(),
-      },
+      // Save the updated state
+      saveGameState(updated)
+
+      return updated
     })
   }
 

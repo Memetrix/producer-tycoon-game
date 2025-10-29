@@ -118,29 +118,42 @@ export default function Page() {
             setOfflineEarnings(offlineData)
           }
 
-          if (savedState.activeContracts && savedState.activeContracts.length > 0) {
+          if (savedState.beatContracts.activeContracts && savedState.beatContracts.activeContracts.length > 0) {
             const now = Date.now()
-            const expiredContracts: Contract[] = []
-            const validContracts: Contract[] = []
+            const expiredContractIds: string[] = []
+            const validContractIds: string[] = []
 
-            savedState.activeContracts.forEach((contract) => {
-              if (contract.timeLimit && contract.acceptedAt) {
-                const timeElapsed = now - contract.acceptedAt
-                const timeLimitMs = contract.timeLimit * 60 * 1000 // convert minutes to ms
+            savedState.beatContracts.activeContracts.forEach((contractId) => {
+              // Get contract object from pool by ID
+              const contract = BEAT_CONTRACTS_POOL.find((c) => c.id === contractId)
+              const progress = savedState.beatContracts.contractProgress[contractId]
+
+              if (contract && contract.requirements.timeLimit && progress?.startedAt) {
+                const timeElapsed = now - new Date(progress.startedAt).getTime()
+                const timeLimitMs = contract.requirements.timeLimit * 60 * 60 * 1000 // hours to ms
 
                 if (timeElapsed >= timeLimitMs) {
-                  expiredContracts.push(contract)
+                  expiredContractIds.push(contractId)
                 } else {
-                  validContracts.push(contract)
+                  validContractIds.push(contractId)
                 }
               } else {
-                validContracts.push(contract)
+                validContractIds.push(contractId)
               }
             })
 
-            if (expiredContracts.length > 0) {
-              console.log(`[v0] ${expiredContracts.length} contract(s) expired while offline`)
-              savedState.activeContracts = validContracts
+            if (expiredContractIds.length > 0) {
+              console.log(`[v0] ${expiredContractIds.length} contract(s) expired while offline`)
+
+              // Remove progress for expired contracts
+              const newProgress = { ...savedState.beatContracts.contractProgress }
+              expiredContractIds.forEach((id) => delete newProgress[id])
+
+              savedState.beatContracts = {
+                ...savedState.beatContracts,
+                activeContracts: validContractIds,
+                contractProgress: newProgress,
+              }
             }
           }
 
@@ -194,6 +207,10 @@ export default function Page() {
 
         if (prev.musicStyle === "electronic") maxEnergy += 30
         if (prev.startingBonus === "energizer") maxEnergy += 50
+
+        // Add artist energy bonuses (additive)
+        const artistEnergyBonus = getTotalEnergyBonus(prev.artists)
+        maxEnergy += artistEnergyBonus
 
         const newEnergy = Math.min(maxEnergy, Math.round(prev.energy + recoveryAmount))
 
