@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Music, Zap, Users, Target, Trophy, ShoppingBag, TrendingUp, Settings } from "lucide-react"
+import { Home, Music, Zap, Users, Target, Trophy, ShoppingBag, TrendingUp, Settings, UserCircle } from "lucide-react"
 import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
 
@@ -21,6 +21,7 @@ export function DesktopSidebar({ currentScreen, onNavigate, gameState }: Desktop
     { id: "upgrades" as Screen, icon: Settings, label: "Улучшения" },
     { id: "leaderboards" as Screen, icon: Trophy, label: "Рейтинг" },
     { id: "shop" as Screen, icon: ShoppingBag, label: "Магазин" },
+    { id: "profile" as Screen, icon: UserCircle, label: "Профиль" },
   ]
 
   return (

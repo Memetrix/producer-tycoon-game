@@ -10,6 +10,7 @@ import { SkillsScreen } from "@/components/skills-screen"
 import { ContractsScreen } from "@/components/contracts-screen"
 import { LeaderboardsScreen } from "@/components/leaderboards-screen"
 import { ShopScreen } from "@/components/shop-screen"
+import { ProfileScreen } from "@/components/profile-screen"
 import { Onboarding } from "@/components/onboarding"
 import { CharacterCreation, type CharacterData } from "@/components/character-creation"
 import { AvatarConfirmation } from "@/components/avatar-confirmation"
@@ -41,6 +42,7 @@ export type Screen =
   | "contracts"
   | "leaderboards"
   | "shop"
+  | "profile"
 
 export default function Page() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
@@ -400,6 +402,12 @@ export default function Page() {
     setOfflineEarnings(null)
   }
 
+  const handleLogout = async () => {
+    const supabase = createBrowserClient()
+    await supabase.auth.signOut()
+    router.push("/auth/login")
+  }
+
   if (!authChecked || (isAuthenticated && isLoading)) {
     return (
       <div className="min-h-screen bg-background dark flex items-center justify-center p-4">
@@ -510,6 +518,7 @@ export default function Page() {
         {currentScreen === "shop" && (
           <ShopScreen gameState={gameState} setGameState={setGameState} onNavigate={navigateTo} />
         )}
+        {currentScreen === "profile" && <ProfileScreen gameState={gameState} onLogout={handleLogout} />}
       </div>
       {!isRhythmGameActive && <BottomNav currentScreen={currentScreen} onNavigate={navigateTo} />}
     </div>
