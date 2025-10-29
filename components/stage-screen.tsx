@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 import type { Screen } from "@/app/page"
-import { VinylBeatCard } from "@/components/vinyl-beat-card"
+import { BeatInfoModal } from "@/components/beat-info-modal"
 import {
   type GameState,
   type Beat,
@@ -48,6 +48,8 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
   const [rhythmAccuracy, setRhythmAccuracy] = useState(0)
 
   const [showNftModal, setShowNftModal] = useState(false)
+  const [selectedBeat, setSelectedBeat] = useState<Beat | null>(null)
+  const [showBeatInfoModal, setShowBeatInfoModal] = useState(false)
 
   // Track and difficulty selection
   const [showTrackSelector, setShowTrackSelector] = useState(false)
@@ -789,9 +791,38 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
                   <div className="mb-3">
                     <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Твои биты</h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-2">
                     {gameState.beats.map((beat) => (
-                      <VinylBeatCard key={beat.id} beat={beat} />
+                      <Card
+                        key={beat.id}
+                        className="p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                        onClick={() => {
+                          setSelectedBeat(beat)
+                          setShowBeatInfoModal(true)
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
+                            <img
+                              src={beat.cover || "/placeholder.svg"}
+                              alt={beat.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate">{beat.name}</p>
+                            <p className="text-xs text-muted-foreground">Качество: {beat.quality}%</p>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3" />
+                              {formatDate(beat.createdAt)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-primary">${beat.price}</p>
+                            <p className="text-xs text-muted-foreground">Продано</p>
+                          </div>
+                        </div>
+                      </Card>
                     ))}
                   </div>
                 </div>
@@ -802,6 +833,21 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
 
         {/* NFT Mint Modal */}
         {showNftModal && currentBeat && <NftMintModal beat={currentBeat} onClose={() => setShowNftModal(false)} />}
+
+        {/* Beat Info Modal */}
+        {showBeatInfoModal && selectedBeat && (
+          <BeatInfoModal
+            beat={selectedBeat}
+            onClose={() => {
+              setShowBeatInfoModal(false)
+              setSelectedBeat(null)
+            }}
+            onMintNFT={() => {
+              setShowBeatInfoModal(false)
+              // TODO: Open NFT mint flow
+            }}
+          />
+        )}
       </div>
     </DesktopLayout>
   )
