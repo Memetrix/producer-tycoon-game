@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { Screen } from "@/app/page"
 import type { GameState } from "@/lib/game-state"
-import { getStageTitle, getReputationTier, ENERGY_CONFIG } from "@/lib/game-state"
+import { getStageTitle, getReputationTier, ENERGY_CONFIG, getSkillMaxEnergyBonus, getTotalEnergyBonus } from "@/lib/game-state"
 import { OfflineEarningsModal } from "@/components/offline-earnings-modal"
 import { DesktopLayout } from "@/components/desktop-layout"
 
@@ -34,8 +34,19 @@ export function HomeScreen({
 
   const getMaxEnergy = () => {
     let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
+
+    // Apply skill bonus first (multiplicative)
+    const skillMaxEnergyBonus = getSkillMaxEnergyBonus(gameState.skills || {})
+    maxEnergy = Math.floor(maxEnergy * (1 + skillMaxEnergyBonus))
+
+    // Add character bonuses
     if (gameState.musicStyle === "electronic") maxEnergy += 30
     if (gameState.startingBonus === "energizer") maxEnergy += 50
+
+    // Add artist energy bonuses (additive)
+    const artistEnergyBonus = getTotalEnergyBonus(gameState.artists)
+    maxEnergy += artistEnergyBonus
+
     return maxEnergy
   }
 
