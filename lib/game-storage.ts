@@ -1,6 +1,12 @@
 import { createClient } from "@/lib/supabase/client"
 import type { GameState, Beat } from "@/lib/game-state"
-import { getReputationTier } from "@/lib/game-state"
+import {
+  getReputationTier,
+  ENERGY_CONFIG,
+  getTotalEnergyBonus,
+  getSkillMaxEnergyBonus,
+  getSkillEnergyRegenBonus,
+} from "@/lib/game-state"
 
 async function getAuthenticatedUserId(): Promise<string | null> {
   const supabase = createClient()
@@ -97,8 +103,32 @@ export async function loadGameState(): Promise<GameState | null> {
     const timeDiffMs = now.getTime() - lastActiveDate.getTime()
     const timeDiffMinutes = Math.floor(timeDiffMs / 60000)
 
+    // Calculate offline energy regeneration
     const baseEnergy = gameState.energy || 0
-    const regeneratedEnergy = Math.min(100, baseEnergy + timeDiffMinutes)
+    const skillRegenBonus = getSkillEnergyRegenBonus(skillsArray.includes("caffeineRush") ? { caffeineRush: true } : {})
+    const energyRegenPerMinute = ENERGY_CONFIG.ENERGY_REGEN_PER_MINUTE + skillRegenBonus
+    const energyRegained = timeDiffMinutes * energyRegenPerMinute
+
+    // Calculate max energy with all bonuses
+    let maxEnergy = ENERGY_CONFIG.BASE_MAX_ENERGY
+
+    // Apply skill bonus first (multiplicative)
+    const skillMaxEnergyBonus = getSkillMaxEnergyBonus(
+      skillsArray.includes("stamina") ? { stamina: true } : {},
+    )
+    maxEnergy = Math.floor(maxEnergy * (1 + skillMaxEnergyBonus))
+
+    // Add character bonuses
+    const musicStyle = player.music_style || ""
+    const startingBonus = player.starting_bonus || ""
+    if (musicStyle === "electronic") maxEnergy += 30
+    if (startingBonus === "energizer") maxEnergy += 50
+
+    // Add artist energy bonuses (additive)
+    const artistEnergyBonus = getTotalEnergyBonus(artistsMap)
+    maxEnergy += artistEnergyBonus
+
+    const regeneratedEnergy = Math.min(maxEnergy, Math.round(baseEnergy + energyRegained))
 
     const currentStage = Math.min(6, getReputationTier(gameState.reputation))
 
