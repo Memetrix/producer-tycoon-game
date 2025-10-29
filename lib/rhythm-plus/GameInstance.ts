@@ -557,6 +557,56 @@ export class GameInstance {
   }
 
   /**
+   * Calculate perspective X position for a note
+   * Takes lane X position and Y position, returns adjusted X for perspective
+   */
+  public getPerspectiveX(baseX: number, baseWidth: number, y: number): { x: number; width: number } {
+    const hitLineY = this.checkHitLineY
+    const maxDistance = hitLineY
+    const distance = Math.max(0, hitLineY - y)
+
+    const minScale = 0.3
+    const maxScale = 1.0
+    const perspectiveScale = minScale + (maxScale - minScale) * (1 - distance / maxDistance)
+
+    // Calculate highway perspective
+    const trackWidth = Math.min(this.canvasWidth / this.trackNum, this.trackMaxWidth)
+    const highwayWidth = this.trackNum * trackWidth
+    const centerX = this.canvasWidth / 2
+
+    const topWidth = highwayWidth * minScale
+    const bottomWidth = highwayWidth * maxScale
+
+    // Find which lane this note is in
+    const laneIndex = this.dropTrackArr.findIndex(track =>
+      baseX >= track.x && baseX < track.x + track.width
+    )
+
+    if (laneIndex === -1) {
+      // Fallback to simple scaling
+      const scaledWidth = baseWidth * perspectiveScale
+      const widthOffset = (baseWidth - scaledWidth) / 2
+      return { x: baseX + widthOffset, width: scaledWidth }
+    }
+
+    // Calculate lane position in perspective
+    const lanePercent = (laneIndex + 0.5) / this.trackNum // Center of lane
+
+    const topLaneWidth = topWidth / this.trackNum
+    const bottomLaneWidth = bottomWidth / this.trackNum
+    const currentLaneWidth = topLaneWidth + (bottomLaneWidth - topLaneWidth) * (1 - distance / maxDistance)
+
+    // Calculate X position at this Y
+    const currentHighwayWidth = topWidth + (bottomWidth - topWidth) * (1 - distance / maxDistance)
+    const currentX = centerX - currentHighwayWidth / 2 + currentHighwayWidth * lanePercent
+
+    return {
+      x: currentX - currentLaneWidth / 2,
+      width: currentLaneWidth
+    }
+  }
+
+  /**
    * Get lane color
    */
   public getLaneColor(key: string): string {

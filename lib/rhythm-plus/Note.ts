@@ -249,27 +249,22 @@ export class Note {
    * Draw single note with perspective scaling
    */
   private drawSingleNote(ctx: CanvasRenderingContext2D, color: string): void {
-    // Calculate perspective scale based on Y position
-    // Notes far from hit line (top) are smaller, notes near hit line are larger
-    const hitLineY = this.game.checkHitLineY
-    const maxDistance = hitLineY // Distance from top to hit line
-    const distance = Math.max(0, hitLineY - this.y)
+    // Get perspective-adjusted position and width
+    const perspective = this.game.getPerspectiveX(this.x, this.width, this.y)
 
-    // Perspective scale: 0.3 at top (far), 1.0 at hit line (close)
+    // Calculate glow intensity based on distance
+    const hitLineY = this.game.checkHitLineY
+    const maxDistance = hitLineY
+    const distance = Math.max(0, hitLineY - this.y)
     const minScale = 0.3
     const maxScale = 1.0
     const perspectiveScale = minScale + (maxScale - minScale) * (1 - distance / maxDistance)
-
-    // Apply perspective width scaling
-    const scaledWidth = this.width * perspectiveScale
-    const widthOffset = (this.width - scaledWidth) / 2
-    const scaledX = this.x + widthOffset
 
     // Draw note with perspective
     ctx.fillStyle = color
     ctx.shadowBlur = 10 * perspectiveScale
     ctx.shadowColor = color
-    ctx.fillRect(scaledX, this.y, scaledWidth, this.singleNoteHeight)
+    ctx.fillRect(perspective.x, this.y, perspective.width, this.singleNoteHeight)
     ctx.shadowBlur = 0
   }
 
@@ -306,13 +301,14 @@ export class Note {
     const hitLineY = this.game.checkHitLineY
     const maxDistance = hitLineY
 
-    // Calculate scale at top and bottom of hold note
-    const topDistance = Math.max(0, hitLineY - paintY)
-    const bottomDistance = Math.max(0, hitLineY - (paintY + paintHeight))
+    // Get perspective for top and bottom of hold note
+    const topPerspective = this.game.getPerspectiveX(this.x, this.width, paintY)
+    const bottomPerspective = this.game.getPerspectiveX(this.x, this.width, paintY + paintHeight)
 
+    // Calculate scale for glow
+    const bottomDistance = Math.max(0, hitLineY - (paintY + paintHeight))
     const minScale = 0.3
     const maxScale = 1.0
-    const topScale = minScale + (maxScale - minScale) * (1 - topDistance / maxDistance)
     const bottomScale = minScale + (maxScale - minScale) * (1 - bottomDistance / maxDistance)
 
     // Draw as trapezoid using path
@@ -320,29 +316,22 @@ export class Note {
     ctx.fillStyle = color
     ctx.globalAlpha = 0.7
 
-    const topWidth = this.width * topScale
-    const bottomWidth = this.width * bottomScale
-    const topOffset = (this.width - topWidth) / 2
-    const bottomOffset = (this.width - bottomWidth) / 2
-
     ctx.beginPath()
-    ctx.moveTo(this.x + topOffset, paintY)
-    ctx.lineTo(this.x + topOffset + topWidth, paintY)
-    ctx.lineTo(this.x + bottomOffset + bottomWidth, paintY + paintHeight)
-    ctx.lineTo(this.x + bottomOffset, paintY + paintHeight)
+    ctx.moveTo(topPerspective.x, paintY)
+    ctx.lineTo(topPerspective.x + topPerspective.width, paintY)
+    ctx.lineTo(bottomPerspective.x + bottomPerspective.width, paintY + paintHeight)
+    ctx.lineTo(bottomPerspective.x, paintY + paintHeight)
     ctx.closePath()
     ctx.fill()
 
     ctx.restore()
 
     // Draw head of hold note
-    const headScale = bottomScale
-    const headWidth = this.width * headScale
-    const headOffset = (this.width - headWidth) / 2
+    const headPerspective = this.game.getPerspectiveX(this.x, this.width, this.y)
     ctx.fillStyle = color
-    ctx.shadowBlur = 10 * headScale
+    ctx.shadowBlur = 10 * bottomScale
     ctx.shadowColor = color
-    ctx.fillRect(this.x + headOffset, this.y, headWidth, this.singleNoteHeight)
+    ctx.fillRect(headPerspective.x, this.y, headPerspective.width, this.singleNoteHeight)
     ctx.shadowBlur = 0
   }
 
