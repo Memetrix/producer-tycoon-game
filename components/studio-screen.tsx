@@ -131,7 +131,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: EQUIPMENT_TIERS.phone.name,
       level: gameState.equipment.phone,
       maxLevel: 10,
-      basePrice: 80,
+      basePrice: 160, // REBALANCED: was 80 (×2 increase)
       bonus: "+2 качество/уровень",
       icon: Monitor,
       color: "primary",
@@ -141,7 +141,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: EQUIPMENT_TIERS.headphones.name,
       level: gameState.equipment.headphones,
       maxLevel: 10,
-      basePrice: 120,
+      basePrice: 240, // REBALANCED: was 120 (×2 increase)
       bonus: "+2 качество/уровень",
       icon: Headphones,
       color: "secondary",
@@ -151,7 +151,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: EQUIPMENT_TIERS.microphone.name,
       level: gameState.equipment.microphone,
       maxLevel: 10,
-      basePrice: 200,
+      basePrice: 400, // REBALANCED: was 200 (×2 increase)
       bonus: "+3 качество/уровень",
       icon: Mic,
       color: "accent",
@@ -161,7 +161,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: EQUIPMENT_TIERS.computer.name,
       level: gameState.equipment.computer,
       maxLevel: 10,
-      basePrice: 400,
+      basePrice: 800, // REBALANCED: was 400 (×2 increase)
       bonus: "+5 качество/уровень",
       icon: Home,
       color: "primary",
@@ -171,7 +171,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: "MIDI",
       level: gameState.equipment.midi || 0,
       maxLevel: 10,
-      basePrice: 100,
+      basePrice: 200, // REBALANCED: was 100 (×2 increase)
       bonus: "+2 качество/уровень",
       icon: Zap,
       color: "secondary",
@@ -181,7 +181,7 @@ export function StudioScreen({ gameState, setGameState, onNavigate }: StudioScre
       name: "Audio Interface",
       level: gameState.equipment.audioInterface || 0,
       maxLevel: 10,
-      basePrice: 250,
+      basePrice: 500, // REBALANCED: was 250 (×2 increase)
       bonus: "+4 качество/уровень",
       icon: Zap,
       color: "accent",

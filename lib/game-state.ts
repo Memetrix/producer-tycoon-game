@@ -50,6 +50,12 @@ export interface GameState {
     // Tier 3: Regional (2000-5000 rep)
     "city-star": number
     "state-champion": number
+    // Tier 4: National (5000-15000 rep)
+    "national-star": number
+    "chart-topper": number
+    // Tier 5: International (15000-50000 rep)
+    "global-icon": number
+    "living-legend": number
   }
 
   // Upgrades purchased
@@ -101,9 +107,10 @@ export interface GameState {
   }
 
   labelDeals: {
-    indie: boolean // $5,000 investment → +$50/час
-    small: boolean // $20,000 investment → +$200/час
-    major: boolean // $100,000 investment → +$1,000/час
+    indie: boolean // $15,000 investment → +$25/час (REBALANCED)
+    small: boolean // $50,000 investment → +$80/час (REBALANCED)
+    major: boolean // $300,000 investment → +$350/час (REBALANCED)
+    "super-major": boolean // $1,000,000 investment → +$1,000/час (NEW: Tier 6)
   }
 
   // Tutorial state
@@ -259,6 +266,12 @@ export const INITIAL_GAME_STATE: GameState = {
     // Tier 3: Regional (2000-5000 rep)
     "city-star": 0,
     "state-champion": 0,
+    // Tier 4: National (5000-15000 rep)
+    "national-star": 0,
+    "chart-topper": 0,
+    // Tier 5: International (15000-50000 rep)
+    "global-icon": 0,
+    "living-legend": 0,
   },
   purchasedUpgrades: [],
   dailyTasks: {
@@ -296,6 +309,7 @@ export const INITIAL_GAME_STATE: GameState = {
     indie: false,
     small: false,
     major: false,
+    "super-major": false, // NEW: Tier 6 endgame label
   },
   tutorialCompleted: false,
 }
@@ -445,8 +459,8 @@ export const ARTISTS_CONFIG = {
     popularity: 52,
     genre: "Сознательный",
     baseCost: 70,
-    incomePerLevel: [0, 5, 7, 10, 14, 20, 28, 38, 50, 65, 85],
-    energyBonusPerLevel: [0, 8, 10, 12, 14, 18, 22, 27, 33, 40, 50],
+    incomePerLevel: [0, 3, 4, 5, 7, 9, 12, 16, 21, 29, 40], // REBALANCED: Level 1: $3/ч → Level 10: $40/ч (было $5 → $85)
+    energyBonusPerLevel: [0, 8, 10, 12, 14, 18, 22, 27, 33, 40, 50], // Бонус энергии оставлен без изменений
     costMultiplier: 1.6,
     tier: 1,
   },
@@ -457,9 +471,9 @@ export const ARTISTS_CONFIG = {
     skill: 65,
     popularity: 45,
     genre: "Хип-хоп",
-    baseCost: 80,
-    incomePerLevel: [0, 6, 9, 13, 18, 25, 34, 46, 62, 82, 108],
-    energyBonusPerLevel: [0, 10, 12, 14, 16, 20, 25, 31, 38, 47, 58],
+    baseCost: 100, // REBALANCED: Повышена стоимость с $80
+    incomePerLevel: [0, 2, 3, 4, 5, 7, 9, 12, 16, 20, 25], // REBALANCED: Level 1: $2/ч → Level 10: $25/ч (было $6 → $108)
+    energyBonusPerLevel: [0, 10, 12, 14, 16, 20, 25, 31, 38, 47, 58], // Бонус энергии оставлен без изменений
     costMultiplier: 1.6,
     tier: 1,
   },
@@ -470,9 +484,9 @@ export const ARTISTS_CONFIG = {
     skill: 72,
     popularity: 38,
     genre: "Трэп",
-    baseCost: 100,
-    incomePerLevel: [0, 8, 11, 16, 22, 30, 41, 56, 76, 102, 136],
-    energyBonusPerLevel: [0, 15, 18, 21, 24, 30, 37, 46, 57, 71, 88],
+    baseCost: 150, // REBALANCED: Повышена стоимость с $100
+    incomePerLevel: [0, 3, 4, 5, 7, 10, 13, 18, 24, 29, 35], // REBALANCED: Level 1: $3/ч → Level 10: $35/ч (было $8 → $136)
+    energyBonusPerLevel: [0, 15, 18, 21, 24, 30, 37, 46, 57, 71, 88], // Бонус энергии оставлен без изменений
     costMultiplier: 1.6,
     tier: 1,
   },
@@ -483,15 +497,15 @@ export const ARTISTS_CONFIG = {
     skill: 85,
     popularity: 70,
     genre: "Хип-хоп",
-    baseCost: 200,
-    incomePerLevel: [0, 12, 18, 26, 36, 50, 68, 92, 124, 166, 222],
-    energyBonusPerLevel: [0, 25, 30, 35, 40, 50, 62, 77, 96, 120, 150],
+    baseCost: 250, // REBALANCED: Повышена стоимость с $200
+    incomePerLevel: [0, 5, 7, 9, 13, 17, 23, 31, 40, 47, 55], // REBALANCED: Level 1: $5/ч → Level 10: $55/ч (было $12 → $222)
+    energyBonusPerLevel: [0, 25, 30, 35, 40, 50, 62, 77, 96, 120, 150], // Бонус энергии оставлен без изменений
     costMultiplier: 1.6,
     requiresReputation: 400,
     tier: 1,
   },
 
-  // TIER 2: Local (500-2000 rep) - NEW ARTISTS
+  // TIER 2: Local (500-2000 rep) - REBALANCED ARTISTS
   "local-hero": {
     id: "local-hero",
     name: "Local Hero",
@@ -499,9 +513,9 @@ export const ARTISTS_CONFIG = {
     skill: 78,
     popularity: 65,
     genre: "R&B",
-    baseCost: 300,
-    incomePerLevel: [0, 20, 28, 38, 52, 70, 94, 126, 168, 224, 298],
-    energyBonusPerLevel: [0, 30, 36, 43, 52, 62, 75, 90, 108, 130, 156],
+    baseCost: 500, // REBALANCED: Повышена стоимость с $300
+    incomePerLevel: [0, 8, 11, 15, 20, 27, 36, 49, 65, 76, 90], // REBALANCED: Level 1: $8/ч → Level 10: $90/ч (было $20 → $298)
+    energyBonusPerLevel: [0, 30, 36, 43, 52, 62, 75, 90, 108, 130, 156], // Бонус энергии оставлен без изменений
     costMultiplier: 1.6,
     requiresReputation: 500,
     tier: 2,
@@ -513,15 +527,15 @@ export const ARTISTS_CONFIG = {
     skill: 82,
     popularity: 72,
     genre: "Trap",
-    baseCost: 400,
-    incomePerLevel: [0, 25, 35, 48, 65, 88, 118, 158, 212, 282, 376],
-    energyBonusPerLevel: [0, 35, 42, 50, 60, 72, 86, 104, 125, 150, 180],
+    baseCost: 700, // REBALANCED: Повышена стоимость с $400
+    incomePerLevel: [0, 10, 14, 19, 26, 35, 47, 63, 84, 96, 110], // REBALANCED: Level 1: $10/ч → Level 10: $110/ч (было $25 → $376)
+    energyBonusPerLevel: [0, 35, 42, 50, 60, 72, 86, 104, 125, 150, 180], // Бонус энергии оставлен без изменений
     costMultiplier: 1.6,
     requiresReputation: 500,
     tier: 2,
   },
 
-  // TIER 3: Regional (2000-5000 rep) - NEW ARTISTS
+  // TIER 3: Regional (2000-5000 rep) - REBALANCED ARTISTS
   "city-star": {
     id: "city-star",
     name: "City Star",
@@ -529,9 +543,9 @@ export const ARTISTS_CONFIG = {
     skill: 88,
     popularity: 80,
     genre: "Pop",
-    baseCost: 800,
-    incomePerLevel: [0, 50, 68, 92, 124, 166, 222, 296, 394, 524, 698],
-    energyBonusPerLevel: [0, 50, 60, 72, 86, 104, 125, 150, 180, 216, 260],
+    baseCost: 1500, // REBALANCED: Повышена стоимость с $800
+    incomePerLevel: [0, 15, 21, 29, 40, 54, 73, 98, 115, 132, 150], // REBALANCED: Level 1: $15/ч → Level 10: $150/ч (было $50 → $698)
+    energyBonusPerLevel: [0, 50, 60, 72, 86, 104, 125, 150, 180, 216, 260], // Бонус энергии оставлен без изменений
     costMultiplier: 1.6,
     requiresReputation: 2000,
     tier: 3,
@@ -543,12 +557,72 @@ export const ARTISTS_CONFIG = {
     skill: 92,
     popularity: 85,
     genre: "Hip-Hop",
-    baseCost: 1000,
-    incomePerLevel: [0, 60, 82, 110, 148, 198, 264, 352, 470, 626, 834],
-    energyBonusPerLevel: [0, 55, 66, 79, 95, 114, 137, 164, 197, 237, 284],
+    baseCost: 2000, // REBALANCED: Повышена стоимость с $1,000
+    incomePerLevel: [0, 20, 28, 38, 52, 71, 96, 129, 154, 177, 200], // REBALANCED: Level 1: $20/ч → Level 10: $200/ч (было $60 → $834)
+    energyBonusPerLevel: [0, 55, 66, 79, 95, 114, 137, 164, 197, 237, 284], // Бонус энергии оставлен без изменений
     costMultiplier: 1.6,
     requiresReputation: 2000,
     tier: 3,
+  },
+
+  // TIER 4: National (5000-15000 rep) - NEW ENDGAME ARTISTS
+  "national-star": {
+    id: "national-star",
+    name: "National Star",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-2.png", // TODO: Заменить на уникальный аватар
+    skill: 95,
+    popularity: 90,
+    genre: "Pop",
+    baseCost: 5000, // NEW: Дорогой артист для среднего эндгейма
+    incomePerLevel: [0, 30, 42, 58, 80, 110, 151, 208, 227, 263, 300], // NEW: Level 1: $30/ч → Level 10: $300/ч
+    energyBonusPerLevel: [0, 60, 72, 86, 104, 125, 150, 180, 216, 260, 312], // Пропорционален доходу
+    costMultiplier: 1.6,
+    requiresReputation: 5000,
+    tier: 4,
+  },
+  "chart-topper": {
+    id: "chart-topper",
+    name: "Chart Topper",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-3.png", // TODO: Заменить на уникальный аватар
+    skill: 97,
+    popularity: 92,
+    genre: "Hip-Hop",
+    baseCost: 8000, // NEW: Очень дорогой артист для среднего эндгейма
+    incomePerLevel: [0, 40, 56, 78, 108, 149, 205, 283, 307, 351, 400], // NEW: Level 1: $40/ч → Level 10: $400/ч
+    energyBonusPerLevel: [0, 70, 84, 101, 121, 145, 174, 209, 251, 301, 361], // Пропорционален доходу
+    costMultiplier: 1.6,
+    requiresReputation: 5000,
+    tier: 4,
+  },
+
+  // TIER 5: International (15000-50000 rep) - ELITE ENDGAME ARTISTS
+  "global-icon": {
+    id: "global-icon",
+    name: "Global Icon",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-7.png", // TODO: Заменить на уникальный аватар
+    skill: 98,
+    popularity: 95,
+    genre: "Electronic",
+    baseCost: 20000, // NEW: Премиум артист для позднего эндгейма
+    incomePerLevel: [0, 80, 112, 156, 216, 298, 411, 567, 615, 713, 800], // NEW: Level 1: $80/ч → Level 10: $800/ч
+    energyBonusPerLevel: [0, 80, 96, 115, 138, 166, 199, 239, 287, 344, 413], // Пропорционален доходу
+    costMultiplier: 1.6,
+    requiresReputation: 15000,
+    tier: 5,
+  },
+  "living-legend": {
+    id: "living-legend",
+    name: "Living Legend",
+    avatar: "https://0ugortr0sqpftx2e.public.blob.vercel-storage.com/mc-flow-8.png", // TODO: Заменить на уникальный аватар
+    skill: 99,
+    popularity: 98,
+    genre: "Hip-Hop",
+    baseCost: 40000, // NEW: Самый дорогой артист в игре
+    incomePerLevel: [0, 120, 168, 235, 326, 451, 623, 860, 933, 1080, 1200], // NEW: Level 1: $120/ч → Level 10: $1,200/ч
+    energyBonusPerLevel: [0, 90, 108, 130, 156, 187, 224, 269, 323, 388, 466], // Пропорционален доходу
+    costMultiplier: 1.6,
+    requiresReputation: 15000,
+    tier: 5,
   },
 }
 
@@ -593,7 +667,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Подписаться на Telegram",
       description: "Подпишись на наш канал в Telegram",
       url: "https://google.com", // Placeholder
-      reward: { money: 200, reputation: 50 }, // UPDATED: было 100/$20 rep
+      reward: { money: 500, reputation: 125 }, // REBALANCED: was $200/50 rep (×2.5 increase for economy balance)
       icon: "📱",
     },
     {
@@ -601,7 +675,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Подписаться на X (Twitter)",
       description: "Подпишись на нас в X",
       url: "https://google.com", // Placeholder
-      reward: { money: 200, reputation: 50 }, // UPDATED: было 100/$20 rep
+      reward: { money: 500, reputation: 125 }, // REBALANCED: was $200/50 rep (×2.5 increase for economy balance)
       icon: "🐦",
     },
     {
@@ -609,7 +683,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Подписаться на Instagram",
       description: "Подпишись на наш Instagram",
       url: "https://google.com", // Placeholder
-      reward: { money: 200, reputation: 50 }, // UPDATED: было 100/$20 rep
+      reward: { money: 500, reputation: 125 }, // REBALANCED: was $200/50 rep (×2.5 increase for economy balance)
       icon: "📸",
     },
   ],
@@ -619,7 +693,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Лайкнуть пост в Telegram",
       description: "Поставь лайк на последний пост в Telegram",
       url: "https://google.com", // Placeholder
-      reward: { money: 300, reputation: 75, energy: 30 }, // UPDATED: было 150/$30 rep/20 energy
+      reward: { money: 750, reputation: 188, energy: 50 }, // REBALANCED: was $300/75 rep/30 energy (×2.5 increase)
       icon: "📱",
     },
     {
@@ -627,7 +701,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Лайкнуть пост в X",
       description: "Поставь лайк на последний пост в X",
       url: "https://google.com", // Placeholder
-      reward: { money: 300, reputation: 75, energy: 30 }, // UPDATED: было 150/$30 rep/20 energy
+      reward: { money: 750, reputation: 188, energy: 50 }, // REBALANCED: was $300/75 rep/30 energy (×2.5 increase)
       icon: "🐦",
     },
     {
@@ -635,7 +709,7 @@ export const DAILY_TASKS_CONFIG = {
       name: "Лайкнуть пост в Instagram",
       description: "Поставь лайк на последний пост в Instagram",
       url: "https://google.com", // Placeholder
-      reward: { money: 300, reputation: 75, energy: 30 }, // UPDATED: было 150/$30 rep/20 energy
+      reward: { money: 750, reputation: 188, energy: 50 }, // REBALANCED: was $300/75 rep/30 energy (×2.5 increase)
       icon: "📸",
     },
   ],
@@ -768,38 +842,38 @@ export function getTierPriceMultiplier(reputation: number): number {
 
 export const STREAK_REWARDS = {
   7: {
-    money: 500,
-    reputation: 100,
+    money: 1250, // REBALANCED: was 500 (×2.5 increase)
+    reputation: 250, // REBALANCED: was 100 (×2.5 increase)
     description: "7 дней подряд",
   },
   14: {
-    money: 1500,
-    reputation: 300,
+    money: 3750, // REBALANCED: was 1500 (×2.5 increase)
+    reputation: 750, // REBALANCED: was 300 (×2.5 increase)
     description: "14 дней подряд",
   },
   21: {
-    money: 3000,
-    reputation: 800,
+    money: 7500, // REBALANCED: was 3000 (×2.5 increase)
+    reputation: 2000, // REBALANCED: was 800 (×2.5 increase)
     description: "21 день подряд - Серьёзный продюсер!",
   },
   30: {
-    money: 5000,
-    reputation: 2000,
+    money: 12500, // REBALANCED: was 5000 (×2.5 increase)
+    reputation: 5000, // REBALANCED: was 2000 (×2.5 increase)
     description: "30 дней подряд - Региональная звезда!",
   },
   40: {
-    money: 8000,
-    reputation: 4000,
+    money: 20000, // REBALANCED: was 8000 (×2.5 increase)
+    reputation: 10000, // REBALANCED: was 4000 (×2.5 increase)
     description: "40 дней подряд - Национальный герой!",
   },
   50: {
-    money: 12000,
-    reputation: 8000,
+    money: 30000, // REBALANCED: was 12000 (×2.5 increase)
+    reputation: 20000, // REBALANCED: was 8000 (×2.5 increase)
     description: "50 дней подряд - Международный уровень!",
   },
   60: {
-    money: 20000,
-    reputation: 15000,
+    money: 50000, // REBALANCED: was 20000 (×2.5 increase)
+    reputation: 37500, // REBALANCED: was 15000 (×2.5 increase)
     description: "60 дней подряд - ЛЕГЕНДАРНЫЙ ПРОДЮСЕР!",
   },
 }
@@ -838,7 +912,7 @@ export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
     description: "Снижает затраты энергии на создание битов",
     branch: "energy",
     requiredReputation: 500,
-    cost: 2000,
+    cost: 5000, // REBALANCED: was 2000 (×2.5 increase)
     effect: "-10% затраты энергии",
     icon: "☕",
   },
@@ -848,7 +922,7 @@ export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
     description: "Увеличивает максимальный запас энергии",
     branch: "energy",
     requiredReputation: 2000,
-    cost: 8000,
+    cost: 20000, // REBALANCED: was 8000 (×2.5 increase)
     effect: "+20% максимальной энергии",
     icon: "💪",
   },
@@ -858,7 +932,7 @@ export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
     description: "Ускоряет восстановление энергии",
     branch: "energy",
     requiredReputation: 5000,
-    cost: 20000,
+    cost: 50000, // REBALANCED: was 20000 (×2.5 increase)
     effect: "+1 энергия/мин",
     icon: "🌊",
   },
@@ -870,7 +944,7 @@ export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
     description: "Улучшает восприятие деталей звука",
     branch: "quality",
     requiredReputation: 500,
-    cost: 2000,
+    cost: 5000, // REBALANCED: was 2000 (×2.5 increase)
     effect: "+5% качество битов",
     icon: "👂",
   },
@@ -880,7 +954,7 @@ export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
     description: "Глубокое понимание музыкальных структур",
     branch: "quality",
     requiredReputation: 2000,
-    cost: 8000,
+    cost: 20000, // REBALANCED: was 8000 (×2.5 increase)
     effect: "+10% качество битов",
     icon: "📚",
   },
@@ -890,7 +964,7 @@ export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
     description: "Доведение каждой детали до совершенства",
     branch: "quality",
     requiredReputation: 5000,
-    cost: 20000,
+    cost: 50000, // REBALANCED: was 20000 (×2.5 increase)
     effect: "+20% качество битов",
     icon: "✨",
   },
@@ -902,7 +976,7 @@ export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
     description: "Умение договариваться о цене",
     branch: "money",
     requiredReputation: 500,
-    cost: 2000,
+    cost: 5000, // REBALANCED: was 2000 (×2.5 increase)
     effect: "+10% цена битов",
     icon: "🤝",
   },
@@ -912,7 +986,7 @@ export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
     description: "Профессиональное ведение бизнеса",
     branch: "money",
     requiredReputation: 2000,
-    cost: 8000,
+    cost: 20000, // REBALANCED: was 8000 (×2.5 increase)
     effect: "+25% цена битов",
     icon: "💼",
   },
@@ -922,7 +996,7 @@ export const SKILLS_CONFIG: Record<keyof GameState["skills"], SkillNode> = {
     description: "Мастер монетизации своего таланта",
     branch: "money",
     requiredReputation: 5000,
-    cost: 20000,
+    cost: 50000, // REBALANCED: was 20000 (×2.5 increase)
     effect: "+50% цена битов",
     icon: "👑",
   },
@@ -966,7 +1040,7 @@ export interface BeatContract {
   id: string
   name: string
   description: string
-  difficulty: "easy" | "medium" | "hard"
+  difficulty: "easy" | "medium" | "hard" | "elite" | "legendary" // UPDATED: Added elite and legendary tiers
   requirements: {
     beats?: number // Total beats to create
     minAccuracy?: number // Minimum accuracy percentage
@@ -988,7 +1062,7 @@ export const BEAT_CONTRACTS_POOL: BeatContract[] = [
     description: "Создай 10 битов с любым качеством",
     difficulty: "easy",
     requirements: { beats: 10 },
-    reward: { money: 2000, reputation: 200 },
+    reward: { money: 5000, reputation: 500 }, // REBALANCED: was $2,000/200 rep (×2.5 increase)
     icon: "📦",
   },
   {
@@ -997,7 +1071,7 @@ export const BEAT_CONTRACTS_POOL: BeatContract[] = [
     description: "Создай 5 битов с качеством 70%+",
     difficulty: "easy",
     requirements: { beats: 5, minQuality: 70 },
-    reward: { money: 2500, reputation: 250 },
+    reward: { money: 6250, reputation: 625 }, // REBALANCED: was $2,500/250 rep (×2.5 increase)
     icon: "🎵",
   },
 
@@ -1008,7 +1082,7 @@ export const BEAT_CONTRACTS_POOL: BeatContract[] = [
     description: "Создай 5 битов с точностью 85%+",
     difficulty: "medium",
     requirements: { beats: 5, minAccuracy: 85 },
-    reward: { money: 5000, reputation: 500 },
+    reward: { money: 12500, reputation: 1250 }, // REBALANCED: was $5,000/500 rep (×2.5 increase)
     icon: "🎯",
   },
   {
@@ -1017,7 +1091,7 @@ export const BEAT_CONTRACTS_POOL: BeatContract[] = [
     description: "Создай 20 битов за неделю",
     difficulty: "medium",
     requirements: { beats: 20, timeLimit: 168 }, // 7 days
-    reward: { money: 6000, reputation: 600 },
+    reward: { money: 15000, reputation: 1500 }, // REBALANCED: was $6,000/600 rep (×2.5 increase)
     icon: "📅",
   },
 
@@ -1028,7 +1102,7 @@ export const BEAT_CONTRACTS_POOL: BeatContract[] = [
     description: "Создай 10 битов с качеством 90%+",
     difficulty: "hard",
     requirements: { beats: 10, minQuality: 90 },
-    reward: { money: 10000, reputation: 1000 },
+    reward: { money: 25000, reputation: 2500 }, // REBALANCED: was $10,000/1,000 rep (×2.5 increase)
     icon: "💎",
   },
   {
@@ -1037,8 +1111,48 @@ export const BEAT_CONTRACTS_POOL: BeatContract[] = [
     description: "Создай 5 битов с точностью 95%+ и качеством 85%+",
     difficulty: "hard",
     requirements: { beats: 5, minAccuracy: 95, minQuality: 85 },
-    reward: { money: 15000, reputation: 1500 },
+    reward: { money: 37500, reputation: 3750 }, // REBALANCED: was $15,000/1,500 rep (×2.5 increase)
     icon: "🏆",
+  },
+
+  // Elite Contracts (15000+ rep, Tier 5)
+  {
+    id: "elite_volume",
+    name: "Массовое производство",
+    description: "Создай 30 битов с качеством 80%+",
+    difficulty: "elite",
+    requirements: { beats: 30, minQuality: 80 },
+    reward: { money: 75000, reputation: 5000 }, // NEW: High volume elite contract
+    icon: "🎼",
+  },
+  {
+    id: "elite_perfection",
+    name: "Абсолютное совершенство",
+    description: "Создай 10 битов с качеством 95%+ и точностью 90%+",
+    difficulty: "elite",
+    requirements: { beats: 10, minQuality: 95, minAccuracy: 90 },
+    reward: { money: 100000, reputation: 7500 }, // NEW: Ultimate quality challenge
+    icon: "💫",
+  },
+
+  // Legendary Contracts (50000+ rep, Tier 6)
+  {
+    id: "legendary_opus",
+    name: "Легендарный опус",
+    description: "Создай 50 битов с качеством 90%+ за 2 недели",
+    difficulty: "legendary",
+    requirements: { beats: 50, minQuality: 90, timeLimit: 336 }, // 14 days
+    reward: { money: 250000, reputation: 15000 }, // NEW: Epic endgame contract
+    icon: "👑",
+  },
+  {
+    id: "legendary_masterpiece",
+    name: "Шедевр эпохи",
+    description: "Создай 15 битов с качеством 98%+ и точностью 95%+",
+    difficulty: "legendary",
+    requirements: { beats: 15, minQuality: 98, minAccuracy: 95 },
+    reward: { money: 500000, reputation: 25000 }, // NEW: Ultimate legendary contract
+    icon: "🌟",
   },
 ]
 
@@ -1060,8 +1174,30 @@ export function getAvailableContracts(reputation: number): BeatContract[] {
     available.push(...BEAT_CONTRACTS_POOL.filter((c) => c.difficulty === "easy" || c.difficulty === "medium"))
   }
 
-  // Tier 4+ (5000+): All contracts
-  if (tier >= 4) {
+  // Tier 4 (5000-15000): Easy + Medium + Hard
+  if (tier === 4) {
+    available.push(
+      ...BEAT_CONTRACTS_POOL.filter(
+        (c) => c.difficulty === "easy" || c.difficulty === "medium" || c.difficulty === "hard",
+      ),
+    )
+  }
+
+  // Tier 5 (15000-50000): Easy + Medium + Hard + Elite
+  if (tier === 5) {
+    available.push(
+      ...BEAT_CONTRACTS_POOL.filter(
+        (c) =>
+          c.difficulty === "easy" ||
+          c.difficulty === "medium" ||
+          c.difficulty === "hard" ||
+          c.difficulty === "elite",
+      ),
+    )
+  }
+
+  // Tier 6 (50000+): All contracts including Legendary
+  if (tier >= 6) {
     available.push(...BEAT_CONTRACTS_POOL)
   }
 
@@ -1070,7 +1206,7 @@ export function getAvailableContracts(reputation: number): BeatContract[] {
 
 // LABEL DEALS CONFIGURATION
 export interface LabelDeal {
-  id: "indie" | "small" | "major"
+  id: "indie" | "small" | "major" | "super-major" // UPDATED: Added super-major for Tier 6
   name: string
   description: string
   cost: number
@@ -1079,13 +1215,13 @@ export interface LabelDeal {
   icon: string
 }
 
-export const LABEL_DEALS_CONFIG: Record<"indie" | "small" | "major", LabelDeal> = {
+export const LABEL_DEALS_CONFIG: Record<"indie" | "small" | "major" | "super-major", LabelDeal> = {
   indie: {
     id: "indie",
     name: "Indie Label",
     description: "Партнерство с независимым лейблом",
-    cost: 5000,
-    passiveIncomePerHour: 50,
+    cost: 15000, // REBALANCED: was 5000 (×3 increase)
+    passiveIncomePerHour: 25, // REBALANCED: was 50 (reduced by 50% for balance)
     requiredReputation: 2000, // Tier 3
     icon: "🎸",
   },
@@ -1093,8 +1229,8 @@ export const LABEL_DEALS_CONFIG: Record<"indie" | "small" | "major", LabelDeal> 
     id: "small",
     name: "Small Label",
     description: "Контракт с малым лейблом",
-    cost: 20000,
-    passiveIncomePerHour: 200,
+    cost: 50000, // REBALANCED: was 20000 (×2.5 increase)
+    passiveIncomePerHour: 80, // REBALANCED: was 200 (reduced by 60% for balance)
     requiredReputation: 5000, // Tier 4
     icon: "🎤",
   },
@@ -1102,10 +1238,19 @@ export const LABEL_DEALS_CONFIG: Record<"indie" | "small" | "major", LabelDeal> 
     id: "major",
     name: "Major Label",
     description: "Сделка с крупным лейблом",
-    cost: 100000,
-    passiveIncomePerHour: 1000,
+    cost: 300000, // REBALANCED: was 100000 (×3 increase)
+    passiveIncomePerHour: 350, // REBALANCED: was 1000 (reduced by 65% for balance)
     requiredReputation: 15000, // Tier 5
     icon: "🏢",
+  },
+  "super-major": {
+    id: "super-major",
+    name: "Super Major Label",
+    description: "Легендарный контракт с мега-корпорацией",
+    cost: 1000000, // NEW: Ultimate endgame label investment
+    passiveIncomePerHour: 1000, // NEW: Top tier passive income
+    requiredReputation: 50000, // Tier 6 (Legend)
+    icon: "👑",
   },
 }
 
@@ -1116,6 +1261,7 @@ export function getLabelDealsPassiveIncome(labelDeals: GameState["labelDeals"]):
   if (labelDeals.indie) incomePerHour += LABEL_DEALS_CONFIG.indie.passiveIncomePerHour
   if (labelDeals.small) incomePerHour += LABEL_DEALS_CONFIG.small.passiveIncomePerHour
   if (labelDeals.major) incomePerHour += LABEL_DEALS_CONFIG.major.passiveIncomePerHour
+  if (labelDeals["super-major"]) incomePerHour += LABEL_DEALS_CONFIG["super-major"].passiveIncomePerHour
 
   return Math.floor(incomePerHour / 60) // Convert to per minute
 }

@@ -129,7 +129,7 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
   }
 
   const calculatePrice = (quality: number, difficulty: number) => {
-    const basePrice = 30
+    const basePrice = 50 // REBALANCED: was 30 (increased by 67% for better economy balance)
     const qualityBonus = Math.max(0, Math.floor((quality - 60) * 1.5)) // FIXED: prevent negative bonus
     const difficultyMultiplier = 1 + (difficulty - 1) * 0.3
     const reputationBonus = Math.floor(gameState.reputation * 0.05)
@@ -155,8 +155,8 @@ export function StageScreen({ gameState, setGameState, onNavigate, onRhythmGameS
       await sellBeats([currentBeat.id])
       console.log("[v0] Beat sold successfully")
 
-      const reputationGain = Math.floor(currentBeat.quality / 5)
-      console.log("[v0] Reputation gain:", reputationGain, "(quality:", currentBeat.quality, "/ 5)")
+      const reputationGain = Math.floor(currentBeat.quality / 2) // REBALANCED: was /5 (×2.5 increase for better progression)
+      console.log("[v0] Reputation gain:", reputationGain, "(quality:", currentBeat.quality, "/ 2)")
 
       const updatedContractProgress = { ...gameState.beatContracts.contractProgress }
       let contractsUpdated = false
